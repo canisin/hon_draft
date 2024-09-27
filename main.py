@@ -11,8 +11,10 @@ socketio = SocketIO( app )
 
 state = "lobby"
 players = {}
-legion = {}
-hellbourne = {}
+legion = { name = "legion" }
+hellbourne = { name = "hellbourne" }
+legion.other = hellbourne
+hellbourne.other = legion
 first_ban = legion
 agi_heroes = {}
 int_heroes = {}
@@ -118,7 +120,7 @@ def ban_hero( player, hero ):
         timer = Timer( 10, picking_countdown_timer )
         timer.start()
     else:
-        banning_team = !banning_team
+        banning_team = banning_team.other
         timer = Timer( 30, banning_timer )
         timer.start()
 
@@ -177,7 +179,7 @@ def pick_hero( player, hero ):
             return
 
     timer.cancel()
-    picking_team = !picking_players[ 0 ].team
+    picking_team = picking_players[ 0 ].team.other
     picking_players = {}
     for player in picking_team:
         if player.has_picked:
