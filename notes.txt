@@ -1,3 +1,6 @@
+https://www.youtube.com/watch?v=mkXdvs8H7TA
+https://www.youtube.com/watch?v=jQjjqEjZK58
+
 states:
 lobby -> pool_countdown -> banning_countdown -> banning x n -> picking_countdown -> picking x n -> lobby
 
