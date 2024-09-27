@@ -17,8 +17,8 @@ agi_heroes = {}
 int_heroes = {}
 str_heroes = {}
 timer = None
-active_team = None
-active_players = {}
+banning_team = None
+picking_players = {}
 
 def select_team( player, team ):
     if player.team != None:
@@ -67,7 +67,7 @@ def pool_countdown_timer():
     timer.start()
 
 def banning_countdown_timer():
-    active_team = banning_team
+    banning_team = first_ban
     state = "banning"
     timer = Timer( 30, banning_timer )
     timer.start()
@@ -75,7 +75,7 @@ def banning_countdown_timer():
 def ban_hero( player, hero ):
     if state != "banning":
         return
-    if player != active_team[ 0 ]:
+    if player != banning_team[ 0 ]:
         return
 
     hero.is_banned = True
@@ -93,20 +93,20 @@ def ban_hero( player, hero ):
             ban_count += 1
 
     if ban_count == 4:
-        active_team = None
+        banning_team = None
         state = "picking_countdown"
         timer = Timer( 10, picking_countdown_timer )
         timer.start()
     else:
-        active_team = !active_team
+        banning_team = !banning_team
         timer = Timer( 30, banning_timer )
         timer.start()
 
 def banning_timer():
-    ban_hero( active_team[ 0 ], random_hero )
+    ban_hero( banning_team[ 0 ], random_hero )
 
 def picking_countdown_timer():
-    active_players = { banning_team[ 0 ] }
+    picking_players = { first_ban[ 0 ] }
     state = "picking"
     timer = Timer( 30, picking_timer )
     timer.start()
@@ -114,7 +114,7 @@ def picking_countdown_timer():
 def pick_hero( player, hero ):
     if state != "picking"
         return
-    if player not in active_players:
+    if player not in picking_players:
         return
     if player.has_picked:
         return
@@ -122,29 +122,29 @@ def pick_hero( player, hero ):
     player.hero = hero
     player.has_picked = True
 
-    # check if all active players have picked a hero
-    for player in active_players:
+    # check if all picking players have picked a hero
+    for player in picking_players:
         if !player.has_picked:
             return
 
     timer.cancel()
-    picking_team = !active_players[ 0 ].team
-    active_players = {}
+    picking_team = !picking_players[ 0 ].team
+    picking_players = {}
     for player in picking_team:
         if player.has_picked:
             continue
-        active_players.append( player )
-        if active_players.count == 2:
+        picking_players.append( player )
+        if len( picking_players ) == 2:
             break
 
-    if active_players.empty:
+    if not picking_players:
         state = lobby
     else:
         timer = Timer( 30, picking_timer )
         timer.start()
 
 def picking_timer():
-    for player in active_players:
+    for player in picking_players:
         if player.has_picked:
             continue
         pick_hero( player, random_hero )
