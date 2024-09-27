@@ -11,10 +11,10 @@ socketio = SocketIO( app )
 
 state = "lobby"
 players = {}
-legion = { name = "legion" }
-hellbourne = { name = "hellbourne" }
-legion.other = hellbourne
-hellbourne.other = legion
+legion = { "name": "legion" }
+hellbourne = { "name": "hellbourne" }
+legion["other"] = hellbourne
+hellbourne["other"] = legion
 first_ban = legion
 agi_heroes = {}
 int_heroes = {}
@@ -57,34 +57,34 @@ def start_draft():
 
 def generate_pool():
     agi_heroes = {
-            { name = "agi_hero_1" },
-            { name = "agi_hero_2" },
-            { name = "agi_hero_3" },
-            { name = "agi_hero_4" },
-            { name = "agi_hero_5" },
-            { name = "agi_hero_6" },
-            { name = "agi_hero_7" },
-            { name = "agi_hero_8" },
+            { "name": "agi_hero_1" },
+            { "name": "agi_hero_2" },
+            { "name": "agi_hero_3" },
+            { "name": "agi_hero_4" },
+            { "name": "agi_hero_5" },
+            { "name": "agi_hero_6" },
+            { "name": "agi_hero_7" },
+            { "name": "agi_hero_8" },
         }
     int_heroes = {
-            { name = "int_hero_1" },
-            { name = "int_hero_2" },
-            { name = "int_hero_3" },
-            { name = "int_hero_4" },
-            { name = "int_hero_5" },
-            { name = "int_hero_6" },
-            { name = "int_hero_7" },
-            { name = "int_hero_8" },
+            { "name": "int_hero_1" },
+            { "name": "int_hero_2" },
+            { "name": "int_hero_3" },
+            { "name": "int_hero_4" },
+            { "name": "int_hero_5" },
+            { "name": "int_hero_6" },
+            { "name": "int_hero_7" },
+            { "name": "int_hero_8" },
         }
     str_heroes = {
-            { name = "str_hero_1" },
-            { name = "str_hero_2" },
-            { name = "str_hero_3" },
-            { name = "str_hero_4" },
-            { name = "str_hero_5" },
-            { name = "str_hero_6" },
-            { name = "str_hero_7" },
-            { name = "str_hero_8" },
+            { "name": "str_hero_1" },
+            { "name": "str_hero_2" },
+            { "name": "str_hero_3" },
+            { "name": "str_hero_4" },
+            { "name": "str_hero_5" },
+            { "name": "str_hero_6" },
+            { "name": "str_hero_7" },
+            { "name": "str_hero_8" },
         }
 
 def pool_countdown_timer():
@@ -110,9 +110,11 @@ def ban_hero( player, hero ):
     hero.is_banned = True
     timer.cancel()
 
-    ban_count = sum( hero.is_banned for hero in agi_heroes )
-              + sum( hero.is_banned for hero in int_heroes )
-              + sum( hero.is_banned for hero in str_heroes )
+    ban_count = (
+            sum( hero.is_banned for hero in agi_heroes )
+          + sum( hero.is_banned for hero in int_heroes )
+          + sum( hero.is_banned for hero in str_heroes )
+        )
 
     if ban_count == 4:
         banning_team = None
@@ -158,7 +160,7 @@ def picking_countdown_timer():
     timer.start()
 
 def pick_hero( player, hero ):
-    if state != "picking"
+    if state != "picking":
         return
     if player not in picking_players:
         return
@@ -175,7 +177,7 @@ def pick_hero( player, hero ):
 
     # check if all picking players have picked a hero
     for player in picking_players:
-        if !player.has_picked:
+        if not player.has_picked:
             return
 
     timer.cancel()
