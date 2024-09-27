@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 
 from threading import Thread
@@ -217,7 +217,9 @@ def update():
 
 @app.route( "/" )
 def home():
-    return f"Hello world! { state[ "value" ] }"
+    return render_template( "home.html",
+        state = state
+    )
 
 if __name__ == "__main__":
     Thread( target = logic, daemon = True ).start()
