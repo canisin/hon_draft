@@ -4,6 +4,7 @@ from flask_socketio import SocketIO
 from threading import Thread
 from threading import Timer
 from time import sleep
+from random import random
 
 app = Flask( __name__ )
 socketio = SocketIO( app )
@@ -53,12 +54,36 @@ def start_draft():
     timer.start()
 
 def generate_pool():
-    agi_heroes = { "agi_hero_1", "agi_hero_2", "agi_hero_3", "agi_hero_4"
-                   "agi_hero_5", "agi_hero_6", "agi_hero_7", "agi_hero_8" }
-    int_heroes = { "int_hero_1", "int_hero_2", "int_hero_3", "int_hero_4"
-                   "int_hero_5", "int_hero_6", "int_hero_7", "int_hero_8" }
-    str_heroes = { "str_hero_1", "str_hero_2", "str_hero_3", "str_hero_4"
-                   "str_hero_5", "str_hero_6", "str_hero_7", "str_hero_8" }
+    agi_heroes = {
+            { name = "agi_hero_1" },
+            { name = "agi_hero_2" },
+            { name = "agi_hero_3" },
+            { name = "agi_hero_4" },
+            { name = "agi_hero_5" },
+            { name = "agi_hero_6" },
+            { name = "agi_hero_7" },
+            { name = "agi_hero_8" },
+        }
+    int_heroes = {
+            { name = "int_hero_1" },
+            { name = "int_hero_2" },
+            { name = "int_hero_3" },
+            { name = "int_hero_4" },
+            { name = "int_hero_5" },
+            { name = "int_hero_6" },
+            { name = "int_hero_7" },
+            { name = "int_hero_8" },
+        }
+    str_heroes = {
+            { name = "str_hero_1" },
+            { name = "str_hero_2" },
+            { name = "str_hero_3" },
+            { name = "str_hero_4" },
+            { name = "str_hero_5" },
+            { name = "str_hero_6" },
+            { name = "str_hero_7" },
+            { name = "str_hero_8" },
+        }
 
 def pool_countdown_timer():
     generate_pool()
@@ -77,20 +102,15 @@ def ban_hero( player, hero ):
         return
     if player != banning_team[ 0 ]:
         return
+    if hero.is_banned:
+        return
 
     hero.is_banned = True
     timer.cancel()
 
-    ban_count = 0
-    for hero in agi_heroes:
-        if hero.is_banned:
-            ban_count += 1
-    for hero in int_heroes:
-        if hero.is_banned:
-            ban_count += 1
-    for hero in str_heroes:
-        if hero.is_banned:
-            ban_count += 1
+    ban_count = sum( hero.is_banned for hero in agi_heroes )
+              + sum( hero.is_banned for hero in int_heroes )
+              + sum( hero.is_banned for hero in str_heroes )
 
     if ban_count == 4:
         banning_team = None
@@ -102,7 +122,31 @@ def ban_hero( player, hero ):
         timer = Timer( 30, banning_timer )
         timer.start()
 
+# make this more python
+def get_available_heroes():
+    available_heroes = {}
+    for hero in agi_heroes:
+        if hero.is_banned:
+            continue
+        if hero.is_selected:
+            continue
+        available_heroes.append( hero )
+    for hero in int_heroes:
+        if hero.is_banned:
+            continue
+        if hero.is_selected:
+            continue
+        available_heroes.append( hero )
+    for hero in str_heroes:
+        if hero.is_banned:
+            continue
+        if hero.is_selected:
+            continue
+        available_heroes.append( hero )
+    return available_heroes
+
 def banning_timer():
+    random_hero = random.choice( get_available_heroes )
     ban_hero( banning_team[ 0 ], random_hero )
 
 def picking_countdown_timer():
@@ -118,9 +162,14 @@ def pick_hero( player, hero ):
         return
     if player.has_picked:
         return
+    if hero.is_banned:
+        return
+    if hero.is_selected:
+        return
 
     player.hero = hero
     player.has_picked = True
+    hero.is_selected = True
 
     # check if all picking players have picked a hero
     for player in picking_players:
@@ -147,6 +196,7 @@ def picking_timer():
     for player in picking_players:
         if player.has_picked:
             continue
+        random_hero = random.choice( get_available_heroes )
         pick_hero( player, random_hero )
 
 value = 0
