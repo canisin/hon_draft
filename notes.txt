@@ -1,0 +1,43 @@
+states:
+lobby -> pool_countdown -> banning_countdown -> banning x n -> picking_countdown -> picking x n -> lobby
+
+always:
+- players can always join (as observers)
+- players can always right click heroes
+
+lobby:
+- can join or leave teams
+- can start drafting
+  reset hero pool, reset player selections, set state to pool_countdown
+- does not have a timer
+pool_countdown:
+- no actions
+- when timer ends..
+  generate hero pool, set state to banning_countdown
+banning_countdown
+- no actions
+- when timer ends..
+  set active team to the first banning team, set state to banning
+banning
+- first player in active team can ban a hero
+- ends early when a hero is banned
+  if banning is complete
+    clear active team, set state to picking_countdown
+  else
+    toggle active team
+- when the timer ends..
+  ban a random hero, then do the above
+picking_countdown
+- no actions
+- when timer ends..
+  set active players to the first player of the first banning team, set state to picking
+picking
+- active players who have not yet selected a hero can select a hero
+- ends early if all active players have selected a hero
+  if picking is complete
+    clear active players, set state to lobby
+  else
+    set active players to the next two players of the other team
+- when timer ends..
+  select a random hero for all active players who have not selected a hero, then do the above
+
