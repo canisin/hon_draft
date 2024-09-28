@@ -16,9 +16,9 @@ hellbourne = { "name": "hellbourne" }
 legion["other"] = hellbourne
 hellbourne["other"] = legion
 first_ban = legion
-agi_heroes = {}
-int_heroes = {}
-str_heroes = {}
+agi_heroes = []
+int_heroes = []
+str_heroes = []
 timer = None
 banning_team = None
 picking_players = {}
@@ -36,9 +36,9 @@ def right_click( player, hero ):
     player.hero = hero
 
 def reset_heroes():
-    agi_heroes = {}
-    int_heroes = {}
-    str_heroes = {}
+    agi_heroes = []
+    int_heroes = []
+    str_heroes = []
 
 def reset_players():
     for player in players:
@@ -56,7 +56,7 @@ def start_draft():
     timer.start()
 
 def generate_pool():
-    agi_heroes = {
+    agi_heroes = [
             { "name": "agi_hero_1" },
             { "name": "agi_hero_2" },
             { "name": "agi_hero_3" },
@@ -65,8 +65,8 @@ def generate_pool():
             { "name": "agi_hero_6" },
             { "name": "agi_hero_7" },
             { "name": "agi_hero_8" },
-        }
-    int_heroes = {
+        ]
+    int_heroes = [
             { "name": "int_hero_1" },
             { "name": "int_hero_2" },
             { "name": "int_hero_3" },
@@ -75,8 +75,8 @@ def generate_pool():
             { "name": "int_hero_6" },
             { "name": "int_hero_7" },
             { "name": "int_hero_8" },
-        }
-    str_heroes = {
+        ]
+    str_heroes = [
             { "name": "str_hero_1" },
             { "name": "str_hero_2" },
             { "name": "str_hero_3" },
@@ -85,7 +85,7 @@ def generate_pool():
             { "name": "str_hero_6" },
             { "name": "str_hero_7" },
             { "name": "str_hero_8" },
-        }
+        ]
 
 def pool_countdown_timer():
     generate_pool()
