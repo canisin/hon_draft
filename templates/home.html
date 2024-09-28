@@ -1,17 +1,87 @@
 {% extends 'base.html' %}
 {% block content %}
-<div><label>State: </label><span id="state-label">{{ state }}<span></div>
+<div><label>State:</label> <span id="state-label">{{ state }}</span></div>
 <button onClick="startDraft()">Start Draft</button>
+<br><br>
+<div><label>Players:</label> <ul id="players"></ul></div>
+<br><br>
+<div><label>Legion:</label> <ul id="legion"></ul></div>
+<br><br>
+<div><label>Hellbourne:</label> <ul id="hellbourne"></ul></div>
+<br><br>
+<div><label>Agi Heroes:</label> <ul id="agi-heroes"></ul></div>
+<br><br>
+<div><label>Int Heroes:</label> <ul id="int-heroes"></ul></div>
+<br><br>
+<div><label>Str Heroes:</label> <ul id="str-heroes"></ul></div>
+<br><br>
 
 <script type="text/javascript">
     var socketio = io();
 
-    const stateLabel = document.getElementById( "state-label" )
     const onStateChanged = ( state ) => {
+        console.log( "updating state" );
+        stateLabel = document.getElementById( "state-label" );
         // try value instead of innerHTML
         stateLabel.innerHTML = state;
     };
     socketio.on( "state-changed", onStateChanged );
+
+    const onPlayers = ( players ) => {
+        console.log( "updating players" );
+        playersList = document.getElementById( "players" );
+        playersList.innerHTML = "";
+        players.forEach( ( player ) =>
+        {
+            playersList.innerHTML += `<li>${player.name}</li>`;
+        } );
+    };
+    socketio.on( "players", onPlayers );
+
+    const onLegion = ( legion ) => {
+        console.log( "updating legion" );
+        legionList = document.getElementById( "legion" );
+    };
+    socketio.on( "legion", onLegion );
+
+    const onHellbourne = ( hellbourne ) => {
+        console.log( "updating hellbourne" );
+        hellbourneList = document.getElementById( "hellbourne" );
+    };
+    socketio.on( "hellbourne", onHellbourne );
+
+    const onAgiHeroes = ( agiHeroes ) => {
+        console.log( "updating agi heroes" );
+        agiHeroesList = document.getElementById( "agi-heroes" );
+        agiHeroesList.innerHTML = "";
+        agiHeroes.forEach( ( hero ) =>
+        {
+            agiHeroesList.innerHTML += `<li>${hero.name}</li>`;
+        } );
+    };
+    socketio.on( "agi-heroes", onAgiHeroes );
+
+    const onIntHeroes = ( intHeroes ) => {
+        console.log( "updating int heroes" );
+        intHeroesList = document.getElementById( "int-heroes" );
+        intHeroesList.innerHTML = "";
+        intHeroes.forEach( ( hero ) =>
+        {
+            intHeroesList.innerHTML += `<li>${hero.name}</li>`;
+        } );
+    };
+    socketio.on( "int-heroes", onIntHeroes );
+
+    const onStrHeroes = ( strHeroes ) => {
+        console.log( "updating str heroes" );
+        strHeroesList = document.getElementById( "str-heroes" );
+        strHeroesList.innerHTML = "";
+        strHeroes.forEach( ( hero ) =>
+        {
+            strHeroesList.innerHTML += `<li>${hero.name}</li>`;
+        } );
+    };
+    socketio.on( "str-heroes", onStrHeroes );
 
     const startDraft = () => {
         socketio.emit( "start-draft" );

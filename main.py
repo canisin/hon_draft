@@ -10,7 +10,7 @@ app = Flask( __name__ )
 socketio = SocketIO( app )
 
 state = "lobby"
-players = {}
+players = []
 legion = { "name": "legion" }
 hellbourne = { "name": "hellbourne" }
 legion["other"] = hellbourne
@@ -21,13 +21,21 @@ int_heroes = []
 str_heroes = []
 timer = None
 banning_team = None
-picking_players = {}
+picking_players = []
 
 def set_state( new_state ):
     global state
     state = new_state
     print( f"sending new state {state} to socket" )
     socketio.emit( "state-changed", state )
+
+def push_data():
+    socketio.emit( "players", players )
+    # socketio.emit( "legion", legion )
+    # socketio.emit( "hellbourne", hellbourne )
+    socketio.emit( "agi-heroes", agi_heroes )
+    socketio.emit( "int-heroes", int_heroes )
+    socketio.emit( "str-heroes", str_heroes )
 
 def select_team( player, team ):
     if player.team != None:
@@ -45,11 +53,13 @@ def reset_heroes():
     agi_heroes = []
     int_heroes = []
     str_heroes = []
+    push_data()
 
 def reset_players():
     for player in players:
         player.has_picked = False
         player.hero = None
+    push_data()
 
 def start_draft():
     if state != "lobby":
@@ -57,11 +67,13 @@ def start_draft():
 
     reset_heroes()
     reset_players()
+    push_data()
     set_state( "pool_countdown" )
     timer = Timer( 5, pool_countdown_timer )
     timer.start()
 
 def generate_pool():
+    global agi_heroes, int_heroes, str_heroes
     agi_heroes = [
             { "name": "agi_hero_1" },
             { "name": "agi_hero_2" },
@@ -92,6 +104,7 @@ def generate_pool():
             { "name": "str_hero_7" },
             { "name": "str_hero_8" },
         ]
+    push_data()
 
 def pool_countdown_timer():
     generate_pool()
@@ -115,6 +128,7 @@ def ban_hero( player, hero ):
 
     hero.is_banned = True
     timer.cancel()
+    push_data()
 
     ban_count = (
             sum( hero.is_banned for hero in agi_heroes )
@@ -160,7 +174,7 @@ def banning_timer():
     ban_hero( banning_team[ 0 ], random_hero )
 
 def picking_countdown_timer():
-    picking_players = { first_ban[ 0 ] }
+    picking_players = [ first_ban[ 0 ] ]
     set_state( "picking" )
     timer = Timer( 30, picking_timer )
     timer.start()
@@ -180,6 +194,7 @@ def pick_hero( player, hero ):
     player.hero = hero
     player.has_picked = True
     hero.is_selected = True
+    push_data()
 
     # check if all picking players have picked a hero
     for player in picking_players:
@@ -188,7 +203,7 @@ def pick_hero( player, hero ):
 
     timer.cancel()
     picking_team = picking_players[ 0 ].team.other
-    picking_players = {}
+    picking_players = []
     for player in picking_team:
         if player.has_picked:
             continue
@@ -230,6 +245,7 @@ def home():
 @socketio.on( "connect" )
 def on_connect( auth ):
     print( "socket connected" )
+    push_data()
 
 @socketio.on( "disconnect" )
 def on_disconnect():
