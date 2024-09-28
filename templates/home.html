@@ -1,4 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>State: {{ state }}</h1>
+<h1>State: </h1><h1 id="state-label">{{ state }}</h1>
+<button onClick="startDraft()">Start Draft</button>
+
+<script type="text/javascript">
+    var socketio = io();
+
+    const stateLabel = document.getElementById( "state-label" )
+    const onStateChanged = ( state ) => {
+        // try value instead of innerHTML
+        stateLabel.innerHTML = state;
+    };
+    socketio.on( "state-changed", onStateChanged );
+
+    const startDraft = () => {
+        socketio.emit( "start-draft" );
+    };
+</script>
 {% endblock %}

@@ -23,6 +23,12 @@ timer = None
 banning_team = None
 picking_players = {}
 
+def set_state( new_state ):
+    global state
+    state = new_state
+    print( f"sending new state {state} to socket" )
+    socketio.emit( "state-changed", state )
+
 def select_team( player, team ):
     if player.team != None:
         player.team.remove( player )
@@ -51,7 +57,7 @@ def start_draft():
 
     reset_heroes()
     reset_players()
-    state = "pool_countdown"
+    set_state( "pool_countdown" )
     timer = Timer( 5, pool_countdown_timer )
     timer.start()
 
@@ -89,13 +95,13 @@ def generate_pool():
 
 def pool_countdown_timer():
     generate_pool()
-    state = "banning_countdown"
+    set_state( "banning_countdown" )
     timer = Timer( 10, banning_countdown_timer )
     timer.start()
 
 def banning_countdown_timer():
     banning_team = first_ban
-    state = "banning"
+    set_state( "banning" )
     timer = Timer( 30, banning_timer )
     timer.start()
 
@@ -118,7 +124,7 @@ def ban_hero( player, hero ):
 
     if ban_count == 4:
         banning_team = None
-        state = "picking_countdown"
+        set_state( "picking_countdown" )
         timer = Timer( 10, picking_countdown_timer )
         timer.start()
     else:
@@ -155,7 +161,7 @@ def banning_timer():
 
 def picking_countdown_timer():
     picking_players = { first_ban[ 0 ] }
-    state = "picking"
+    set_state( "picking" )
     timer = Timer( 30, picking_timer )
     timer.start()
 
@@ -191,7 +197,7 @@ def pick_hero( player, hero ):
             break
 
     if not picking_players:
-        state = lobby
+        set_state( "lobby" )
     else:
         timer = Timer( 30, picking_timer )
         timer.start()
@@ -220,6 +226,20 @@ def home():
     return render_template( "home.html",
         state = state
     )
+
+@socketio.on( "connect" )
+def on_connect( auth ):
+    print( "socket connected" )
+
+@socketio.on( "disconnect" )
+def on_disconnect():
+    print( "socket disconnected" )
+
+@socketio.on( "start-draft" )
+def on_start_draft():
+    print( "received start draft request from socket" )
+    start_draft()
+
 
 if __name__ == "__main__":
     Thread( target = logic, daemon = True ).start()
