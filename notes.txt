@@ -44,3 +44,13 @@ picking
 - when timer ends..
   select a random hero for all active players who have not selected a hero, then do the above
 
+TODO:
+- break the python code into smaller files
+- try to use python classes
+- convert some loops to more pyhtonic syntax
+- write html and css to build the page based on template substitution
+- push all state to render template for the above to work
+- use sockets and js to update individual elements of the page
+- emit information to sockets for each change whether triggered by timer or players
+
+
