@@ -17,39 +17,26 @@
     </div>
     <div class="inner-margin"></div>
     <div class="heroes">
-        <div class="stat-block" id="agi-heroes">
-            <div class="hero-list-header">Agility</div>
+        {% for stat in [ {"key": "agi", "name": "Agility"}, {"key": "int", "name": "Intelligence"}, {"key": "str", "name": "Strength"} ] %}
+        <div class="stat-block" id="{{ stat.key }}-heroes">
+            <div class="hero-list-header">{{ stat.name }}</div>
             <div class="hero-block">
                 {% for index in range( 8 ) %}
-                <div class="hero" id="agi-{{ index }}">
-                    <img class="hero-image" src={% if agi_heroes|length > index %}"https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"{% else %}"https://stats.projectkongor.com/images/h0/icon_128.jpg"{% endif %}/>
-                    <label class="hero-name">{{ agi_heroes[ index ].name }}</label>
+                {% if heroes[ stat.key ]|length > index %}
+                <div class="hero" id="{{ stat.key }}-{{ index }}">
+                    <img class="hero-image" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                    <label class="hero-name">{{ heroes[ stat.key ][ index ].name }}</label>
                 </div>
+                {% else %}
+                <div class="hero" id="{{ stat.key }}-{{ index }}">
+                    <img class="hero-image" src="https://stats.projectkongor.com/images/h0/icon_128.jpg"/>
+                    <label class="hero-name"></label>
+                </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
-        <div class="stat-block" id="int-heroes">
-            <div class="hero-list-header">Intelligence</div>
-            <div class="hero-block">
-                {% for index in range( 8 ) %}
-                <div class="hero" id="int-{{ index }}">
-                    <img class="hero-image" src={% if int_heroes|length > index %}"https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"{% else %}"https://stats.projectkongor.com/images/h0/icon_128.jpg"{% endif %}/>
-                    <label class="hero-name">{{ int_heroes[ index ].name }}</label>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="stat-block" id="str-heroes">
-            <div class="hero-list-header">Strength</div>
-            <div class="hero-block">
-                {% for index in range( 8 ) %}
-                <div class="hero" id="str-{{ index }}">
-                    <img class="hero-image" src={% if str_heroes|length > index %}"https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"{% else %}"https://stats.projectkongor.com/images/h0/icon_128.jpg"{% endif %}/>
-                    <label class="hero-name">{{ str_heroes[ index ].name }}</label>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% endfor %}
     </div>
     <div class="inner-margin"></div>
     <div class="team" id="hellbourne">

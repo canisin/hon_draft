@@ -19,9 +19,7 @@ def get_other_team( team ):
     if team == hellbourne: return legion
 
 first_ban = legion
-agi_heroes = []
-int_heroes = []
-str_heroes = []
+heroes = { "agi": [], "int": [], "str": [] }
 timer = None
 banning_team = None
 picking_players = []
@@ -42,9 +40,9 @@ def push_data():
     socketio.emit( "players", players )
     socketio.emit( "legion", legion )
     socketio.emit( "hellbourne", hellbourne )
-    socketio.emit( "agi-heroes", agi_heroes )
-    socketio.emit( "int-heroes", int_heroes )
-    socketio.emit( "str-heroes", str_heroes )
+    socketio.emit( "agi-heroes", heroes[ "agi" ] )
+    socketio.emit( "int-heroes", heroes[ "int" ] )
+    socketio.emit( "str-heroes", heroes[ "str" ] )
 
 def select_team( player, team ):
     if player.team != None:
@@ -59,9 +57,9 @@ def right_click( player, hero ):
     player.hero = hero
 
 def reset_heroes():
-    agi_heroes = []
-    int_heroes = []
-    str_heroes = []
+    heroes[ "agi" ] = []
+    heroes[ "int" ] = []
+    heroes[ "str" ] = []
     push_data()
 
 def reset_players():
@@ -80,8 +78,8 @@ def start_draft():
     set_timer( 5, pool_countdown_timer )
 
 def generate_pool():
-    global agi_heroes, int_heroes, str_heroes
-    agi_heroes = [
+    global heroes
+    heroes[ "agi" ] = [
             { "name": "agi_hero_1" },
             { "name": "agi_hero_2" },
             { "name": "agi_hero_3" },
@@ -91,7 +89,7 @@ def generate_pool():
             { "name": "agi_hero_7" },
             { "name": "agi_hero_8" },
         ]
-    int_heroes = [
+    heroes[ "int" ] = [
             { "name": "int_hero_1" },
             { "name": "int_hero_2" },
             { "name": "int_hero_3" },
@@ -101,7 +99,7 @@ def generate_pool():
             { "name": "int_hero_7" },
             { "name": "int_hero_8" },
         ]
-    str_heroes = [
+    heroes[ "str" ] = [
             { "name": "str_hero_1" },
             { "name": "str_hero_2" },
             { "name": "str_hero_3" },
@@ -136,9 +134,9 @@ def ban_hero( player, hero ):
     push_data()
 
     ban_count = (
-            sum( hero.is_banned for hero in agi_heroes )
-          + sum( hero.is_banned for hero in int_heroes )
-          + sum( hero.is_banned for hero in str_heroes )
+            sum( hero.is_banned for hero in heroes[ "agi" ] )
+          + sum( hero.is_banned for hero in heroes[ "int" ] )
+          + sum( hero.is_banned for hero in heroes[ "str" ] )
         )
 
     if ban_count == 4:
@@ -152,19 +150,19 @@ def ban_hero( player, hero ):
 # make this more python
 def get_available_heroes():
     available_heroes = {}
-    for hero in agi_heroes:
+    for hero in heroes[ "agi" ]:
         if hero.is_banned:
             continue
         if hero.is_selected:
             continue
         available_heroes.append( hero )
-    for hero in int_heroes:
+    for hero in heroes[ "int" ]:
         if hero.is_banned:
             continue
         if hero.is_selected:
             continue
         available_heroes.append( hero )
-    for hero in str_heroes:
+    for hero in heroes[ "str" ]:
         if hero.is_banned:
             continue
         if hero.is_selected:
@@ -243,9 +241,7 @@ def home():
         state = state,
         legion = legion,
         hellbourne = hellbourne,
-        agi_heroes = agi_heroes,
-        int_heroes = int_heroes,
-        str_heroes = str_heroes
+        heroes = heroes
     )
 
 @app.route( "/test" )
