@@ -242,6 +242,10 @@ def home():
         state = state
     )
 
+@app.route( "/test" )
+def test():
+    return render_template( "test.html" )
+
 @socketio.on( "connect" )
 def on_connect( auth ):
     print( "socket connected" )
@@ -258,6 +262,6 @@ def on_start_draft():
 
 
 if __name__ == "__main__":
-    Thread( target = logic, daemon = True ).start()
+    # Thread( target = logic, daemon = True ).start()
 
-    socketio.run( app, host = "localhost", port = 80 )
+    socketio.run( app, host = "localhost", port = 80, debug = True )
