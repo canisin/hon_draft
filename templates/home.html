@@ -1,31 +1,93 @@
 {% extends 'base.html' %}
 {% block content %}
-<div><label>State:</label> <span id="state-label">{{ state }}</span></div>
-<button onClick="startDraft()">Start Draft</button>
-<br><br>
-<div><label>Players:</label> <ul id="players"></ul></div>
-<br><br>
-<div><label>Legion:</label> <ul id="legion"></ul></div>
-<br><br>
-<div><label>Hellbourne:</label> <ul id="hellbourne"></ul></div>
-<br><br>
-<div><label>Agi Heroes:</label> <ul id="agi-heroes"></ul></div>
-<br><br>
-<div><label>Int Heroes:</label> <ul id="int-heroes"></ul></div>
-<br><br>
-<div><label>Str Heroes:</label> <ul id="str-heroes"></ul></div>
-<br><br>
+<div class="header">
+    <div class="state" id="state">{{ state }}</div>
+    <div class="countdown" id="countdown">0</div>
+</div>
+<div class="main">
+    <div class="outer-margin"></div>
+    <div class="team" id="legion">
+        <div class="team-header">Legion</div>
+        {% for index in range( 3 ) %}
+        <div class="player" id="legion-{{ index }}">
+            <div class="player-name">{% if legion|length > index %}{{ legion[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+            <div class="selected-hero"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="inner-margin"></div>
+    <div class="heroes">
+        <div class="stat-block" id="agi-heroes">
+            <div class="hero-list-header">Agility</div>
+            <div class="hero-block">
+                <img class="hero" id="agi-1" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-2" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-3" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-4" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-5" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-6" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-7" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="agi-8" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+            </div>
+        </div>
+        <div class="stat-block" id="int-heroes">
+            <div class="hero-list-header">Intelligence</div>
+            <div class="hero-block">
+                <img class="hero" id="int-1" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-2" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-3" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-4" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-5" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-6" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-7" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="int-8" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+            </div>
+        </div>
+        <div class="stat-block" id="str-heroes">
+            <div class="hero-list-header">Strength</div>
+            <div class="hero-block">
+                <img class="hero" id="str-1" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-2" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-3" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-4" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-5" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-6" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-7" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+                <img class="hero" id="str-8" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
+            </div>
+        </div>
+    </div>
+    <div class="inner-margin"></div>
+    <div class="team" id="hellbourne">
+        <div class="team-header">Hellbourne</div>
+        {% for index in range( 3 ) %}
+        <div class="player" id="hellbourne-{{ index }}">
+            <div class="player-name">{% if hellbourne|length > index %}{{ hellbourne[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+            <div class="selected-hero"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="outer-margin"></div>
+</div>
 
 <script type="text/javascript">
     var socketio = io();
 
     const onStateChanged = ( state ) => {
         console.log( "updating state" );
-        stateLabel = document.getElementById( "state-label" );
+        stateLabel = document.getElementById( "state" );
         // try value instead of innerHTML
         stateLabel.innerHTML = state;
     };
     socketio.on( "state-changed", onStateChanged );
+
+    const onTimerChanged = ( seconds ) => {
+        console.log( "updating timer" );
+        countdownLabel = document.getElementById( "countdown" );
+        // try value instead of innerHTML
+        countdownLabel.innerHTML = seconds;
+    };
+    socketio.on( "set-timer", onTimerChanged );
 
     const onPlayers = ( players ) => {
         console.log( "updating players" );

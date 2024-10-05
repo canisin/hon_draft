@@ -15,8 +15,8 @@ legion = { "name": "legion" }
 hellbourne = { "name": "hellbourne" }
 
 def get_other_team( team ):
-    if team == legion return hellbourne
-    if team == hellbourne return legion
+    if team == legion: return hellbourne
+    if team == hellbourne: return legion
 
 first_ban = legion
 agi_heroes = []
@@ -32,7 +32,7 @@ def set_state( new_state ):
     print( f"sending new state {state} to socket" )
     socketio.emit( "state-changed", state )
 
-def set_timer( seconds, callback )
+def set_timer( seconds, callback ):
     global timer
     timer = Timer( seconds, callback )
     socketio.emit( "set-timer", seconds )
@@ -240,7 +240,9 @@ def update():
 @app.route( "/" )
 def home():
     return render_template( "home.html",
-        state = state
+        state = state,
+        legion = legion,
+        hellbourne = hellbourne
     )
 
 @app.route( "/test" )
