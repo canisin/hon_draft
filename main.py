@@ -11,8 +11,8 @@ socketio = SocketIO( app )
 
 state = "lobby"
 players = []
-legion = { "name": "legion" }
-hellbourne = { "name": "hellbourne" }
+legion = []
+hellbourne = []
 
 def get_other_team( team ):
     if team == legion: return hellbourne
@@ -242,7 +242,10 @@ def home():
     return render_template( "home.html",
         state = state,
         legion = legion,
-        hellbourne = hellbourne
+        hellbourne = hellbourne,
+        agi_heroes = agi_heroes,
+        int_heroes = int_heroes,
+        str_heroes = str_heroes
     )
 
 @app.route( "/test" )

@@ -54,3 +54,5 @@ TODO:
 - emit information to sockets for each change whether triggered by timer or players
 
 
+- the heroes section of the html can be made more dynamic by looping over a list of stats
+

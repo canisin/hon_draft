@@ -92,6 +92,14 @@
     width: 25%;
 }
 
+.hero-image {
+    width: 100%;
+}
+
+.hero-name {
+    padding: 2px;
+}
+
 #agi-heroes .hero {
     border: 5px solid green;
 }
