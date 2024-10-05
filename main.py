@@ -13,8 +13,11 @@ state = "lobby"
 players = []
 legion = { "name": "legion" }
 hellbourne = { "name": "hellbourne" }
-legion["other"] = hellbourne
-hellbourne["other"] = legion
+
+def get_other_team( team ):
+    if team == legion return hellbourne
+    if team == hellbourne return legion
+
 first_ban = legion
 agi_heroes = []
 int_heroes = []
@@ -29,10 +32,16 @@ def set_state( new_state ):
     print( f"sending new state {state} to socket" )
     socketio.emit( "state-changed", state )
 
+def set_timer( seconds, callback )
+    global timer
+    timer = Timer( seconds, callback )
+    socketio.emit( "set-timer", seconds )
+    timer.start()
+
 def push_data():
     socketio.emit( "players", players )
-    # socketio.emit( "legion", legion )
-    # socketio.emit( "hellbourne", hellbourne )
+    socketio.emit( "legion", legion )
+    socketio.emit( "hellbourne", hellbourne )
     socketio.emit( "agi-heroes", agi_heroes )
     socketio.emit( "int-heroes", int_heroes )
     socketio.emit( "str-heroes", str_heroes )
@@ -67,10 +76,8 @@ def start_draft():
 
     reset_heroes()
     reset_players()
-    push_data()
     set_state( "pool_countdown" )
-    timer = Timer( 5, pool_countdown_timer )
-    timer.start()
+    set_timer( 5, pool_countdown_timer )
 
 def generate_pool():
     global agi_heroes, int_heroes, str_heroes
@@ -109,14 +116,12 @@ def generate_pool():
 def pool_countdown_timer():
     generate_pool()
     set_state( "banning_countdown" )
-    timer = Timer( 10, banning_countdown_timer )
-    timer.start()
+    set_timer( 10, banning_countdown_timer )
 
 def banning_countdown_timer():
     banning_team = first_ban
     set_state( "banning" )
-    timer = Timer( 30, banning_timer )
-    timer.start()
+    set_timer( 30, banning_timer )
 
 def ban_hero( player, hero ):
     if state != "banning":
@@ -139,12 +144,10 @@ def ban_hero( player, hero ):
     if ban_count == 4:
         banning_team = None
         set_state( "picking_countdown" )
-        timer = Timer( 10, picking_countdown_timer )
-        timer.start()
+        set_timer( 10, picking_countdown_timer )
     else:
-        banning_team = banning_team.other
-        timer = Timer( 30, banning_timer )
-        timer.start()
+        banning_team = get_other_team( banning_team )
+        set_timer( 30, banning_timer )
 
 # make this more python
 def get_available_heroes():
@@ -176,8 +179,7 @@ def banning_timer():
 def picking_countdown_timer():
     picking_players = [ first_ban[ 0 ] ]
     set_state( "picking" )
-    timer = Timer( 30, picking_timer )
-    timer.start()
+    set_timer( 30, picking_timer )
 
 def pick_hero( player, hero ):
     if state != "picking":
@@ -202,7 +204,7 @@ def pick_hero( player, hero ):
             return
 
     timer.cancel()
-    picking_team = picking_players[ 0 ].team.other
+    picking_team = get_other_team( picking_players[ 0 ].team )
     picking_players = []
     for player in picking_team:
         if player.has_picked:
@@ -214,8 +216,7 @@ def pick_hero( player, hero ):
     if not picking_players:
         set_state( "lobby" )
     else:
-        timer = Timer( 30, picking_timer )
-        timer.start()
+        set_timer( 30, picking_timer )
 
 def picking_timer():
     for player in picking_players:
