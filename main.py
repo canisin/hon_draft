@@ -255,7 +255,6 @@ def test():
 @socketio.on( "connect" )
 def on_connect( auth ):
     print( "socket connected" )
-    push_data()
 
 @socketio.on( "disconnect" )
 def on_disconnect():
