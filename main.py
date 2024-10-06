@@ -35,7 +35,10 @@ heroes = {
 
 def set_hero( stat, index, hero ):
     heroes[ stat ][ index ] = hero
-    socketio.emit( "update-hero", vars( hero ) )
+    socketio.emit( "update-hero", {
+        "stat": stat,
+        "index": index,
+        "hero": vars( hero ) } )
 
 def reset_heroes():
     for stat in [ "agi", "int", "str" ]:

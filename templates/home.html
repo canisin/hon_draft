@@ -53,7 +53,6 @@
     const onStateChanged = ( state ) => {
         console.log( "updating state" );
         stateLabel = document.getElementById( "state" );
-        // try value instead of innerHTML
         stateLabel.innerHTML = state;
     };
     socketio.on( "state-changed", onStateChanged );
@@ -61,10 +60,19 @@
     const onTimerChanged = ( seconds ) => {
         console.log( "updating timer" );
         countdownLabel = document.getElementById( "countdown" );
-        // try value instead of innerHTML
         countdownLabel.innerHTML = seconds;
     };
     socketio.on( "set-timer", onTimerChanged );
+
+    const onHeroChanged = ( data ) => {
+        console.log( `updating hero ${ data.stat }-${ data.index }` );
+        heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
+        nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
+        nameLabel.innerHTML = data.hero.name;
+        image = heroDiv.getElementsByClassName( "hero-image" )[ 0 ];
+        image.src = `https://stats.projectkongor.com/images/${ data.hero.icon }/icon_128.jpg`;
+    };
+    socketio.on( "update-hero", onHeroChanged );
 
     const onPlayers = ( players ) => {
         console.log( "updating players" );
@@ -88,39 +96,6 @@
         hellbourneList = document.getElementById( "hellbourne" );
     };
     socketio.on( "hellbourne", onHellbourne );
-
-    const onAgiHeroes = ( agiHeroes ) => {
-        console.log( "updating agi heroes" );
-        agiHeroesList = document.getElementById( "agi-heroes" );
-        agiHeroesList.innerHTML = "";
-        agiHeroes.forEach( ( hero ) =>
-        {
-            agiHeroesList.innerHTML += `<li>${hero.name}</li>`;
-        } );
-    };
-    socketio.on( "agi-heroes", onAgiHeroes );
-
-    const onIntHeroes = ( intHeroes ) => {
-        console.log( "updating int heroes" );
-        intHeroesList = document.getElementById( "int-heroes" );
-        intHeroesList.innerHTML = "";
-        intHeroes.forEach( ( hero ) =>
-        {
-            intHeroesList.innerHTML += `<li>${hero.name}</li>`;
-        } );
-    };
-    socketio.on( "int-heroes", onIntHeroes );
-
-    const onStrHeroes = ( strHeroes ) => {
-        console.log( "updating str heroes" );
-        strHeroesList = document.getElementById( "str-heroes" );
-        strHeroesList.innerHTML = "";
-        strHeroes.forEach( ( hero ) =>
-        {
-            strHeroesList.innerHTML += `<li>${hero.name}</li>`;
-        } );
-    };
-    socketio.on( "str-heroes", onStrHeroes );
 
     const startDraft = () => {
         socketio.emit( "start-draft" );
