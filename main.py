@@ -1,5 +1,5 @@
-from flask import Flask, render_template, session
-from flask_socketio import SocketIO
+from flask import Flask, render_template, session, request
+from flask_socketio import SocketIO, emit
 
 from threading import Thread
 from threading import Timer
@@ -256,8 +256,33 @@ def on_start_draft():
 @socketio.on( "message" )
 def on_message( message ):
     print( "received message" )
+    if message[:1] == "/":
+        on_command( message[1:] )
+        return
     player = session[ "player" ]
     socketio.emit( "message", f"{player}: {message}" )
+
+def on_command( message ):
+    ( command, _, parameters ) = message.partition( " " )
+    if command == "name":
+        set_name( parameters )
+        return
+    print( "unrecognized command" )
+    emit( "message", "unrecognized command" )
+
+def set_name( name ):
+    print( "received name change command" )
+    # tell the client to make a request to set the cookie
+    emit( "set-name", name )
+    player = session[ "player" ]
+    session[ "player" ] = name
+    socketio.emit( "message", f"{player} changed name to {name}" )
+
+@app.route( "/name", methods = [ "POST" ] )
+def name():
+    print( "name request" )
+    session[ "player" ] = request.form[ "name" ]
+    return ""
 
 if __name__ == "__main__":
     socketio.run( app, host = "localhost", port = 80, debug = True )

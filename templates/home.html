@@ -163,5 +163,14 @@
         messageLog.scrollTop = messageLog.scrollHeight;
     };
     socketio.on( "message", onMessage );
+
+    function onSetName( name )
+    {
+        console.log( "requesting name change" );
+        let form = new FormData();
+        form.append( "name", name );
+        fetch( "name", { method: "POST", body: form } );
+    };
+    socketio.on( "set-name", onSetName );
 </script>
 {% endblock %}
