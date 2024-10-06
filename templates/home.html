@@ -48,42 +48,46 @@
 </div>
 
 <script type="text/javascript">
+    "use strict";
+
     var socketio = io();
 
     const onStateChanged = ( state ) => {
-        console.log( "updating state" );
-        stateLabel = document.getElementById( "state" );
+        console.log( "changing state" );
+        let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state;
     };
     socketio.on( "state-changed", onStateChanged );
 
-    const onTimerChanged = ( seconds ) => {
-        console.log( "updating timer" );
-        countdownLabel = document.getElementById( "countdown" );
+    let timer;
+    const onSetTimer = ( seconds ) => {
+        console.log( "setting timer" );
+        let countdownLabel = document.getElementById( "countdown" );
         countdownLabel.innerHTML = seconds;
+        clearInterval( timer );
         if( seconds == 0 ) return;
         timer = setInterval( () => {
             --seconds;
             countdownLabel.innerHTML = seconds;
             if( seconds == 0 )
-                clearInterval( timer )
+                clearInterval( timer );
         }, 1000 );
     };
-    socketio.on( "set-timer", onTimerChanged );
+    socketio.on( "set-timer", onSetTimer );
 
-    const onHeroChanged = ( data ) => {
+    const onUpdateHero = ( data ) => {
         console.log( `updating hero ${ data.stat }-${ data.index }` );
-        heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
-        nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
+        let heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
+        let nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
         nameLabel.innerHTML = data.hero.name;
-        image = heroDiv.getElementsByClassName( "hero-image" )[ 0 ];
+        let image = heroDiv.getElementsByClassName( "hero-image" )[ 0 ];
         image.src = `https://stats.projectkongor.com/images/${ data.hero.icon }/icon_128.jpg`;
     };
-    socketio.on( "update-hero", onHeroChanged );
+    socketio.on( "update-hero", onUpdateHero );
 
     const onPlayers = ( players ) => {
         console.log( "updating players" );
-        playersList = document.getElementById( "players" );
+        let playersList = document.getElementById( "players" );
         playersList.innerHTML = "";
         players.forEach( ( player ) =>
         {
@@ -94,13 +98,13 @@
 
     const onLegion = ( legion ) => {
         console.log( "updating legion" );
-        legionList = document.getElementById( "legion" );
+        let legionList = document.getElementById( "legion" );
     };
     socketio.on( "legion", onLegion );
 
     const onHellbourne = ( hellbourne ) => {
         console.log( "updating hellbourne" );
-        hellbourneList = document.getElementById( "hellbourne" );
+        let hellbourneList = document.getElementById( "hellbourne" );
     };
     socketio.on( "hellbourne", onHellbourne );
 
