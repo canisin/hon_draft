@@ -18,8 +18,36 @@ def get_other_team( team ):
     if team == legion: return hellbourne
     if team == hellbourne: return legion
 
+class Hero:
+    def __init__( self, name, icon ):
+        self.name = name
+        self.icon = icon
+
+null_hero = Hero( "", "h0" )
+rikimaru = Hero( "Rikimaru", "heroes/14" )
+blacksmith = Hero( "Blacksmith", "heroes/7" )
+armadon = Hero( "Armadon", "heroes/2" )
+heroes = {
+    "agi": list( null_hero for _ in range( 8 ) ),
+    "int": list( null_hero for _ in range( 8 ) ),
+    "str": list( null_hero for _ in range( 8 ) ),
+}
+
+def set_hero( stat, index, hero ):
+    heroes[ stat ][ index ] = hero
+    socketio.emit( "update-hero", vars( hero ) )
+
+def reset_heroes():
+    for stat in [ "agi", "int", "str" ]:
+        for index in range( 8 ):
+            set_hero( stat, index, null_hero )
+
+def generate_heroes():
+    for stat, hero in [ ( "agi", rikimaru ), ( "int", blacksmith ), ( "str", armadon ) ]:
+        for index in range( 8 ):
+            set_hero( stat, index, hero )
+
 first_ban = legion
-heroes = { "agi": [], "int": [], "str": [] }
 timer = None
 banning_team = None
 picking_players = []
@@ -40,9 +68,6 @@ def push_data():
     socketio.emit( "players", players )
     socketio.emit( "legion", legion )
     socketio.emit( "hellbourne", hellbourne )
-    socketio.emit( "agi-heroes", heroes[ "agi" ] )
-    socketio.emit( "int-heroes", heroes[ "int" ] )
-    socketio.emit( "str-heroes", heroes[ "str" ] )
 
 def select_team( player, team ):
     if player.team != None:
@@ -55,12 +80,6 @@ def right_click( player, hero ):
     if player.has_picked:
         return
     player.hero = hero
-
-def reset_heroes():
-    heroes[ "agi" ] = []
-    heroes[ "int" ] = []
-    heroes[ "str" ] = []
-    push_data()
 
 def reset_players():
     for player in players:
@@ -77,42 +96,8 @@ def start_draft():
     set_state( "pool_countdown" )
     set_timer( 5, pool_countdown_timer )
 
-def generate_pool():
-    global heroes
-    heroes[ "agi" ] = [
-            { "name": "agi_hero_1" },
-            { "name": "agi_hero_2" },
-            { "name": "agi_hero_3" },
-            { "name": "agi_hero_4" },
-            { "name": "agi_hero_5" },
-            { "name": "agi_hero_6" },
-            { "name": "agi_hero_7" },
-            { "name": "agi_hero_8" },
-        ]
-    heroes[ "int" ] = [
-            { "name": "int_hero_1" },
-            { "name": "int_hero_2" },
-            { "name": "int_hero_3" },
-            { "name": "int_hero_4" },
-            { "name": "int_hero_5" },
-            { "name": "int_hero_6" },
-            { "name": "int_hero_7" },
-            { "name": "int_hero_8" },
-        ]
-    heroes[ "str" ] = [
-            { "name": "str_hero_1" },
-            { "name": "str_hero_2" },
-            { "name": "str_hero_3" },
-            { "name": "str_hero_4" },
-            { "name": "str_hero_5" },
-            { "name": "str_hero_6" },
-            { "name": "str_hero_7" },
-            { "name": "str_hero_8" },
-        ]
-    push_data()
-
 def pool_countdown_timer():
-    generate_pool()
+    generate_heroes()
     set_state( "banning_countdown" )
     set_timer( 10, banning_countdown_timer )
 

@@ -17,22 +17,15 @@
     </div>
     <div class="inner-margin"></div>
     <div class="heroes">
-        {% for stat in [ {"key": "agi", "name": "Agility"}, {"key": "int", "name": "Intelligence"}, {"key": "str", "name": "Strength"} ] %}
-        <div class="stat-block" id="{{ stat.key }}-heroes">
-            <div class="hero-list-header">{{ stat.name }}</div>
+        {% for stat, stat_name in [ ( "agi", "Agility" ), ( "int", "Intelligence" ), ( "str", "Strength" ) ] %}
+        <div class="stat-block" id="{{ stat }}-heroes">
+            <div class="hero-list-header">{{ stat_name }}</div>
             <div class="hero-block">
                 {% for index in range( 8 ) %}
-                {% if heroes[ stat.key ]|length > index %}
-                <div class="hero" id="{{ stat.key }}-{{ index }}">
-                    <img class="hero-image" src="https://stats.projectkongor.com/images/heroes/2/icon_128.jpg"/>
-                    <label class="hero-name">{{ heroes[ stat.key ][ index ].name }}</label>
+                <div class="hero" id="{{ stat }}-{{ index }}">
+                    <img class="hero-image" src="https://stats.projectkongor.com/images/{{ heroes[ stat ][ index ].icon }}/icon_128.jpg"/>
+                    <label class="hero-name">{{ heroes[ stat ][ index ].name }}</label>
                 </div>
-                {% else %}
-                <div class="hero" id="{{ stat.key }}-{{ index }}">
-                    <img class="hero-image" src="https://stats.projectkongor.com/images/h0/icon_128.jpg"/>
-                    <label class="hero-name"></label>
-                </div>
-                {% endif %}
                 {% endfor %}
             </div>
         </div>
