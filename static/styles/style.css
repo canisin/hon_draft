@@ -1,6 +1,6 @@
 * {
     box-sizing: border-box;
-    border: 1px solid black;
+    // border: 1px solid black;
 }
 
 .content {
@@ -136,13 +136,29 @@
 
 .chat-area {
     width: 720px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: whitesmoke;
+    gap: 5px;
 }
 
 #message-history {
     height: 200px;
+    width: 100%;
+    overflow-y: scroll;
+}
+
+.message {
 }
 
 .message-inputs {
+    width: 100%;
     display: flex;
     gap: 10px;
 }
