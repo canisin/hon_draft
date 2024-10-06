@@ -49,7 +49,7 @@
 </div>
 <button id="start-button" onClick="startDraft()">Start Draft</button>
 <div class="chat-area">
-    <div id="message-history"></div>
+    <div id="message-log"></div>
     <div class="message-inputs">
         <input type="text" id="message-input"/>
         <button id="message-button" onClick="sendMessage()">Send</button>
@@ -61,7 +61,8 @@
 
     var socketio = io();
 
-    const onStateChanged = ( state ) => {
+    function onStateChanged( state )
+    {
         console.log( "changing state" );
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state;
@@ -69,7 +70,8 @@
     socketio.on( "state-changed", onStateChanged );
 
     let timer;
-    const onSetTimer = ( seconds ) => {
+    function onSetTimer( seconds )
+    {
         console.log( "setting timer" );
         let countdownLabel = document.getElementById( "countdown" );
         countdownLabel.innerHTML = seconds;
@@ -84,7 +86,8 @@
     };
     socketio.on( "set-timer", onSetTimer );
 
-    const onUpdateHero = ( data ) => {
+    function onUpdateHero( data )
+    {
         console.log( `updating hero ${ data.stat }-${ data.index }` );
         let heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
         let nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
@@ -94,7 +97,8 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
-    const onPlayers = ( players ) => {
+    function onPlayers( players )
+    {
         console.log( "updating players" );
         let playersList = document.getElementById( "players" );
         playersList.innerHTML = "";
@@ -105,20 +109,46 @@
     };
     socketio.on( "players", onPlayers );
 
-    const onLegion = ( legion ) => {
+    function onLegion( legion )
+    {
         console.log( "updating legion" );
         let legionList = document.getElementById( "legion" );
     };
     socketio.on( "legion", onLegion );
 
-    const onHellbourne = ( hellbourne ) => {
+    function onHellbourne( hellbourne )
+    {
         console.log( "updating hellbourne" );
         let hellbourneList = document.getElementById( "hellbourne" );
     };
     socketio.on( "hellbourne", onHellbourne );
 
-    const startDraft = () => {
+    function startDraft()
+    {
         socketio.emit( "start-draft" );
     };
+
+    function getTimestamp()
+    {
+        let time = new Date();
+        return time.getHours().toString().padStart( 2, "0" )
+             + ":"
+             + time.getMinutes().toString().padStart( 2, "0" )
+             + ":"
+             + time.getSeconds().toString().padStart( 2, "0" );
+    };
+
+    function onMessage( message )
+    {
+        console.log( "message received" );
+        let messageLog = document.getElementById( "message-log" );
+        messageLog.innerHTML += `
+            <div class="message">
+                <span class="message-timestamp">${ getTimestamp() }</span>
+                <span class="message-message">${ message }</span>
+            </div>
+        `;
+    };
+    socketio.on( "message", onMessage );
 </script>
 {% endblock %}

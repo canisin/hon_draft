@@ -95,6 +95,7 @@
 
 .hero-list-header {
     padding: 5px;
+    font-variant: small-caps;
 }
 
 .hero-block {
@@ -148,13 +149,20 @@
     gap: 5px;
 }
 
-#message-history {
+#message-log {
     height: 200px;
     width: 100%;
     overflow-y: scroll;
 }
 
 .message {
+}
+
+.message-timestamp {
+    color: gray;
+}
+
+.message-message {
 }
 
 .message-inputs {

@@ -99,6 +99,15 @@ def start_draft():
     set_state( "pool_countdown" )
     set_timer( 5, pool_countdown_timer )
 
+    time_remaining = 5
+    def announce_countdown():
+        nonlocal time_remaining
+        socketio.emit( "message", f"Draft starting in { time_remaining } seconds.." )
+        time_remaining -= 1
+        if time_remaining == 0: return
+        Timer( 1, announce_countdown ).start()
+    announce_countdown()
+
 def pool_countdown_timer():
     generate_heroes()
     set_state( "banning_countdown" )
