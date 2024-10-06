@@ -50,9 +50,9 @@
 <button id="start-button" onClick="startDraft()">Start Draft</button>
 <div class="chat-area">
     <div id="message-log"></div>
-    <div class="message-inputs">
+    <form id="message-form">
         <input type="text" id="message-input"/>
-        <button id="message-button" onClick="sendMessage()">Send</button>
+        <input type="submit" id="message-button" value="Send"/>
     </div>
 </div>
 
@@ -136,6 +136,18 @@
              + time.getMinutes().toString().padStart( 2, "0" )
              + ":"
              + time.getSeconds().toString().padStart( 2, "0" );
+    };
+
+    let messageForm = document.getElementById( "message-form" );
+    messageForm.addEventListener( "submit", sendMessage );
+    function sendMessage( event )
+    {
+        event.preventDefault();
+
+        let input = document.getElementById( "message-input" );
+        if( input.value == "" ) return;
+        socketio.emit( "message", input.value );
+        input.value = "";
     };
 
     function onMessage( message )

@@ -165,7 +165,7 @@
 .message-message {
 }
 
-.message-inputs {
+#message-form {
     width: 100%;
     display: flex;
     gap: 10px;

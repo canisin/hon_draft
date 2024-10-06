@@ -253,6 +253,10 @@ def on_start_draft():
     print( "received start draft request from socket" )
     start_draft()
 
+@socketio.on( "message" )
+def on_message( message ):
+    print( "received message" )
+    socketio.emit( "message", message )
 
 if __name__ == "__main__":
     socketio.run( app, host = "localhost", port = 80, debug = True )
