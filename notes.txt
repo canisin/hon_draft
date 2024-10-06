@@ -54,3 +54,8 @@ TODO:
 - emit information to sockets for each change whether triggered by timer or players
 
 - try using actual margins instead of the margin divs that you created
+
+- clean up most of the console logging
+- put the name of the message sender in a separate span, and color basedd on team
+- implement team based chatting
+
