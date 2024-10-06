@@ -211,18 +211,6 @@ def picking_timer():
         random_hero = random.choice( get_available_heroes )
         pick_hero( player, random_hero )
 
-value = 0
-
-def logic():
-    print( "starting logic thread" )
-    while True:
-        sleep( 1 )
-        update()
-
-def update():
-    global value
-    value += 1
-
 @app.route( "/" )
 def home():
     return render_template( "home.html",
@@ -251,6 +239,4 @@ def on_start_draft():
 
 
 if __name__ == "__main__":
-    # Thread( target = logic, daemon = True ).start()
-
     socketio.run( app, host = "localhost", port = 80, debug = True )
