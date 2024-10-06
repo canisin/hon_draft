@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 from flask_socketio import SocketIO
 
 from threading import Thread
@@ -7,6 +7,7 @@ from time import sleep
 from random import random
 
 app = Flask( __name__ )
+app.secret_key = "honzor"
 socketio = SocketIO( app )
 
 state = "lobby"
@@ -222,6 +223,8 @@ def picking_timer():
 
 @app.route( "/" )
 def home():
+    if "player" not in session:
+        session[ "player" ] = "Unnamed Player"
     return render_template( "home.html",
         state = state,
         legion = legion,
@@ -236,10 +239,14 @@ def test():
 @socketio.on( "connect" )
 def on_connect( auth ):
     print( "socket connected" )
+    player = session[ "player" ]
+    socketio.emit( "message", f"{ player } joined." )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
     print( "socket disconnected" )
+    player = session[ "player" ]
+    socketio.emit( "message", f"{ player } left." )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
