@@ -23,7 +23,7 @@ class Hero:
         self.name = name
         self.icon = icon
 
-null_hero = Hero( "", "h0" )
+null_hero = Hero( "null", "h0" )
 rikimaru = Hero( "Rikimaru", "heroes/14" )
 blacksmith = Hero( "Blacksmith", "heroes/7" )
 armadon = Hero( "Armadon", "heroes/2" )

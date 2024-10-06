@@ -1,20 +1,25 @@
 * {
     box-sizing: border-box;
-    // border: 1px solid black;
+    border: 1px solid black;
 }
 
 .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .header {
     text-align: center;
-    margin: 30px 0;
+    margin: 10px 0;
 }
 
-.state {
+#state {
+    font-size: 22px;
 }
 
-.countdown {
+#countdown {
+    font-size: 14px;
 }
 
 .main {
@@ -35,6 +40,7 @@
 
 .team-header {
     padding: 5px;
+    font-size: 22px;
 }
 
 #legion .team-header {
@@ -49,12 +55,19 @@
     color: red;
 }
 
+.team-players {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+}
+
 .player {
-    margin: 0 0 25px;
 }
 
 .player-name {
     padding: 5px;
+    font-size: 14px;
 }
 
 .selected-hero {
@@ -71,10 +84,13 @@
 }
 
 .heroes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .stat-block {
-    margin: 0 0 10px;
 }
 
 .hero-list-header {
@@ -88,16 +104,17 @@
 }
 
 .hero {
-    display: block;
     width: 25%;
 }
 
 .hero-image {
+    display: block;
     width: 100%;
 }
 
 .hero-name {
-    padding: 2px;
+    font-size: 10px;
+    text-align: center;
 }
 
 #agi-heroes .hero {
@@ -112,8 +129,28 @@
     border: 5px solid red;
 }
 
-.controls {
+#start-button {
+    padding: 10px;
+    margin: 10px;
+}
+
+.chat-area {
+    width: 720px;
+}
+
+#message-history {
+    height: 200px;
+}
+
+.message-inputs {
     display: flex;
-    justify-content: center;
-    padding: 20px 0 0;
+    gap: 10px;
+}
+
+#message-input {
+    flex: 1 1 auto;
+}
+
+#message-button {
+    flex: 0 0 auto;
 }

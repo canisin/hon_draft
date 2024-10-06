@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="header">
-    <div class="state" id="state">{{ state }}</div>
-    <div class="countdown" id="countdown">0</div>
+    <div id="state">{{ state }}</div>
+    <div id="countdown">0</div>
 </div>
 <div class="main">
     <div class="outer-margin"></div>
     <div class="team" id="legion">
         <div class="team-header">Legion</div>
-        {% for index in range( 3 ) %}
-        <div class="player" id="legion-{{ index }}">
-            <div class="player-name">{% if legion|length > index %}{{ legion[ index ] }}{% else %}Unnamed Player{% endif %}</div>
-            <div class="selected-hero"></div>
+        <div class="team-players">
+            {% for index in range( 3 ) %}
+            <div class="player" id="legion-{{ index }}">
+                <div class="player-name">{% if legion|length > index %}{{ legion[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+                <div class="selected-hero"></div>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     <div class="inner-margin"></div>
     <div class="heroes">
@@ -34,17 +36,24 @@
     <div class="inner-margin"></div>
     <div class="team" id="hellbourne">
         <div class="team-header">Hellbourne</div>
-        {% for index in range( 3 ) %}
-        <div class="player" id="hellbourne-{{ index }}">
-            <div class="player-name">{% if hellbourne|length > index %}{{ hellbourne[ index ] }}{% else %}Unnamed Player{% endif %}</div>
-            <div class="selected-hero"></div>
+        <div class="team-players">
+            {% for index in range( 3 ) %}
+            <div class="player" id="hellbourne-{{ index }}">
+                <div class="player-name">{% if hellbourne|length > index %}{{ hellbourne[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+                <div class="selected-hero"></div>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     <div class="outer-margin"></div>
 </div>
-<div class="controls">
-    <button onClick="startDraft()">Start Draft</button>
+<button id="start-button" onClick="startDraft()">Start Draft</button>
+<div class="chat-area">
+    <div id="message-history"></div>
+    <div class="message-inputs">
+        <input type="text" id="message-input"/>
+        <button id="message-button" onClick="sendMessage()">Send</button>
+    </div>
 </div>
 
 <script type="text/javascript">
