@@ -61,6 +61,13 @@
         console.log( "updating timer" );
         countdownLabel = document.getElementById( "countdown" );
         countdownLabel.innerHTML = seconds;
+        if( seconds == 0 ) return;
+        timer = setInterval( () => {
+            --seconds;
+            countdownLabel.innerHTML = seconds;
+            if( seconds == 0 )
+                clearInterval( timer )
+        }, 1000 );
     };
     socketio.on( "set-timer", onTimerChanged );
 
