@@ -136,6 +136,11 @@
 }
 
 .chat-area {
+    display: flex;
+    justify-content: center;
+}
+
+.messages {
     width: 720px;
     display: flex;
     flex-direction: column;
@@ -177,4 +182,30 @@
 
 #message-button {
     flex: 0 0 auto;
+}
+
+.players {
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: whitesmoke;
+    gap: 5px;
+}
+
+.players-header {
+    padding: 5px;
+    font-size: 18px;
+    text-decoration: underline;
+}
+
+#players-list {
+    padding: 5px;
+}
+
+.players-list-name {
 }

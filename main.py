@@ -5,19 +5,42 @@ from threading import Thread
 from threading import Timer
 from time import sleep
 from random import random
+from uuid import uuid4
 
 app = Flask( __name__ )
 app.secret_key = "honzor"
 socketio = SocketIO( app )
 
 state = "lobby"
+
+class Player:
+    def __init__( self, name, id ):
+        self.name = name
+        self.id = id
+
+null_player = Player( "null", 0 )
+
 players = []
-legion = []
-hellbourne = []
+teams = {
+    "legion": list( null_player for _ in range( 3 ) ),
+    "hellbourne": list( null_player for _ in range( 3 ) ),
+}
 
 def get_other_team( team ):
     if team == legion: return hellbourne
     if team == hellbourne: return legion
+
+def set_team( team, index, player ):
+    teams[ team ][ index ] = player
+    socketio.emit( "update-team", {
+        "team": team,
+        "index": index,
+        "player": vars( player ) } )
+
+def reset_teams():
+    for team in teams:
+        for index in range( 3 ):
+            set_team( team, index, null_player )
 
 class Hero:
     def __init__( self, name, icon ):
@@ -42,7 +65,7 @@ def set_hero( stat, index, hero ):
         "hero": vars( hero ) } )
 
 def reset_heroes():
-    for stat in [ "agi", "int", "str" ]:
+    for stat in heroes:
         for index in range( 8 ):
             set_hero( stat, index, null_hero )
 
@@ -51,7 +74,7 @@ def generate_heroes():
         for index in range( 8 ):
             set_hero( stat, index, hero )
 
-first_ban = legion
+first_ban = teams[ "legion" ]
 timer = None
 banning_team = None
 picking_players = []
@@ -59,7 +82,7 @@ picking_players = []
 def set_state( new_state ):
     global state
     state = new_state
-    print( f"sending new state {state} to socket" )
+    print( f"sending new state { state } to socket" )
     socketio.emit( "state-changed", state )
 
 def set_timer( seconds, callback ):
@@ -67,29 +90,6 @@ def set_timer( seconds, callback ):
     timer = Timer( seconds, callback )
     socketio.emit( "set-timer", seconds )
     timer.start()
-
-def push_data():
-    socketio.emit( "players", players )
-    socketio.emit( "legion", legion )
-    socketio.emit( "hellbourne", hellbourne )
-
-def select_team( player, team ):
-    if player.team != None:
-        player.team.remove( player )
-    player.team = team
-    if team != None:
-        team.append( player )
-
-def right_click( player, hero ):
-    if player.has_picked:
-        return
-    player.hero = hero
-
-def reset_players():
-    for player in players:
-        player.has_picked = False
-        player.hero = None
-    push_data()
 
 def start_draft():
     if state != "lobby":
@@ -115,6 +115,7 @@ def pool_countdown_timer():
     set_timer( 10, banning_countdown_timer )
 
 def banning_countdown_timer():
+    global banning_team
     banning_team = first_ban
     set_state( "banning" )
     set_timer( 30, banning_timer )
@@ -129,7 +130,6 @@ def ban_hero( player, hero ):
 
     hero.is_banned = True
     timer.cancel()
-    push_data()
 
     ban_count = (
             sum( hero.is_banned for hero in heroes[ "agi" ] )
@@ -173,6 +173,7 @@ def banning_timer():
     ban_hero( banning_team[ 0 ], random_hero )
 
 def picking_countdown_timer():
+    global picking_players
     picking_players = [ first_ban[ 0 ] ]
     set_state( "picking" )
     set_timer( 30, picking_timer )
@@ -192,7 +193,6 @@ def pick_hero( player, hero ):
     player.hero = hero
     player.has_picked = True
     hero.is_selected = True
-    push_data()
 
     # check if all picking players have picked a hero
     for player in picking_players:
@@ -223,12 +223,15 @@ def picking_timer():
 
 @app.route( "/" )
 def home():
-    if "player" not in session:
-        session[ "player" ] = "Unnamed Player"
+    if "name" not in session:
+        session[ "name" ] = "Unnamed Player"
+    if "id" not in session:
+        session[ "id" ] = uuid4().hex
+    print( players )
     return render_template( "home.html",
         state = state,
-        legion = legion,
-        hellbourne = hellbourne,
+        players = players,
+        teams = teams,
         heroes = heroes
     )
 
@@ -236,22 +239,52 @@ def home():
 def test():
     return render_template( "test.html" )
 
+def find_player():
+    global players
+    for player in players:
+        if player.id == session[ "id" ]:
+            return player
+
 @socketio.on( "connect" )
 def on_connect( auth ):
+    global players
     print( "socket connected" )
-    player = session[ "player" ]
-    socketio.emit( "message", f"{ player } joined." )
+    print( session[ "id" ] )
+    player = Player( session[ "name" ], session[ "id" ] )
+    socketio.emit( "add-player", {
+        "index": len( players ),
+        "player": vars( player ) } )
+    players.append( player )
+    socketio.emit( "message", f"{ player.name } joined." )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
+    global players
     print( "socket disconnected" )
-    player = session[ "player" ]
-    socketio.emit( "message", f"{ player } left." )
+    player = find_player()
+    socketio.emit( "remove-player", players.index( player ) )
+    players.remove( player )
+    socketio.emit( "message", f"{ player.name } left." )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
     print( "received start draft request from socket" )
     start_draft()
+
+@socketio.on( "click-slot" )
+def click_slot( team, index ):
+    # if state != "lobby"
+    #     return
+    # player = find_player()
+    ...
+
+@socketio.on( "click-hero" )
+def click_hero( stat, index ):
+    ...
+
+@socketio.on( "right-click-hero" )
+def right_click_hero( stat, index ):
+    ...
 
 @socketio.on( "message" )
 def on_message( message ):
@@ -259,8 +292,8 @@ def on_message( message ):
     if message[:1] == "/":
         on_command( message[1:] )
         return
-    player = session[ "player" ]
-    socketio.emit( "message", f"{player}: {message}" )
+    player = find_player()
+    socketio.emit( "message", f"{ player.name }: { message }" )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
@@ -274,14 +307,18 @@ def set_name( name ):
     print( "received name change command" )
     # tell the client to make a request to set the cookie
     emit( "set-name", name )
-    player = session[ "player" ]
-    session[ "player" ] = name
-    socketio.emit( "message", f"{player} changed name to {name}" )
 
 @app.route( "/name", methods = [ "POST" ] )
 def name():
     print( "name request" )
-    session[ "player" ] = request.form[ "name" ]
+    player = find_player()
+    name = request.form[ "name" ]
+    socketio.emit( "message", f"{ player.name } changed name to { name }" )
+    player.name = name
+    socketio.emit( "update-player", {
+        "index": players.index( player ),
+        "player": vars( player ) } )
+    session[ "name" ] = name
     return ""
 
 if __name__ == "__main__":

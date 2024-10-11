@@ -59,3 +59,7 @@ TODO:
 - put the name of the message sender in a separate span, and color basedd on team
 - implement team based chatting
 
+
+- players can get added multiple times to the players list
+- player index is not working after additions and removals, replace with player id
+

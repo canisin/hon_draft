@@ -9,9 +9,9 @@
     <div class="team" id="legion">
         <div class="team-header">Legion</div>
         <div class="team-players">
-            {% for index in range( 3 ) %}
-            <div class="player" id="legion-{{ index }}">
-                <div class="player-name">{% if legion|length > index %}{{ legion[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+            {% for player in teams[ "legion" ] %}
+            <div class="player" id="legion-{{ loop.index0 }}">
+                <div class="player-name">{{ player.name }}</div>
                 <div class="selected-hero"></div>
             </div>
             {% endfor %}
@@ -37,9 +37,9 @@
     <div class="team" id="hellbourne">
         <div class="team-header">Hellbourne</div>
         <div class="team-players">
-            {% for index in range( 3 ) %}
-            <div class="player" id="hellbourne-{{ index }}">
-                <div class="player-name">{% if hellbourne|length > index %}{{ hellbourne[ index ] }}{% else %}Unnamed Player{% endif %}</div>
+            {% for player in teams[ "hellbourne" ] %}
+            <div class="player" id="hellbourne-{{ loop.index0 }}">
+                <div class="player-name">{{ player.name }}</div>
                 <div class="selected-hero"></div>
             </div>
             {% endfor %}
@@ -49,10 +49,20 @@
 </div>
 <button id="start-button" onClick="startDraft()">Start Draft</button>
 <div class="chat-area">
-    <div id="message-log"></div>
-    <form id="message-form">
-        <input type="text" id="message-input"/>
-        <input type="submit" id="message-button" value="Send"/>
+    <div class="messages">
+        <div id="message-log"></div>
+        <form id="message-form">
+            <input type="text" id="message-input"/>
+            <input type="submit" id="message-button" value="Send"/>
+        </form>
+    </div>
+    <div class="players">
+        <div class="players-header">Players</div>
+        <div id="players-list">
+            {% for player in players %}
+            <div class="players-list-name" id="player-{{ loop.index0 }}">{{ player.name }}</div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
@@ -97,31 +107,29 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
-    function onPlayers( players )
+    function onAddPlayer( data )
     {
-        console.log( "updating players" );
-        let playersList = document.getElementById( "players" );
-        playersList.innerHTML = "";
-        players.forEach( ( player ) =>
-        {
-            playersList.innerHTML += `<li>${player.name}</li>`;
-        } );
+        console.log( "adding player" );
+        let players = document.getElementById( "players-list" );
+        players.innerHTML += `<div class="players-list-name" id="player-${ data.index }">${ data.player.name }</div>`;
     };
-    socketio.on( "players", onPlayers );
+    socketio.on( "add-player", onAddPlayer );
 
-    function onLegion( legion )
+    function onRemovePlayer( index )
     {
-        console.log( "updating legion" );
-        let legionList = document.getElementById( "legion" );
+        console.log( "removing player" );
+        let player = document.getElementById( `player-${ index }` );
+        player.remove();
     };
-    socketio.on( "legion", onLegion );
+    socketio.on( "remove-player", onRemovePlayer );
 
-    function onHellbourne( hellbourne )
+    function onUpdatePlayer( data )
     {
-        console.log( "updating hellbourne" );
-        let hellbourneList = document.getElementById( "hellbourne" );
+        console.log( "updating player" );
+        let player = document.getElementById( `player-${ data.index }` );
+        player.innerHTML = data.player.name;
     };
-    socketio.on( "hellbourne", onHellbourne );
+    socketio.on( "update-player", onUpdatePlayer );
 
     function startDraft()
     {
