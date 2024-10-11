@@ -46,19 +46,11 @@ picking
 
 TODO:
 - break the python code into smaller files
-- try to use python classes
 - convert some loops to more pyhtonic syntax
-- write html and css to build the page based on template substitution
-- push all state to render template for the above to work
-- use sockets and js to update individual elements of the page
-- emit information to sockets for each change whether triggered by timer or players
 
 - try using actual margins instead of the margin divs that you created
 
-- clean up most of the console logging
-- put the name of the message sender in a separate span, and color basedd on team
-- implement team based chatting
-
+- implement team chat
 
 - players can get added multiple times to the players list
 - player index is not working after additions and removals, replace with player id

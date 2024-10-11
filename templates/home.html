@@ -98,7 +98,7 @@
 
     function onUpdateHero( data )
     {
-        console.log( `updating hero ${ data.stat }-${ data.index }` );
+        console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
         let nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
         nameLabel.innerHTML = data.hero.name;

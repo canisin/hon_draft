@@ -227,7 +227,6 @@ def home():
         session[ "name" ] = "Unnamed Player"
     if "id" not in session:
         session[ "id" ] = uuid4().hex
-    print( players )
     return render_template( "home.html",
         state = state,
         players = players,
@@ -249,7 +248,6 @@ def find_player():
 def on_connect( auth ):
     global players
     print( "socket connected" )
-    print( session[ "id" ] )
     player = Player( session[ "name" ], session[ "id" ] )
     socketio.emit( "add-player", {
         "index": len( players ),
