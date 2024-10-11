@@ -234,10 +234,6 @@ def home():
         heroes = heroes
     )
 
-@app.route( "/test" )
-def test():
-    return render_template( "test.html" )
-
 def find_player():
     global players
     for player in players:
