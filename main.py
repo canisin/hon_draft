@@ -282,6 +282,10 @@ def click_slot( team, index ):
         player.team = None
         player.index = None
         socketio.emit( "update-player", vars( player ) )
+    else:
+        return
+    socketio.emit( "message", f"{ player.name } is now playing in { player.team } at position { player.index }."
+        if player.team else f"{ player.name } is now an observer." )
 
 @socketio.on( "click-hero" )
 def click_hero( stat, index ):
