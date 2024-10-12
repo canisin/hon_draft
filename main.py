@@ -245,9 +245,7 @@ def on_connect( auth ):
     global players
     print( "socket connected" )
     player = Player( session[ "name" ], session[ "id" ] )
-    socketio.emit( "add-player", {
-        "index": len( players ),
-        "player": vars( player ) } )
+    socketio.emit( "add-player", vars( player ) )
     players.append( player )
     socketio.emit( "message", f"{ player.name } joined." )
 
@@ -256,7 +254,7 @@ def on_disconnect():
     global players
     print( "socket disconnected" )
     player = find_player()
-    socketio.emit( "remove-player", players.index( player ) )
+    socketio.emit( "remove-player", player.id )
     players.remove( player )
     socketio.emit( "message", f"{ player.name } left." )
 
@@ -309,9 +307,7 @@ def name():
     name = request.form[ "name" ]
     socketio.emit( "message", f"{ player.name } changed name to { name }" )
     player.name = name
-    socketio.emit( "update-player", {
-        "index": players.index( player ),
-        "player": vars( player ) } )
+    socketio.emit( "update-player", vars( player ) )
     session[ "name" ] = name
     return ""
 

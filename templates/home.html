@@ -60,7 +60,7 @@
         <div class="players-header">Players</div>
         <div id="players-list">
             {% for player in players %}
-            <div class="players-list-name" id="player-{{ loop.index0 }}">{{ player.name }}</div>
+            <div class="players-list-name" id="{{ player.id }}">{{ player.name }}</div>
             {% endfor %}
         </div>
     </div>
@@ -107,27 +107,27 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
-    function onAddPlayer( data )
+    function onAddPlayer( player )
     {
         console.log( "adding player" );
         let players = document.getElementById( "players-list" );
-        players.innerHTML += `<div class="players-list-name" id="player-${ data.index }">${ data.player.name }</div>`;
+        players.innerHTML += `<div class="players-list-name" id="${ player.id }">${ player.name }</div>`;
     };
     socketio.on( "add-player", onAddPlayer );
 
-    function onRemovePlayer( index )
+    function onRemovePlayer( id )
     {
         console.log( "removing player" );
-        let player = document.getElementById( `player-${ index }` );
+        let player = document.getElementById( `${ id }` );
         player.remove();
     };
     socketio.on( "remove-player", onRemovePlayer );
 
-    function onUpdatePlayer( data )
+    function onUpdatePlayer( player )
     {
         console.log( "updating player" );
-        let player = document.getElementById( `player-${ data.index }` );
-        player.innerHTML = data.player.name;
+        let playerElement = document.getElementById( `${ player.id }` );
+        playerElement.innerHTML = player.name;
     };
     socketio.on( "update-player", onUpdatePlayer );
 
