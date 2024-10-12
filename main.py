@@ -17,6 +17,8 @@ class Player:
     def __init__( self, name, id ):
         self.name = name
         self.id = id
+        self.team = None
+        self.index = None
 
 null_player = Player( "null", 0 )
 
@@ -30,17 +32,14 @@ def get_other_team( team ):
     if team == legion: return hellbourne
     if team == hellbourne: return legion
 
-def set_team( team, index, player ):
+def set_slot( team, index, player ):
     teams[ team ][ index ] = player
-    socketio.emit( "update-team", {
-        "team": team,
-        "index": index,
-        "player": vars( player ) } )
+    socketio.emit( "update-slot", ( team, index, vars( player ) ) )
 
 def reset_teams():
     for team in teams:
         for index in range( 3 ):
-            set_team( team, index, null_player )
+            set_slot( team, index, null_player )
 
 class Hero:
     def __init__( self, name, icon ):
@@ -267,10 +266,22 @@ def on_start_draft():
 
 @socketio.on( "click-slot" )
 def click_slot( team, index ):
-    # if state != "lobby"
-    #     return
-    # player = find_player()
-    ...
+    if state != "lobby":
+        return
+    player = find_player()
+    slot = teams[ team ][ index ]
+    if slot == null_player:
+        if player.team:
+            set_slot( player.team, player.index, null_player )
+        set_slot( team, index, player )
+        player.team = team
+        player.index = index
+        socketio.emit( "update-player", vars( player ) )
+    elif slot == player:
+        set_slot( team, index, null_player )
+        player.team = None
+        player.index = None
+        socketio.emit( "update-player", vars( player ) )
 
 @socketio.on( "click-hero" )
 def click_hero( stat, index ):

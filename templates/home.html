@@ -9,8 +9,10 @@
     <div class="team" id="legion">
         <div class="team-header">Legion</div>
         <div class="team-players">
-            {% for player in teams[ "legion" ] %}
-            <div class="player" id="legion-{{ loop.index0 }}">
+            {% set team = "legion" %}
+            {% for player in teams[ team ] %}
+            {% set index = loop.index0 %}
+            <div class="slot" id="legion-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
                 <div class="player-name">{{ player.name }}</div>
                 <div class="selected-hero"></div>
             </div>
@@ -37,8 +39,10 @@
     <div class="team" id="hellbourne">
         <div class="team-header">Hellbourne</div>
         <div class="team-players">
-            {% for player in teams[ "hellbourne" ] %}
-            <div class="player" id="hellbourne-{{ loop.index0 }}">
+            {% set team = "hellbourne" %}
+            {% for player in teams[ team ] %}
+            {% set index = loop.index0 %}
+            <div class="slot" id="hellbourne-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
                 <div class="player-name">{{ player.name }}</div>
                 <div class="selected-hero"></div>
             </div>
@@ -70,6 +74,29 @@
     "use strict";
 
     var socketio = io();
+
+    function clickSlot( team, index )
+    {
+        console.log( "clicking slot" );
+        socketio.emit( "click-slot", team, index );
+    };
+
+    function startDraft()
+    {
+        socketio.emit( "start-draft" );
+    };
+
+    let messageForm = document.getElementById( "message-form" );
+    messageForm.addEventListener( "submit", sendMessage );
+    function sendMessage( event )
+    {
+        event.preventDefault();
+
+        let input = document.getElementById( "message-input" );
+        if( input.value == "" ) return;
+        socketio.emit( "message", input.value );
+        input.value = "";
+    };
 
     function onStateChanged( state )
     {
@@ -107,6 +134,15 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
+    function onUpdateSlot( team, index, player )
+    {
+        console.log( "updating slot " + `${ team }-${ index }` );
+        let slotDiv = document.getElementById( `${ team }-${ index }` );
+        let nameLabel = slotDiv.getElementsByClassName( "player-name" )[ 0 ];
+        nameLabel.innerHTML = player.name;
+    };
+    socketio.on( "update-slot", onUpdateSlot );
+
     function onAddPlayer( player )
     {
         console.log( "adding player" );
@@ -131,11 +167,6 @@
     };
     socketio.on( "update-player", onUpdatePlayer );
 
-    function startDraft()
-    {
-        socketio.emit( "start-draft" );
-    };
-
     function getTimestamp()
     {
         let time = new Date();
@@ -144,18 +175,6 @@
              + time.getMinutes().toString().padStart( 2, "0" )
              + ":"
              + time.getSeconds().toString().padStart( 2, "0" );
-    };
-
-    let messageForm = document.getElementById( "message-form" );
-    messageForm.addEventListener( "submit", sendMessage );
-    function sendMessage( event )
-    {
-        event.preventDefault();
-
-        let input = document.getElementById( "message-input" );
-        if( input.value == "" ) return;
-        socketio.emit( "message", input.value );
-        input.value = "";
     };
 
     function onMessage( message )
