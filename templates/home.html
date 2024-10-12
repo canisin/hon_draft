@@ -139,11 +139,41 @@
     };
     socketio.on( "update-slot", onUpdateSlot );
 
+    function setPlayerDetails( player )
+    {
+        let playerDiv = document.getElementById( player.id );
+        let teamImage = playerDiv.getElementsByClassName( "players-list-team-icon" )[ 0 ];
+        let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
+
+        playerName.innerHTML = player.name;
+
+        switch ( player.team )
+        {
+            case "legion":
+                teamImage.src = "/static/images/player-icon-legion.png"
+                playerName.style.color = "green";
+                break;
+            case "hellbourne":
+                teamImage.src = "/static/images/player-icon-hellbourne.png"
+                playerName.style.color = "red";
+                break;
+            default:
+                teamImage.src = "/static/images/player-icon-observer.png"
+                playerName.style.color = "blue";
+                break;
+        }
+    };
+
     function onAddPlayer( player )
     {
         console.log( "adding player" );
-        let players = document.getElementById( "players-list" );
-        players.innerHTML += `<div class="players-list-name" id="${ player.id }">${ player.name }</div>`;
+        document.getElementById( "players-list" ).innerHTML += `
+            <div class="players-list-item" id="${ player.id }">
+                <img class="players-list-team-icon"/>
+                <div class="players-list-name" >${ player.name }</div>
+            </div>
+        `;
+        setPlayerDetails( player );
     };
     socketio.on( "add-player", onAddPlayer );
 
@@ -158,8 +188,7 @@
     function onUpdatePlayer( player )
     {
         console.log( "updating player" );
-        let playerElement = document.getElementById( `${ player.id }` );
-        playerElement.innerHTML = player.name;
+        setPlayerDetails( player );
     };
     socketio.on( "update-player", onUpdatePlayer );
 

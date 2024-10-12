@@ -207,5 +207,14 @@
     padding: 5px;
 }
 
+.players-list-item {
+}
+
+.players-list-team-icon {
+    display: inline;
+    height: 12px;
+}
+
 .players-list-name {
+    display: inline;
 }
