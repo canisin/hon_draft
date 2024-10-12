@@ -20,6 +20,15 @@ class Player:
         self.team = None
         self.index = None
 
+    def set_name( self, name ):
+        self.name = name
+        socketio.emit( "update-player", vars( self ) )
+
+    def set_team( self, team, index = None ):
+        self.team = team
+        self.index = index if team else None
+        socketio.emit( "update-player", vars( self ) )
+
 null_player = Player( "null", 0 )
 
 players = []
@@ -274,14 +283,10 @@ def click_slot( team, index ):
         if player.team:
             set_slot( player.team, player.index, null_player )
         set_slot( team, index, player )
-        player.team = team
-        player.index = index
-        socketio.emit( "update-player", vars( player ) )
+        player.set_team( team, index )
     elif slot == player:
         set_slot( team, index, null_player )
-        player.team = None
-        player.index = None
-        socketio.emit( "update-player", vars( player ) )
+        player.set_team( None )
     else:
         return
     socketio.emit( "message", f"{ player.name } is now playing in { player.team } at position { player.index }."
@@ -323,8 +328,7 @@ def name():
     player = find_player()
     name = request.form[ "name" ]
     old_name = player.name
-    player.name = name
-    socketio.emit( "update-player", vars( player ) )
+    player.set_name( name )
     socketio.emit( "message", f"{ old_name } changed name to { player.name }" )
     session[ "name" ] = name
     return ""
