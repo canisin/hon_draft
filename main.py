@@ -6,6 +6,7 @@ from threading import Timer
 from time import sleep
 from random import random
 from uuid import uuid4
+import json
 
 app = Flask( __name__ )
 app.secret_key = "honzor"
@@ -28,6 +29,9 @@ class Player:
         self.team = team
         self.index = index if team else None
         socketio.emit( "update-player", vars( self ) )
+
+    def to_json( self ):
+        return json.dumps( self, default = vars )
 
 null_player = Player( "null", 0 )
 
@@ -256,7 +260,11 @@ def on_connect( auth ):
     player = Player( session[ "name" ], session[ "id" ] )
     players.append( player )
     socketio.emit( "add-player", vars( player ) )
-    socketio.emit( "message", f"{ player.name } joined." )
+    socketio.emit( "message", f"{ player.name } joined.", include_self = False )
+    for other_player in players:
+        if other_player == player: continue
+        emit( "add-player", vars( other_player ) )
+    emit( "message", "You joined." )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
