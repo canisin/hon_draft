@@ -6,16 +6,16 @@
 </div>
 <div class="main">
     <div class="outer-margin"></div>
-    {% set team, team_name = "legion", "Legion" %}
-    <div class="team" id="{{ team }}">
+    {% set team = teams[ "legion" ] %}
+    <div class="team" id="{{ team.name }}">
         <div class="team-header">
-            <img class="team-header-icon" src="/static/images/team-{{ team }}.png"/>
-            <div class="team-header-name">{{ team_name }}</div>
+            <img class="team-header-icon" src={{ team.icon }}/>
+            <div class="team-header-name">{{ team.name }}</div>
         </div>
         <div class="team-slots">
-            {% for player in teams[ team ] %}
+            {% for player in team.players %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team }}-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
+            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
                 <div class="slot-player">
                     <img class="slot-player-icon" src="{{ player.icon }}"/>
                     <div class="slot-player-name">{{ player.name }}</div>
@@ -45,16 +45,16 @@
         {% endfor %}
     </div>
     <div class="inner-margin"></div>
-    {% set team, team_name = "hellbourne", "Hellbourne" %}
-    <div class="team" id="{{ team }}">
+    {% set team = teams[ "hellbourne" ] %}
+    <div class="team" id="{{ team.name }}">
         <div class="team-header">
-            <div class="team-header-name">{{ team_name }}</div>
-            <img class="team-header-icon" src="/static/images/team-{{ team }}.png"/>
+            <div class="team-header-name">{{ team.name }}</div>
+            <img class="team-header-icon" src={{ team.icon }}/>
         </div>
         <div class="team-slots">
-            {% for player in teams[ team ] %}
+            {% for player in team.players %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team }}-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
+            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
                 <div class="slot-player">
                     <div class="slot-player-name">{{ player.name }}</div>
                     <img class="slot-player-icon" src="{{ player.icon }}"/>

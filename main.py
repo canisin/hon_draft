@@ -27,71 +27,75 @@ class Player:
     def __init__( self, name, id ):
         self.name = name
         self.id = id
-        self.team = None
-        self.index = None
-        self.icon = "/static/images/team-observer.png"
-        self.color = "blue"
-        self.hero = None
+        self.set_team_impl( None )
+
+    def set_team_impl( self, team, index = None ):
+        self.team = team
+        self.index = index if team else None
+        self.icon = team.icon if team else "/static/images/observer.png"
+        self.color = team.color if team else "blue"
+        self.hero = team.null_hero if team else None
 
     def set_name( self, name ):
         self.name = name
-        socketio.emit( "update-player", self.to_dict() )
+        socketio.emit( "update-player", self.emit() )
         if self.team:
-            socketio.emit( "update-slot", ( self.team, self.index, self.to_dict() ) )
+            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def set_team( self, team, index = None ):
-        self.team = team
-        self.index = index if team else None
-        match team:
-            case "legion":
-                self.icon = "/static/images/team-legion.png"
-                self.color = "green"
-                self.hero = null_hero_legion
-            case "hellbourne":
-                self.icon = "/static/images/team-hellbourne.png"
-                self.color = "red"
-                self.hero = null_hero_hellbourne
-            case _:
-                self.icon = "/static/images/team-observer.png"
-                self.color = "blue"
-                self.hero = None
-        socketio.emit( "update-player", self.to_dict() )
+        self.set_team_impl( team, index )
+        socketio.emit( "update-player", self.emit() )
 
     def set_hero( self, hero ):
         self.hero = hero
-        socketio.emit( "update-player", self.to_dict() )
+        socketio.emit( "update-player", self.emit() )
 
     def to_json( self ):
         return json.dumps( self, default = vars )
 
-    def to_dict( self ):
-        return json.loads( json.dumps( self, default = vars ) )
+    def emit( self ):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "icon": self.icon,
+            "color": self.color,
+            "hero": vars( self.hero ) if self.hero else None,
+        }
 
-null_players = {
-    "legion": Player( "null", None ),
-    "hellbourne": Player( "null", None )
-}
-for team, player in null_players.items():
-    player.set_team( team )
+class Team:
+    def __init__( self, name ):
+        self.name = name
+        self.icon = f"static/images/team-{name}.png"
+        self.color = "green" if name == "legion" else "red"
+        self.null_hero = Hero( "null", f"/static/images/hero-{name}.png" )
+        self.null_player = Player( "null", None )
+        self.null_player.set_team( self )
+        self.players = list( self.null_player for _ in range( 3 ) )
+
+    def set_slot( self, index, player ):
+        self.players[ index ] = player
+        socketio.emit( "update-slot", ( self.name, index, player.emit() ) )
+
+    def reset_slot( self, index ):
+        self.set_slot( index, self.null_player )
+
+    def reset_slots( self ):
+        for index in range( 3 ):
+            self.reset_slot( index )
 
 players = []
 teams = {
-    "legion": list( null_players[ "legion" ] for _ in range( 3 ) ),
-    "hellbourne": list( null_players[ "hellbourne" ] for _ in range( 3 ) ),
+    "legion": Team( "legion" ),
+    "hellbourne": Team( "hellbourne" ),
 }
 
 def get_other_team( team ):
-    if team == legion: return hellbourne
-    if team == hellbourne: return legion
+    if team == teams[ "legion" ]: return teams[ "hellbourne" ]
+    if team == teams[ "hellbourne" ]: return teams[ "legion" ]
 
-def set_slot( team, index, player ):
-    teams[ team ][ index ] = player
-    socketio.emit( "update-slot", ( team, index, player.to_dict() ) )
-
-def reset_slots():
-    for team in teams:
-        for index in range( 3 ):
-            set_slot( team, index, null_players[ team ] )
+def reset_teams():
+    for team in teams.values():
+        team.reset_slots()
 
 rikimaru = Hero( "Rikimaru", "/static/images/heroes/hantumon.png" )
 blacksmith = Hero( "Blacksmith", "/static/images/heroes/dwarf_magi.png" )
@@ -290,11 +294,11 @@ def on_connect( auth ):
     if find_player(): return
     player = Player( session[ "name" ], session[ "id" ] )
     players.append( player )
-    socketio.emit( "add-player", player.to_dict() )
+    socketio.emit( "add-player", player.emit() )
     socketio.emit( "message", f"{ player.name } joined.", include_self = False )
     for other_player in players:
         if other_player == player: continue
-        emit( "add-player", other_player.to_dict() )
+        emit( "add-player", other_player.emit() )
     emit( "message", "You joined." )
 
 @socketio.on( "disconnect" )
@@ -317,18 +321,19 @@ def click_slot( team, index ):
     if state != "lobby":
         return
     player = find_player()
-    slot = teams[ team ][ index ]
-    if slot in null_players.values():
+    team = teams[ team ]
+    slot = team.players[ index ]
+    if slot is team.null_player:
         if player.team:
-            set_slot( player.team, player.index, null_players[ player.team ] )
+            player.team.reset_slot( player.index )
         player.set_team( team, index )
-        set_slot( team, index, player )
+        team.set_slot( index, player )
     elif slot == player:
-        set_slot( team, index, null_players[ team ] )
+        team.reset_slot( index )
         player.set_team( None )
     else:
         return
-    socketio.emit( "message", f"{ player.name } is now playing in { player.team } at position { player.index }."
+    socketio.emit( "message", f"{ player.name } is now playing in { player.team.name } at position { player.index }."
         if player.team else f"{ player.name } is now an observer." )
 
 @socketio.on( "click-hero" )

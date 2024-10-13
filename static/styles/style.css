@@ -63,6 +63,7 @@
 .team-header-name {
     display: inline;
     font-size: 22px;
+    text-transform: capitalize;
 }
 
 #legion .team-header {
