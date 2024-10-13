@@ -34,6 +34,8 @@ class Player:
     def set_name( self, name ):
         self.name = name
         socketio.emit( "update-player", self.to_dict() )
+        if self.team:
+            socketio.emit( "update-slot", ( self.team, self.index, self.to_dict() ) )
 
     def set_team( self, team, index = None ):
         self.team = team
