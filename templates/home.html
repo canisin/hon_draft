@@ -39,7 +39,7 @@
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
                 <div class="draft-hero" id="{{ stat }}-{{ index }}">
-                    <img class="draft-hero-image" src="{{ heroes[ stat ][ index ].icon }}"/>
+                    <img class="draft-hero-icon" src="{{ heroes[ stat ][ index ].icon }}"/>
                     <div class="draft-hero-name">{{ heroes[ stat ][ index ].name }}</div>
                 </div>
                 {% endfor %}
@@ -144,9 +144,9 @@
     {
         console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
-        let nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
+        let nameLabel = heroDiv.getElementsByClassName( "draft-hero-name" )[ 0 ];
         nameLabel.innerHTML = hero.name;
-        let image = heroDiv.getElementsByClassName( "hero-image" )[ 0 ];
+        let image = heroDiv.getElementsByClassName( "draft-hero-icon" )[ 0 ];
         image.src = hero.icon
     };
     socketio.on( "update-hero", onUpdateHero );

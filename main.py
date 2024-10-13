@@ -18,6 +18,7 @@ class Hero:
     def __init__( self, name, icon ):
         self.name = name
         self.icon = icon
+        self.is_banned = False
 
 null_hero = Hero( "null", "/static/images/hero-none.png" )
 null_hero_legion = Hero( "null", "/static/images/hero-legion.png" )
@@ -49,6 +50,9 @@ class Player:
     def set_hero( self, hero ):
         self.hero = hero
         socketio.emit( "update-player", self.emit() )
+
+    def reset_hero( self ):
+        self.set_hero( self.team.null_hero if self.team else None )
 
     def to_json( self ):
         return json.dumps( self, default = vars )
@@ -84,6 +88,11 @@ class Team:
             self.reset_slot( index )
 
 players = []
+
+def reset_players():
+    for player in players:
+        player.reset_hero()
+
 teams = {
     "legion": Team( "legion" ),
     "hellbourne": Team( "hellbourne" ),
@@ -92,10 +101,6 @@ teams = {
 def get_other_team( team ):
     if team == teams[ "legion" ]: return teams[ "hellbourne" ]
     if team == teams[ "hellbourne" ]: return teams[ "legion" ]
-
-def reset_teams():
-    for team in teams.values():
-        team.reset_slots()
 
 rikimaru = Hero( "Rikimaru", "/static/images/heroes/hantumon.png" )
 blacksmith = Hero( "Blacksmith", "/static/images/heroes/dwarf_magi.png" )
@@ -170,7 +175,7 @@ def banning_countdown_timer():
 def ban_hero( player, hero ):
     if state != "banning":
         return
-    if player != banning_team[ 0 ]:
+    if player not in banning_team.players:
         return
     if hero.is_banned:
         return
@@ -323,7 +328,7 @@ def click_slot( team, index ):
     player = find_player()
     team = teams[ team ]
     slot = team.players[ index ]
-    if slot is team.null_player:
+    if slot == team.null_player:
         if player.team:
             player.team.reset_slot( player.index )
         player.set_team( team, index )
