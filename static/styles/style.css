@@ -36,10 +36,32 @@
 }
 
 .team {
+    display: flex;
+    flex-direction: column;
+}
+
+#legion {
+    align-items: flex-start;
+}
+
+#hellbourne {
+    align-items: flex-end;
 }
 
 .team-header {
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-block: 15px;
+}
+
+.team-header-icon {
+    display: inline;
+    height: 22px;
+}
+
+.team-header-name {
+    display: inline;
     font-size: 22px;
 }
 
@@ -97,6 +119,14 @@
 .slot-player-name {
     display: inline;
     font-size: 14px;
+}
+
+#legion .slot-player-name {
+    color: green;
+}
+
+#hellbourne .slot-player-name {
+    color: red;
 }
 
 .slot-hero {

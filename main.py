@@ -20,6 +20,8 @@ class Hero:
         self.icon = icon
 
 null_hero = Hero( "null", "/static/images/hero-none.png" )
+null_hero_legion = Hero( "null", "/static/images/hero-legion.png" )
+null_hero_hellbourne = Hero( "null", "/static/images/hero-hellbourne.png" )
 
 class Player:
     def __init__( self, name, id ):
@@ -29,7 +31,7 @@ class Player:
         self.index = None
         self.icon = "/static/images/team-observer.png"
         self.color = "blue"
-        self.hero = null_hero
+        self.hero = None
 
     def set_name( self, name ):
         self.name = name
@@ -44,12 +46,15 @@ class Player:
             case "legion":
                 self.icon = "/static/images/team-legion.png"
                 self.color = "green"
+                self.hero = null_hero_legion
             case "hellbourne":
                 self.icon = "/static/images/team-hellbourne.png"
                 self.color = "red"
+                self.hero = null_hero_hellbourne
             case _:
                 self.icon = "/static/images/team-observer.png"
                 self.color = "blue"
+                self.hero = None
         socketio.emit( "update-player", self.to_dict() )
 
     def set_hero( self, hero ):
@@ -62,14 +67,17 @@ class Player:
     def to_dict( self ):
         return json.loads( json.dumps( self, default = vars ) )
 
-null_player = Player( "null", None )
-null_player.icon = "/static/images/team-none.png"
-null_player.color = "gray"
+null_players = {
+    "legion": Player( "null", None ),
+    "hellbourne": Player( "null", None )
+}
+for team, player in null_players.items():
+    player.set_team( team )
 
 players = []
 teams = {
-    "legion": list( null_player for _ in range( 3 ) ),
-    "hellbourne": list( null_player for _ in range( 3 ) ),
+    "legion": list( null_players[ "legion" ] for _ in range( 3 ) ),
+    "hellbourne": list( null_players[ "hellbourne" ] for _ in range( 3 ) ),
 }
 
 def get_other_team( team ):
@@ -83,10 +91,7 @@ def set_slot( team, index, player ):
 def reset_slots():
     for team in teams:
         for index in range( 3 ):
-            set_slot( team, index, null_player )
-
-legion_picked_hero = Hero( "null", "/static/images/hero-legion-picked.png" )
-hellbourne_picked_hero = Hero( "null", "/static/images/hero-hellbourne-picked.png" )
+            set_slot( team, index, null_players[ team ] )
 
 rikimaru = Hero( "Rikimaru", "/static/images/heroes/hantumon.png" )
 blacksmith = Hero( "Blacksmith", "/static/images/heroes/dwarf_magi.png" )
@@ -313,13 +318,13 @@ def click_slot( team, index ):
         return
     player = find_player()
     slot = teams[ team ][ index ]
-    if slot == null_player:
+    if slot in null_players.values():
         if player.team:
-            set_slot( player.team, player.index, null_player )
+            set_slot( player.team, player.index, null_players[ player.team ] )
         player.set_team( team, index )
         set_slot( team, index, player )
     elif slot == player:
-        set_slot( team, index, null_player )
+        set_slot( team, index, null_players[ team ] )
         player.set_team( None )
     else:
         return

@@ -8,7 +8,10 @@
     <div class="outer-margin"></div>
     {% set team, team_name = "legion", "Legion" %}
     <div class="team" id="{{ team }}">
-        <div class="team-header">{{ team_name }}</div>
+        <div class="team-header">
+            <img class="team-header-icon" src="/static/images/team-{{ team }}.png"/>
+            <div class="team-header-name">{{ team_name }}</div>
+        </div>
         <div class="team-slots">
             {% for player in teams[ team ] %}
             {% set index = loop.index0 %}
@@ -44,7 +47,10 @@
     <div class="inner-margin"></div>
     {% set team, team_name = "hellbourne", "Hellbourne" %}
     <div class="team" id="{{ team }}">
-        <div class="team-header">{{ team_name }}</div>
+        <div class="team-header">
+            <div class="team-header-name">{{ team_name }}</div>
+            <img class="team-header-icon" src="/static/images/team-{{ team }}.png"/>
+        </div>
         <div class="team-slots">
             {% for player in teams[ team ] %}
             {% set index = loop.index0 %}
