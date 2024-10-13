@@ -14,26 +14,55 @@ socketio = SocketIO( app )
 
 state = "lobby"
 
+class Hero:
+    def __init__( self, name, icon ):
+        self.name = name
+        self.icon = icon
+
+null_hero = Hero( "null", "/static/images/hero-none.png" )
+
 class Player:
     def __init__( self, name, id ):
         self.name = name
         self.id = id
         self.team = None
         self.index = None
+        self.icon = "/static/images/team-observer.png"
+        self.color = "blue"
+        self.hero = null_hero
 
     def set_name( self, name ):
         self.name = name
-        socketio.emit( "update-player", vars( self ) )
+        socketio.emit( "update-player", self.to_dict() )
 
     def set_team( self, team, index = None ):
         self.team = team
         self.index = index if team else None
-        socketio.emit( "update-player", vars( self ) )
+        match team:
+            case "legion":
+                self.icon = "/static/images/team-legion.png"
+                self.color = "green"
+            case "hellbourne":
+                self.icon = "/static/images/team-hellbourne.png"
+                self.color = "red"
+            case _:
+                self.icon = "/static/images/team-observer.png"
+                self.color = "blue"
+        socketio.emit( "update-player", self.to_dict() )
+
+    def set_hero( self, hero ):
+        self.hero = hero
+        socketio.emit( "update-player", self.to_dict() )
 
     def to_json( self ):
         return json.dumps( self, default = vars )
 
-null_player = Player( "null", 0 )
+    def to_dict( self ):
+        return json.loads( json.dumps( self, default = vars ) )
+
+null_player = Player( "null", None )
+null_player.icon = "/static/images/team-none.png"
+null_player.color = "gray"
 
 players = []
 teams = {
@@ -47,22 +76,20 @@ def get_other_team( team ):
 
 def set_slot( team, index, player ):
     teams[ team ][ index ] = player
-    socketio.emit( "update-slot", ( team, index, vars( player ) ) )
+    socketio.emit( "update-slot", ( team, index, player.to_dict() ) )
 
-def reset_teams():
+def reset_slots():
     for team in teams:
         for index in range( 3 ):
             set_slot( team, index, null_player )
 
-class Hero:
-    def __init__( self, name, icon ):
-        self.name = name
-        self.icon = icon
+legion_picked_hero = Hero( "null", "/static/images/hero-legion-picked.png" )
+hellbourne_picked_hero = Hero( "null", "/static/images/hero-hellbourne-picked.png" )
 
-null_hero = Hero( "null", "h0" )
-rikimaru = Hero( "Rikimaru", "heroes/14" )
-blacksmith = Hero( "Blacksmith", "heroes/7" )
-armadon = Hero( "Armadon", "heroes/2" )
+rikimaru = Hero( "Rikimaru", "/static/images/heroes/hantumon.png" )
+blacksmith = Hero( "Blacksmith", "/static/images/heroes/dwarf_magi.png" )
+armadon = Hero( "Armadon", "/static/images/heroes/armadon.png" )
+
 heroes = {
     "agi": list( null_hero for _ in range( 8 ) ),
     "int": list( null_hero for _ in range( 8 ) ),
@@ -71,10 +98,7 @@ heroes = {
 
 def set_hero( stat, index, hero ):
     heroes[ stat ][ index ] = hero
-    socketio.emit( "update-hero", {
-        "stat": stat,
-        "index": index,
-        "hero": vars( hero ) } )
+    socketio.emit( "update-hero", ( stat, index, vars( hero ) ) )
 
 def reset_heroes():
     for stat in heroes:
@@ -259,11 +283,11 @@ def on_connect( auth ):
     if find_player(): return
     player = Player( session[ "name" ], session[ "id" ] )
     players.append( player )
-    socketio.emit( "add-player", vars( player ) )
+    socketio.emit( "add-player", player.to_dict() )
     socketio.emit( "message", f"{ player.name } joined.", include_self = False )
     for other_player in players:
         if other_player == player: continue
-        emit( "add-player", vars( other_player ) )
+        emit( "add-player", other_player.to_dict() )
     emit( "message", "You joined." )
 
 @socketio.on( "disconnect" )
@@ -290,8 +314,8 @@ def click_slot( team, index ):
     if slot == null_player:
         if player.team:
             set_slot( player.team, player.index, null_player )
-        set_slot( team, index, player )
         player.set_team( team, index )
+        set_slot( team, index, player )
     elif slot == player:
         set_slot( team, index, null_player )
         player.set_team( None )

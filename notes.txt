@@ -55,3 +55,7 @@ TODO:
 - players can get added multiple times to the players list
 - player index is not working after additions and removals, replace with player id
 
+- player name can be too wide
+  at slot
+  in player list
+

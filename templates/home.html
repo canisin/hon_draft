@@ -6,29 +6,35 @@
 </div>
 <div class="main">
     <div class="outer-margin"></div>
-    <div class="team" id="legion">
-        <div class="team-header">Legion</div>
-        <div class="team-players">
-            {% set team = "legion" %}
+    {% set team, team_name = "legion", "Legion" %}
+    <div class="team" id="{{ team }}">
+        <div class="team-header">{{ team_name }}</div>
+        <div class="team-slots">
             {% for player in teams[ team ] %}
             {% set index = loop.index0 %}
-            <div class="slot" id="legion-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
-                <div class="player-name">{{ player.name }}</div>
-                <div class="selected-hero"></div>
+            <div class="slot" id="{{ team }}-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
+                <div class="slot-player">
+                    <img class="slot-player-icon" src="{{ player.icon }}"/>
+                    <div class="slot-player-name">{{ player.name }}</div>
+                </div>
+                <div class="slot-hero">
+                    <img class="slot-hero-icon" src="{{ player.hero.icon }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                </div>
             </div>
             {% endfor %}
         </div>
     </div>
     <div class="inner-margin"></div>
-    <div class="heroes">
+    <div class="draft-heroes">
         {% for stat, stat_name in [ ( "agi", "Agility" ), ( "int", "Intelligence" ), ( "str", "Strength" ) ] %}
-        <div class="stat-block" id="{{ stat }}-heroes">
-            <div class="hero-list-header">{{ stat_name }}</div>
-            <div class="hero-block">
+        <div class="stat" id="{{ stat }}">
+            <div class="stat-header">{{ stat_name }}</div>
+            <div class="stat-heroes">
                 {% for index in range( 8 ) %}
-                <div class="hero" id="{{ stat }}-{{ index }}">
-                    <img class="hero-image" src="https://stats.projectkongor.com/images/{{ heroes[ stat ][ index ].icon }}/icon_128.jpg"/>
-                    <div class="hero-name">{{ heroes[ stat ][ index ].name }}</div>
+                <div class="draft-hero" id="{{ stat }}-{{ index }}">
+                    <img class="draft-hero-image" src="{{ heroes[ stat ][ index ].icon }}"/>
+                    <div class="draft-hero-name">{{ heroes[ stat ][ index ].name }}</div>
                 </div>
                 {% endfor %}
             </div>
@@ -36,15 +42,21 @@
         {% endfor %}
     </div>
     <div class="inner-margin"></div>
-    <div class="team" id="hellbourne">
-        <div class="team-header">Hellbourne</div>
-        <div class="team-players">
-            {% set team = "hellbourne" %}
+    {% set team, team_name = "hellbourne", "Hellbourne" %}
+    <div class="team" id="{{ team }}">
+        <div class="team-header">{{ team_name }}</div>
+        <div class="team-slots">
             {% for player in teams[ team ] %}
             {% set index = loop.index0 %}
-            <div class="slot" id="hellbourne-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
-                <div class="player-name">{{ player.name }}</div>
-                <div class="selected-hero"></div>
+            <div class="slot" id="{{ team }}-{{ index }}" onClick="clickSlot( '{{ team }}', {{ index }} )">
+                <div class="slot-player">
+                    <div class="slot-player-name">{{ player.name }}</div>
+                    <img class="slot-player-icon" src="{{ player.icon }}"/>
+                </div>
+                <div class="slot-hero">
+                    <img class="slot-hero-icon" src="{{ player.hero.icon }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -119,49 +131,40 @@
     };
     socketio.on( "set-timer", onSetTimer );
 
-    function onUpdateHero( data )
+    function onUpdateHero( stat, index, hero )
     {
         console.log( "updating hero" );
-        let heroDiv = document.getElementById( `${ data.stat }-${ data.index }` );
+        let heroDiv = document.getElementById( `${ stat }-${ index }` );
         let nameLabel = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
-        nameLabel.innerHTML = data.hero.name;
+        nameLabel.innerHTML = hero.name;
         let image = heroDiv.getElementsByClassName( "hero-image" )[ 0 ];
-        image.src = `https://stats.projectkongor.com/images/${ data.hero.icon }/icon_128.jpg`;
+        image.src = hero.icon
     };
     socketio.on( "update-hero", onUpdateHero );
 
     function onUpdateSlot( team, index, player )
     {
-        console.log( "updating slot " + `${ team }-${ index }` );
+        console.log( "updating slot" );
         let slotDiv = document.getElementById( `${ team }-${ index }` );
-        let nameLabel = slotDiv.getElementsByClassName( "player-name" )[ 0 ];
-        nameLabel.innerHTML = player.name;
+        let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
+        playerName.innerHTML = player.name;
+        let playerIcon = slotDiv.getElementsByClassName( "slot-player-icon" )[ 0 ];
+        playerIcon.src = player.icon;
+        let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
+        heroName.innerHTML = player.hero.name;
+        let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
+        heroIcon.src = player.hero.icon;
     };
     socketio.on( "update-slot", onUpdateSlot );
 
-    function setPlayerDetails( player )
+    function updatePlayer( player )
     {
         let playerDiv = document.getElementById( player.id );
-        let teamImage = playerDiv.getElementsByClassName( "players-list-team-icon" )[ 0 ];
         let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
-
         playerName.innerHTML = player.name;
-
-        switch ( player.team )
-        {
-            case "legion":
-                teamImage.src = "/static/images/player-icon-legion.png"
-                playerName.style.color = "green";
-                break;
-            case "hellbourne":
-                teamImage.src = "/static/images/player-icon-hellbourne.png"
-                playerName.style.color = "red";
-                break;
-            default:
-                teamImage.src = "/static/images/player-icon-observer.png"
-                playerName.style.color = "blue";
-                break;
-        }
+        playerName.style.color = player.color;
+        let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
+        playerIcon.src = player.icon;
     };
 
     function onAddPlayer( player )
@@ -169,11 +172,11 @@
         console.log( "adding player" );
         document.getElementById( "players-list" ).innerHTML += `
             <div class="players-list-item" id="${ player.id }">
-                <img class="players-list-team-icon"/>
+                <img class="players-list-icon"/>
                 <div class="players-list-name" >${ player.name }</div>
             </div>
         `;
-        setPlayerDetails( player );
+        updatePlayer( player );
     };
     socketio.on( "add-player", onAddPlayer );
 
@@ -188,7 +191,7 @@
     function onUpdatePlayer( player )
     {
         console.log( "updating player" );
-        setPlayerDetails( player );
+        updatePlayer( player );
     };
     socketio.on( "update-player", onUpdatePlayer );
 

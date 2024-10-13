@@ -55,78 +55,107 @@
     color: red;
 }
 
-.team-players {
+.team-slots {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 25px;
 }
 
-.player {
+.slot {
+    display: flex;
+    flex-direction: column;
 }
 
-.player-name {
-    padding: 5px;
-    font-size: 14px;
-}
-
-.selected-hero {
-    width: 150px;
-    height: 150px;
-}
-
-#legion .selected-hero {
+#legion .slot {
     border: 5px solid green;
 }
 
-#hellbourne .selected-hero {
+#hellbourne .slot {
     border: 5px solid red;
 }
 
-.heroes {
+.slot-player {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#legion .slot-player {
+    justify-content: left;
+}
+
+#hellbourne .slot-player {
+    justify-content: right;
+}
+
+.slot-player-icon {
+    display: inline;
+    height: 14px;
+}
+
+.slot-player-name {
+    display: inline;
+    font-size: 14px;
+}
+
+.slot-hero {
+}
+
+.slot-hero-icon {
+    width: 90px;
+    display: block;
+}
+
+.slot-hero-name {
+    font-size: 10px;
+    text-align: center;
+}
+
+.draft-heroes {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
 }
 
-.stat-block {
+.stat {
 }
 
-.hero-list-header {
+.stat-header {
     padding: 5px;
     font-variant: small-caps;
 }
 
-.hero-block {
+.stat-heroes {
     display: flex;
     flex-wrap: wrap;
     width: 320px;
 }
 
-.hero {
+.draft-hero {
     width: 25%;
 }
 
-.hero-image {
+.draft-hero-image {
     display: block;
     width: 100%;
 }
 
-.hero-name {
+.draft-hero-name {
     font-size: 10px;
     text-align: center;
 }
 
-#agi-heroes .hero {
+#agi .hero {
     border: 5px solid green;
 }
 
-#int-heroes .hero {
+#int .hero {
     border: 5px solid blue;
 }
 
-#str-heroes .hero {
+#str .hero {
     border: 5px solid red;
 }
 
@@ -210,7 +239,7 @@
 .players-list-item {
 }
 
-.players-list-team-icon {
+.players-list-icon {
     display: inline;
     height: 12px;
 }
