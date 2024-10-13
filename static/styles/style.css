@@ -150,8 +150,20 @@
 }
 
 .stat-header {
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-block: 5px;
+}
+
+.stat-header-icon {
+    height: 24px;
+}
+
+.stat-header-name {
+    font-size: 22px;
     font-variant: small-caps;
+    text-transform: capitalize;
 }
 
 .stat-heroes {

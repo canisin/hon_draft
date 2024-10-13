@@ -30,9 +30,12 @@
     </div>
     <div class="inner-margin"></div>
     <div class="draft-heroes">
-        {% for stat, stat_name in [ ( "agi", "Agility" ), ( "int", "Intelligence" ), ( "str", "Strength" ) ] %}
+        {% for stat, stat_name in [ ( "agi", "agility" ), ( "int", "intelligence" ), ( "str", "strength" ) ] %}
         <div class="stat" id="{{ stat }}">
-            <div class="stat-header">{{ stat_name }}</div>
+            <div class="stat-header">
+                <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png"/>
+                <div class="stat-header-name">{{ stat_name }}</div>
+            </div>
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
                 <div class="draft-hero" id="{{ stat }}-{{ index }}">
