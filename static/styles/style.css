@@ -55,6 +55,10 @@
     padding-block: 15px;
 }
 
+#hellbourne .team-header {
+    flex-direction: row-reverse;
+}
+
 .team-header-icon {
     display: inline;
     height: 22px;
@@ -66,15 +70,11 @@
     text-transform: capitalize;
 }
 
-#legion .team-header {
+#legion .team-header-name {
     color: green;
 }
 
-#hellbourne {
-    text-align: right;
-}
-
-#hellbourne .team-header {
+#hellbourne .team-header-name {
     color: red;
 }
 
@@ -104,12 +104,8 @@
     gap: 5px;
 }
 
-#legion .slot-player {
-    justify-content: left;
-}
-
 #hellbourne .slot-player {
-    justify-content: right;
+    flex-direction: row-reverse;
 }
 
 .slot-player-icon {

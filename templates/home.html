@@ -48,16 +48,16 @@
     {% set team = teams[ "hellbourne" ] %}
     <div class="team" id="{{ team.name }}">
         <div class="team-header">
-            <div class="team-header-name">{{ team.name }}</div>
             <img class="team-header-icon" src={{ team.icon }}/>
+            <div class="team-header-name">{{ team.name }}</div>
         </div>
         <div class="team-slots">
             {% for player in team.players %}
             {% set index = loop.index0 %}
             <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
                 <div class="slot-player">
-                    <div class="slot-player-name">{{ player.name }}</div>
                     <img class="slot-player-icon" src="{{ player.icon }}"/>
+                    <div class="slot-player-name">{{ player.name }}</div>
                 </div>
                 <div class="slot-hero">
                     <img class="slot-hero-icon" src="{{ player.hero.icon }}"/>
