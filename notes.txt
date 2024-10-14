@@ -56,3 +56,13 @@ TODO:
   at slot
   in player list
 
+make a pass on global and non-local variables
+
+Add tick sounds to countdowns below five seconds 
+Add mouse over and click sounds to buttons
+Find game sounds in game archives 
+Use number of picks to allow picking in any order
+  consider how this might interact with pre selected heroes
+Also see if you can implement pre-selection for banning
+Add commit based versioning, current commit sha or a version number incremented per commit
+
