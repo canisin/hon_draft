@@ -41,8 +41,8 @@
                 {% set hero = heroes[ stat ][ index ] %}
                 <div class="hero" id="{{ stat }}-{{ index }}" onClick="clickHero( '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
                         <img class="hero-icon" src="{{ hero.icon }}"/>
+                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
                     </div>
                     <div class="hero-name">{{ hero.name }}</div>
                 </div>

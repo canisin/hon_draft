@@ -177,16 +177,17 @@
 }
 
 .hero-icon-container {
-    position: relative;
-}
-
-.hero-icon-banned {
-    position: absolute;
-    width: 100%;
+    display: grid;
 }
 
 .hero-icon {
     width: 100%;
+    grid-area: 1/1;
+}
+
+.hero-icon-banned {
+    width: 100%;
+    grid-area: 1/1;
 }
 
 .hero-name {
