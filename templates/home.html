@@ -29,7 +29,7 @@
         </div>
     </div>
     <div class="inner-margin"></div>
-    <div class="draft-heroes">
+    <div class="heroes">
         {% for stat, stat_name in [ ( "agi", "agility" ), ( "int", "intelligence" ), ( "str", "strength" ) ] %}
         <div class="stat" id="{{ stat }}">
             <div class="stat-header">
@@ -38,9 +38,13 @@
             </div>
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
-                <div class="draft-hero" id="{{ stat }}-{{ index }}">
-                    <img class="draft-hero-icon" src="{{ heroes[ stat ][ index ].icon }}"/>
-                    <div class="draft-hero-name">{{ heroes[ stat ][ index ].name }}</div>
+                {% set hero = heroes[ stat ][ index ] %}
+                <div class="hero" id="{{ stat }}-{{ index }}" onClick="clickHero( '{{ stat }}', {{ index }} )">
+                    <div class="hero-icon-container">
+                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
+                        <img class="hero-icon" src="{{ hero.icon }}"/>
+                    </div>
+                    <div class="hero-name">{{ hero.name }}</div>
                 </div>
                 {% endfor %}
             </div>
@@ -98,6 +102,12 @@
         socketio.emit( "click-slot", team, index );
     };
 
+    function clickHero( stat, index )
+    {
+        console.log( "clicking hero" );
+        socketio.emit( "click-hero", stat, index );
+    };
+
     function startDraft()
     {
         socketio.emit( "start-draft" );
@@ -144,10 +154,12 @@
     {
         console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
-        let nameLabel = heroDiv.getElementsByClassName( "draft-hero-name" )[ 0 ];
-        nameLabel.innerHTML = hero.name;
-        let image = heroDiv.getElementsByClassName( "draft-hero-icon" )[ 0 ];
-        image.src = hero.icon
+        let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
+        heroName.innerHTML = hero.name;
+        let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
+        heroIcon.src = hero.icon
+        let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
+        bannedIcon.style.visibility = hero.is_banned ? "visible" : "hidden";
     };
     socketio.on( "update-hero", onUpdateHero );
 

@@ -172,15 +172,20 @@ def banning_countdown_timer():
     set_state( "banning" )
     set_timer( 30, banning_timer )
 
-def ban_hero( player, hero ):
+def ban_hero( player, stat, index ):
+    global banning_team
     if state != "banning":
         return
     if player not in banning_team.players:
         return
+
+    hero = heroes[ stat ][ index ]
     if hero.is_banned:
         return
 
     hero.is_banned = True
+    socketio.emit( "update-hero", ( stat, index, vars( hero ) ) )
+
     timer.cancel()
 
     ban_count = (
@@ -343,7 +348,9 @@ def click_slot( team, index ):
 
 @socketio.on( "click-hero" )
 def click_hero( stat, index ):
-    ...
+    player = find_player()
+    if state == "banning":
+        ban_hero( player, stat, index )
 
 @socketio.on( "right-click-hero" )
 def right_click_hero( stat, index ):

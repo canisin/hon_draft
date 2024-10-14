@@ -139,7 +139,7 @@
     text-align: center;
 }
 
-.draft-heroes {
+.heroes {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -172,16 +172,24 @@
     width: 320px;
 }
 
-.draft-hero {
+.hero {
     width: 25%;
 }
 
-.draft-hero-icon {
-    display: block;
+.hero-icon-container {
+    position: relative;
+}
+
+.hero-icon-banned {
+    position: absolute;
     width: 100%;
 }
 
-.draft-hero-name {
+.hero-icon {
+    width: 100%;
+}
+
+.hero-name {
     font-size: 10px;
     text-align: center;
 }
