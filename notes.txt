@@ -58,7 +58,6 @@ TODO:
 - break the python code into smaller files
 - convert some loops to more pyhtonic syntax
 - make a pass on global and non-local variables
-- figure out some kind of configuration system to allow debugging at home
 
 Implement picking 
     Use number of picks to allow picking in any order
@@ -71,7 +70,6 @@ Implement clever fate
     Fate bans and picks should support one hero of each stat for each team
     Add the ability to select active stats if necessary
 Add a version indicator based on git commits, sha or number of commits
-Add fav icon 
 Move hero names into a simple tooltip
 Enable/disable buttons on the client based on current state
 Add style to state and countdown
