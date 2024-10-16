@@ -7,6 +7,10 @@ from time import sleep
 import random
 from uuid import uuid4
 import json
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv()
 
 pool_countdown_duration = 5
 banning_countdown_duration = 5
@@ -533,4 +537,7 @@ def name():
     return ""
 
 if __name__ == "__main__":
-    socketio.run( app, allow_unsafe_werkzeug = True, host = "0.0.0.0" )
+    host = getenv( "HOST" ) or "0.0.0.0"
+    port = getenv( "PORT" ) or None
+    debug = getenv( "DEBUG" ) or False
+    socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug )
