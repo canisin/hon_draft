@@ -44,7 +44,9 @@
                         <img class="hero-icon" src="{{ hero.icon }}"/>
                         <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
                     </div>
-                    <div class="hero-name">{{ hero.name }}</div>
+                    <div class="hero-name-container">
+                        <div class="hero-name">{{ hero.name }}</div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -150,12 +152,26 @@
     };
     socketio.on( "set-timer", onSetTimer );
 
+    function setFontSizeToFit( element )
+    {
+        let words = element.textContent.split( " " );
+        if ( words.length == 0 ) return;
+        let longestWord = words.sort( ( a, b ) => b.length - a.length )[ 0 ];
+        let scale = Math.min( 1, 6 / longestWord.length );
+        if ( scale == 1 ) return;
+        let currentSize = parseFloat( window.getComputedStyle( element ).fontSize );
+        element.style.fontSize = ( currentSize * scale ) + "px";
+    };
+
+    Array.from( document.getElementsByClassName( "hero-name" ) ).forEach( setFontSizeToFit );
+
     function onUpdateHero( stat, index, hero )
     {
         console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
         let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
         heroName.innerHTML = hero.name;
+        setFontSizeToFit( heroName );
         let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
         heroIcon.src = hero.icon
         let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];

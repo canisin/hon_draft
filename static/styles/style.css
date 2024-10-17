@@ -174,9 +174,11 @@
 
 .hero {
     width: 25%;
+    display: grid;
 }
 
 .hero-icon-container {
+    grid-area: 1/1;
     display: grid;
 }
 
@@ -190,9 +192,24 @@
     grid-area: 1/1;
 }
 
+.hero-name-container {
+    grid-area: 1/1;
+    display: none;
+    # background: white;
+    # opacity: 50%;
+    background: rgba( 255, 255, 255, .5 );
+}
+
+.hero:hover .hero-name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .hero-name {
-    font-size: 10px;
+    font-size: 18px;
     text-align: center;
+    font-weight: bold;
 }
 
 #agi .hero {
