@@ -39,7 +39,7 @@
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
                 {% set hero = heroes[ stat ][ index ] %}
-                <div class="hero" id="{{ stat }}-{{ index }}" onClick="clickHero( '{{ stat }}', {{ index }} )">
+                <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
                         <img class="hero-icon" src="{{ hero.icon }}"/>
                         <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
@@ -49,7 +49,7 @@
                             <div class="hero-name">{{ hero.name }}</div>
                         </div>
                         <div class="hero-button-container">
-                            <button class="hero-ban-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban</button>
+                            <button class="hero-button" onClick="clickHero( '{{ stat }}', {{ index }} )">Ban</button>
                         </div>
                     </div>
                 </div>
@@ -119,9 +119,9 @@
     };
 
     let selectedHero = ( "", -1 );
-    function clickHero( stat, index )
+    function selectHero( stat, index )
     {
-        console.log( "clicking hero" );
+        console.log( "selecting hero" );
         Array.from( document.getElementsByClassName( "hero" ) ).forEach(
             heroDiv => applyHeroSelection( false, heroDiv ) );
         if ( selectedHero == ( stat, index ) )
@@ -134,9 +134,9 @@
         selectedHero = ( stat, index );
     };
 
-    function banHero( stat, index )
+    function clickHero( stat, index )
     {
-        console.log( "banning hero" );
+        console.log( "clicking hero" );
         socketio.emit( "click-hero", stat, index );
     };
 
