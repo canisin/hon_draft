@@ -9,6 +9,7 @@ from uuid import uuid4
 import json
 from dotenv import load_dotenv
 from os import getenv
+from os import popen
 
 load_dotenv()
 
@@ -16,6 +17,9 @@ pool_countdown_duration = 5
 banning_countdown_duration = 5
 banning_duration = 5
 picking_duration = 5
+
+revision = popen( "git rev-list --count HEAD" ).read().strip()
+sha = popen( "git rev-parse --short HEAD" ).read().strip()
 
 app = Flask( __name__ )
 app.secret_key = "honzor"
@@ -456,6 +460,7 @@ def on_connect( auth ):
     for other_player in players:
         if other_player == player: continue
         emit( "add-player", other_player.emit() )
+    emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
     emit( "message", "You joined." )
 
 @socketio.on( "disconnect" )
