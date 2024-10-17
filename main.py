@@ -16,7 +16,10 @@ load_dotenv()
 pool_countdown_duration = 5
 banning_countdown_duration = 5
 banning_duration = 5
+picking_countdown_duration = 5
 picking_duration = 5
+
+ban_count = 4
 
 revision = popen( "git rev-list --count HEAD" ).read().strip()
 sha = popen( "git rev-parse --short HEAD" ).read().strip()
@@ -347,16 +350,11 @@ def ban_hero( player, stat, index ):
 
     timer.cancel()
 
-    ban_count = (
-            sum( hero.is_banned for hero in heroes[ "agi" ] )
-          + sum( hero.is_banned for hero in heroes[ "int" ] )
-          + sum( hero.is_banned for hero in heroes[ "str" ] )
-        )
-
-    if ban_count == 4:
+    current_ban_count = sum( hero.is_banned for stat in heroes for hero in heroes[ stat ] )
+    if current_ban_count == ban_count:
         banning_team = None
         set_state( "picking_countdown" )
-        set_timer( 10, picking_countdown_timer )
+        set_timer( picking_countdown_duration, picking_countdown_timer )
     else:
         banning_team = get_other_team( banning_team )
         set_timer( banning_duration, banning_timer )
