@@ -167,13 +167,12 @@
 }
 
 .stat-heroes {
-    display: flex;
-    flex-wrap: wrap;
     width: 320px;
+    display: grid;
+    grid-template-columns: repeat( 4, 1fr );
 }
 
 .hero {
-    width: 25%;
     display: grid;
 }
 
@@ -192,17 +191,30 @@
     grid-area: 1/1;
 }
 
-.hero-name-container {
+.hero-controls {
     grid-area: 1/1;
-    display: none;
-    # background: white;
-    # opacity: 50%;
     background: rgba( 255, 255, 255, .5 );
+    display: none;
+    grid-template-rows: 2fr;
+    grid-auto-rows: 1fr;
 }
 
-.hero:hover .hero-name-container {
+.hero:hover .hero-controls {
+    display: grid;
+}
+
+.hero-button-container {
+    display: none;
+    justify-content: center;
+}
+
+.hero-ban-button {
+    width: 100%;
+}
+
+.hero-name-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
 }
 

@@ -44,8 +44,13 @@
                         <img class="hero-icon" src="{{ hero.icon }}"/>
                         <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
                     </div>
-                    <div class="hero-name-container">
-                        <div class="hero-name">{{ hero.name }}</div>
+                    <div class="hero-controls">
+                        <div class="hero-name-container">
+                            <div class="hero-name">{{ hero.name }}</div>
+                        </div>
+                        <div class="hero-button-container">
+                            <button class="hero-ban-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban</button>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -104,9 +109,34 @@
         socketio.emit( "click-slot", team, index );
     };
 
+    function applyHeroSelection( isSelected, heroDiv )
+    {
+        heroDiv.style.borderColor = isSelected ? "yellow" : "";
+        let controls = heroDiv.getElementsByClassName( "hero-controls" )[ 0 ];
+        controls.style.display = isSelected ? "grid" : "";
+        let banButton = heroDiv.getElementsByClassName( "hero-button-container" )[ 0 ];
+        banButton.style.display = isSelected ? "flex" : "";
+    };
+
+    let selectedHero = ( "", -1 );
     function clickHero( stat, index )
     {
         console.log( "clicking hero" );
+        Array.from( document.getElementsByClassName( "hero" ) ).forEach(
+            heroDiv => applyHeroSelection( false, heroDiv ) );
+        if ( selectedHero == ( stat, index ) )
+        {
+            selectedHero = ( "", -1 );
+            return;
+        }
+        let heroDiv = document.getElementById( `${ stat }-${ index }` );
+        applyHeroSelection( true, heroDiv );
+        selectedHero = ( stat, index );
+    };
+
+    function banHero( stat, index )
+    {
+        console.log( "banning hero" );
         socketio.emit( "click-hero", stat, index );
     };
 
