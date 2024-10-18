@@ -20,6 +20,9 @@ picking_countdown_duration = 5
 picking_duration = 5
 
 ban_count = 4
+initial_pick_count = 1
+later_pick_count = 2
+remaining_picks = 0
 
 revision = popen( "git rev-list --count HEAD" ).read().strip()
 sha = popen( "git rev-parse --short HEAD" ).read().strip()
@@ -66,9 +69,14 @@ class Player:
     def set_hero( self, hero ):
         self.hero = hero
         socketio.emit( "update-player", self.emit() )
+        if self.team:
+            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def reset_hero( self ):
         self.set_hero( self.team.null_hero if self.team else None )
+
+    def has_picked( self ):
+        return self.hero != self.team.null_hero
 
     def to_json( self ):
         return json.dumps( self, default = vars )
@@ -102,6 +110,9 @@ class Team:
     def reset_slots( self ):
         for index in range( 3 ):
             self.reset_slot( index )
+
+    def picking_players( self ):
+        return ( player for player in self.players if player != self.null_player and not player.has_picked() )
 
 players = []
 
@@ -288,8 +299,7 @@ def generate_heroes():
 
 first_ban = teams[ "legion" ]
 timer = None
-banning_team = None
-picking_players = []
+active_team = None
 
 def set_state( new_state ):
     global state
@@ -327,8 +337,8 @@ def pool_countdown_timer():
     set_timer( banning_countdown_duration, banning_countdown_timer )
 
 def banning_countdown_timer():
-    global banning_team
-    banning_team = first_ban
+    global active_team
+    active_team = first_ban
     set_state( "banning" )
     set_timer( banning_duration, banning_timer )
 
@@ -336,8 +346,8 @@ def ban_hero( player, stat, index ):
     if state != "banning":
         return
 
-    global banning_team
-    if player and player not in banning_team.players:
+    global active_team
+    if player and player.team != active_team:
         return
 
     hero = heroes[ stat ][ index ]
@@ -350,19 +360,21 @@ def ban_hero( player, stat, index ):
 
     timer.cancel()
 
-    current_ban_count = sum( hero.is_banned for stat in heroes for hero in heroes[ stat ] )
+    current_ban_count = sum( 1 for stat in heroes for hero in heroes[ stat ] if hero.is_banned )
     if current_ban_count == ban_count:
-        banning_team = None
+        active_team = None
         set_state( "picking_countdown" )
         set_timer( picking_countdown_duration, picking_countdown_timer )
     else:
-        banning_team = get_other_team( banning_team )
+        active_team = get_other_team( active_team )
         set_timer( banning_duration, banning_timer )
 
 def get_available_heroes():
     available_heroes = []
     for stat, stat_heroes in heroes.items():
         for index, hero in enumerate( stat_heroes ):
+            if hero == null_hero:
+                continue
             if hero.is_banned:
                 continue
             available_heroes.append( ( stat, index ) )
@@ -372,58 +384,60 @@ def banning_timer():
     stat, index = random.choice( get_available_heroes() )
     ban_hero( None, stat, index )
 
-def picking_countdown_timer():
-    global picking_players
-    picking_players = [ first_ban[ 0 ] ]
-    set_state( "picking" )
+def start_picking( pick_count ):
+    global active_team
+    global remaining_picks
+    remaining_picks = min(
+        pick_count,
+        sum( 1 for player in active_team.picking_players() )
+    )
+    print( f"{ remaining_picks = }" )
+
+    if remaining_picks == 0:
+        active_team = None
+        set_state( "lobby" )
+        return
+
     set_timer( picking_duration, picking_timer )
+
+def picking_countdown_timer():
+    global active_team
+    active_team = first_ban
+    set_state( "picking" )
+    start_picking( initial_pick_count )
 
 def pick_hero( player, stat, index ):
     if state != "picking":
         return
 
-    global picking_players
-    if player not in picking_players:
+    global active_team
+    if player.team != active_team:
         return
-    if player.has_picked:
+    if player.has_picked():
         return
 
     hero = heroes[ stat ][ index ]
+    if hero == null_hero:
+        return
     if hero.is_banned:
         return
-    if hero.is_selected:
+
+    player.set_hero( hero )
+    set_hero( stat, index, null_hero )
+
+    global remaining_picks
+    remaining_picks -= 1
+    if remaining_picks > 0:
         return
-
-    player.hero = hero
-    player.has_picked = True
-    hero.is_selected = True
-
-    # check if all picking players have picked a hero
-    for player in picking_players:
-        if not player.has_picked:
-            return
 
     timer.cancel()
 
-    global picking_team
-    picking_team = get_other_team( picking_players[ 0 ].team )
-    picking_players = []
-    for player in picking_team:
-        if player.has_picked:
-            continue
-        picking_players.append( player )
-        if len( picking_players ) == 2:
-            break
-
-    if not picking_players:
-        set_state( "lobby" )
-    else:
-        set_timer( picking_duration, picking_timer )
+    active_team = get_other_team( active_team )
+    start_picking( later_pick_count )
 
 def picking_timer():
-    for player in picking_players:
-        if player.has_picked:
-            continue
+    while remaining_picks > 0:
+        player = next( player for player in active_team.picking_players() )
         stat, index = random.choice( get_available_heroes() )
         pick_hero( player, stat, index )
 
@@ -501,6 +515,8 @@ def click_hero( stat, index ):
     player = find_player()
     if state == "banning":
         ban_hero( player, stat, index )
+    elif state == "picking":
+        pick_hero( player, stat, index )
 
 @socketio.on( "right-click-hero" )
 def right_click_hero( stat, index ):
