@@ -6,7 +6,6 @@ from threading import Timer
 from time import sleep
 import random
 from uuid import uuid4
-import json
 from dotenv import load_dotenv
 from os import getenv
 from os import popen
@@ -77,9 +76,6 @@ class Player:
 
     def has_picked( self ):
         return self.hero != self.team.null_hero
-
-    def to_json( self ):
-        return json.dumps( self, default = vars )
 
     def emit( self ):
         return {
