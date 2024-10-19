@@ -1,48 +1,6 @@
+tutorials
 https://www.youtube.com/watch?v=mkXdvs8H7TA
 https://www.youtube.com/watch?v=jQjjqEjZK58
-
-states:
-lobby -> pool_countdown -> banning_countdown -> banning x n -> picking_countdown -> picking x n -> lobby
-
-always:
-- players can always join (as observers)
-- players can always right click heroes
-
-lobby:
-- can join or leave teams
-- can start drafting
-  reset hero pool, reset player selections, set state to pool_countdown
-- does not have a timer
-pool_countdown:
-- no actions
-- when timer ends..
-  generate hero pool, set state to banning_countdown
-banning_countdown
-- no actions
-- when timer ends..
-  set active team to the first banning team, set state to banning
-banning
-- first player in active team can ban a hero
-- ends early when a hero is banned
-  if banning is complete
-    clear active team, set state to picking_countdown
-  else
-    toggle active team
-- when the timer ends..
-  ban a random hero, then do the above
-picking_countdown
-- no actions
-- when timer ends..
-  set active players to the first player of the first banning team, set state to picking
-picking
-- active players who have not yet selected a hero can select a hero
-- ends early if all active players have selected a hero
-  if picking is complete
-    clear active players, set state to lobby
-  else
-    set active players to the next two players of the other team
-- when timer ends..
-  select a random hero for all active players who have not selected a hero, then do the above
 
 python versions
 - home      3.12.6
@@ -50,18 +8,13 @@ python versions
 - render    3.12.1
 - latest    3.13.0
 
-requirements
-  currently pillow is missing from requirements
-  pillow is used for the icon fixing script
-
-TODO:
+TODO
 - break the python code into smaller files
-- convert some loops to more pyhtonic syntax
+- start using exceptions
 - make a pass on global and non-local variables
 
-Implement preselecting heroes
-    Test if it works with pick counts
-    See if it can also be used for banning
+Implement preselecting heroes (dibs)
+    Hide dibs from the opposing team
 Implement the ability to select first ban 
 Active team indicators
 Implement clever fate
@@ -82,38 +35,23 @@ Add hover and click animations
 Add sounds
     Button sounds (hover and click)
     Countdowns ticks below five seconds
+    "ban a hero!"
     Hero pick sounds
     Denied effect for banning? Could grow old very fast
     Sound assets can probably be found in game files
 
-what happened to fav icon??
-
-stuck: i need to set a hero for render templates to work, 
-  but if I will do that then I need to set it to the dibs hero, too 
-  and then it is getting difficult to determine 
-  if a player has actually picked a hero...
-
-Hero = None should work if I add an emit function to Team, and it probably makes more sense.
 Can store dibs as a hero and search when picking.
 Can have a dibs button if right click does not work.
 Rename click events to pick-slot, dibs-hero, ban-hero and pick-hero.
+  Split the ban button into two or three
 Don't display controls if hero name is empty
 Indicate active team by displaying "Banning" or "Picking (n)" next to the team name.
-Active team and remaining picks need to be sent to the client. Consider extending state to a little class for this.
-It seems that an element can be enlarged by transform: scale( x ) without disrupting the rest of the document!
+Active team and remaining picks need to be sent to the client. 
+  Consider extending state to a little class for this.
+It seems that an element can be enlarged by transform: scale( x ) 
+  without disrupting the rest of the document!
 transform: translate() can probably also be very useful to stack things just right.
-Must hide dibs from the opposing team!!
-Get rid of the magic numbers 3 (team size) and 8 (pool size)
-Remove the long write up of the drafting logic from the todo document once picking is working
-Get rid of the null_* variables as much as you can, they are only necessary for the interface and should only be used when emitting
-The ban icon is kinda weirdly small (like the fav icon was)
-Something something single player on the not first banning side and the picking phase being skipped
-
-start using exceptions
-
-
-- clean up todo list
-- split the ban button into two or three
-- get back to dibs stuff
+Having a single player on the not first banning side skips that player
+There seems to be a lobby countdown when draft ends
 
 
