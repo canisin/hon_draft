@@ -21,7 +21,7 @@
                     <div class="slot-player-name">{{ player.name }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
                     <div class="slot-hero-name">{{ player.hero.name }}</div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                     <div class="slot-player-name">{{ player.name }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
                     <div class="slot-hero-name">{{ player.hero.name }}</div>
                 </div>
             </div>
@@ -235,6 +235,7 @@
         heroName.innerHTML = player.hero.name;
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
         heroIcon.src = player.hero.icon;
+        heroIcon.style.filter = player.is_dibs ? "grayscale( 1 )" : "";
     };
     socketio.on( "update-slot", onUpdateSlot );
 
