@@ -372,7 +372,7 @@ class Heroes:
             stat.generate()
 
     def get( stat, index ):
-        return next( stat for stat in Heroes.stats if stat.stat == stat ).get( index )
+        return next( stat_iter for stat_iter in Heroes.stats if stat_iter.stat == stat ).get( index )
 
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
