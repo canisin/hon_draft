@@ -49,7 +49,9 @@
                             <div class="hero-name">{{ hero.name }}</div>
                         </div>
                         <div class="hero-button-container">
-                            <button class="hero-button" onClick="clickHero( '{{ stat }}', {{ index }} )">Ban</button>
+                            <button class="hero-button" onClick="dibsHero( '{{ stat }}', {{ index }} )">D</button>
+                            <button class="hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">B</button>
+                            <button class="hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">P</button>
                         </div>
                     </div>
                 </div>
@@ -134,10 +136,22 @@
         selectedHero = ( stat, index );
     };
 
-    function clickHero( stat, index )
+    function dibsHero( stat, index )
     {
-        console.log( "clicking hero" );
-        socketio.emit( "click-hero", stat, index );
+        console.log( "dibsing hero" );
+        socketio.emit( "dibs-hero", stat, index );
+    };
+
+    function banHero( stat, index )
+    {
+        console.log( "banning hero" );
+        socketio.emit( "ban-hero", stat, index );
+    };
+
+    function pickHero( stat, index )
+    {
+        console.log( "picking hero" );
+        socketio.emit( "pick-hero", stat, index );
     };
 
     function startDraft()

@@ -457,6 +457,25 @@ def pool_countdown_timer():
     set_state( "banning_countdown" )
     set_timer( banning_countdown_duration, banning_countdown_timer )
 
+def dibs_hero( player, stat, index ):
+    if state in [ "lobby", "pool_countdown" ]:
+        return
+
+    if not player.team:
+        return
+
+    if player.hero:
+        return
+
+    hero = Heroes.get( stat, index )
+    if hero.is_banned:
+        return
+    if hero.is_picked:
+        return
+
+    player.set_dibs( hero if player.dibs != hero else None )
+    socketio.emit( "message", f"{ player.name } has called dibs on { hero.name }" )
+
 def banning_countdown_timer():
     global active_team
     active_team = first_ban
@@ -625,17 +644,20 @@ def click_slot( team, index ):
     socketio.emit( "message", f"{ player.name } is now playing in { player.team.name } at position { player.index }."
         if player.team else f"{ player.name } is now an observer." )
 
-@socketio.on( "click-hero" )
-def click_hero( stat, index ):
+@socketio.on( "dibs-hero" )
+def on_dibs_hero( stat, index ):
     player = find_player()
-    if state == "banning":
-        ban_hero( player, stat, index )
-    elif state == "picking":
-        pick_hero( player, stat, index )
+    dibs_hero( player, stat, index )
 
-@socketio.on( "right-click-hero" )
-def right_click_hero( stat, index ):
-    ...
+@socketio.on( "ban-hero" )
+def on_ban_hero( stat, index ):
+    player = find_player()
+    ban_hero( player, stat, index )
+
+@socketio.on( "pick-hero" )
+def on_pick_hero( stat, index ):
+    player = find_player()
+    pick_hero( player, stat, index )
 
 @socketio.on( "message" )
 def on_message( message ):
