@@ -105,7 +105,7 @@ class Player:
             "hero": self.hero.emit() if self.hero
                 else self.team.emit_null_hero() if self.team
                 else Hero.emit_null(),
-            "team": self.team.emit( without_players = True ) if self.team else Teams.emit_observer(),
+            "team": self.team.emit() if self.team else Teams.emit_observer(),
         }
 
 class Team:
@@ -137,15 +137,15 @@ class Team:
         return {
             "name": "null",
             "hero": self.emit_null_hero(),
-            "team": self.emit( without_players = True ),
+            "team": self.emit(),
         }
 
-    def emit( self, without_players = False ):
+    def emit( self, with_players = False ):
         return {
             "name": self.name,
             "icon": emit_icon( self.icon ),
             "color": self.color,
-            "players": None if without_players else
+            "players": None if not with_players else
                 [ next( ( player.emit() for player in self.players if player.index == index ),
                     self.emit_null_player() ) for index in range( 3 ) ]
         }
@@ -170,8 +170,8 @@ class Teams:
 
     def emit():
         return {
-            "legion": Teams.legion.emit(),
-            "hellbourne": Teams.hellbourne.emit(),
+            "legion": Teams.legion.emit( with_players = True ),
+            "hellbourne": Teams.hellbourne.emit( with_players = True ),
         }
 
     def emit_observer():
