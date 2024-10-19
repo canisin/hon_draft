@@ -56,7 +56,7 @@ class Hero:
         self.push_update()
 
     def push_update( self ):
-        index = Heroes.stats_dict[ self.stat ].pool.index( self )
+        _, index = Heroes.find( self )
         socketio.emit( "update-hero", ( self.stat, index, self.emit() ) )
 
     def reset( self ):
@@ -389,7 +389,7 @@ class Stat:
         return sum( 1 for hero in self.pool if hero.is_banned )
 
     def get_random( self ):
-        return random.choice( [ ( self.stat, index ) for index, hero in enumerate( self.pool ) if hero.is_available() ] )
+        return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
 
     def emit( self ):
         return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
@@ -408,6 +408,9 @@ class Heroes:
 
     def get( stat, index ):
         return Heroes.stats_dict[ stat ].get( index )
+
+    def find( hero ):
+        return ( hero.stat, Heroes.stats_dict[ hero.stat ].pool.index( hero ) )
 
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
@@ -510,7 +513,8 @@ def ban_hero( player, stat, index ):
         set_timer( banning_duration, banning_timer )
 
 def banning_timer():
-    stat, index = Heroes.get_random()
+    hero = Heroes.get_random()
+    stat, index = Heroes.find( hero )
     ban_hero( None, stat, index )
 
 def start_picking( pick_count ):
@@ -571,8 +575,10 @@ def pick_hero( player, stat, index, is_fate = False ):
 
 def picking_timer():
     while remaining_picks > 0:
-        player = next( player for player in active_team.picking_players() )
-        stat, index = Heroes.get_random()
+        player = next( ( player for player in active_team.picking_players() if player.dibs ),
+           ( player for player in active_team.picking_players() ) )
+        hero = player.dibs if player.dibs else Heroes.get_random()
+        stat, index = Heroes.find( hero )
         pick_hero( player, stat, index, is_fate = True )
 
 @app.route( "/" )
