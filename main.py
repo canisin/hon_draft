@@ -375,7 +375,7 @@ class Stat:
         self.pool = []
 
         for index in range( pool_size ):
-            socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
+            socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
 
     def generate( self ):
         for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
