@@ -10,7 +10,6 @@ python versions
 
 TODO
 - break the python code into smaller files
-- start using exceptions
 - make a pass on global and non-local variables
 
 Implement preselecting heroes (dibs)

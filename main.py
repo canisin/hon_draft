@@ -72,6 +72,7 @@ class Player:
         self.name = name
         self.id = id
         self.hero = None
+        self.dibs = None
         self.team = None
         self.index = None
 
@@ -87,27 +88,42 @@ class Player:
 
         self.team = team
         self.index = index if team else None
-        socketio.emit( "update-player", self.emit() )
-
-        if self.team:
-            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
+        self.push_update()
 
     def set_hero( self, hero ):
+        self.dibs = None
         self.hero = hero
+        self.push_update()
+
+    def set_dibs( self, hero ):
+        assert not self.hero
+        self.dibs = hero
+        self.push_update()
+
+    def check_dibs( self ):
+        if not self.dibs: return
+        if not self.dibs.is_available():
+            self.set_dibs( None )
+
+    def reset( self ):
+        self.hero = None
+        self.dibs = None
+        self.push_update()
+
+    def push_update( self ):
         socketio.emit( "update-player", self.emit() )
         if self.team:
             socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
-
-    def reset_hero( self ):
-        self.set_hero( None )
 
     def emit( self ):
         return {
             "name": self.name,
             "id": self.id,
             "hero": self.hero.emit() if self.hero
+                else self.dibs.emit() if self.dibs
                 else self.team.emit_null_hero() if self.team
                 else Hero.emit_null(),
+            "is_dibs": self.dibs is not None,
             "team": self.team.emit() if self.team else Teams.emit_observer(),
         }
 
@@ -157,7 +173,11 @@ players = []
 
 def reset_players():
     for player in players:
-        player.reset_hero()
+        player.reset()
+
+def check_dibs():
+    for player in players:
+        player.check_dibs()
 
 class Teams:
     legion = Team( "legion", "team-legion", "green" )
@@ -445,6 +465,8 @@ def ban_hero( player, stat, index ):
     socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
     socketio.emit( "message", f"{ player.name if player else "Fate" } has banned { hero.name }" )
 
+    check_dibs()
+
     timer.cancel()
 
     if Heroes.calc_ban_count() == ban_count:
@@ -497,6 +519,8 @@ def pick_hero( player, stat, index ):
 
     player.set_hero( hero )
     hero.is_picked = True
+
+    check_dibs()
 
     global remaining_picks
     remaining_picks -= 1
