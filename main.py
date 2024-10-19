@@ -308,6 +308,9 @@ def set_hero( stat, index, hero ):
     socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
 
 def reset_heroes():
+    for stat in all_heroes:
+        for hero in all_heroes[ stat ]:
+            hero.is_banned = False
     for stat in heroes:
         for index in range( 8 ):
             set_hero( stat, index, null_hero )

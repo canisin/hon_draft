@@ -106,7 +106,7 @@ Must hide dibs from the opposing team!!
 Get rid of the magic numbers 3 (team size) and 8 (pool size)
 Remove the long write up of the drafting logic from the todo document once picking is working
 Get rid of the null_* variables as much as you can, they are only necessary for the interface and should only be used when emitting
-
+The ban icon is kinda weirdly small (like the fav icon was)
 
 
 start using exceptions
