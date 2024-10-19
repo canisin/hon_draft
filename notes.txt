@@ -107,13 +107,11 @@ Get rid of the magic numbers 3 (team size) and 8 (pool size)
 Remove the long write up of the drafting logic from the todo document once picking is working
 Get rid of the null_* variables as much as you can, they are only necessary for the interface and should only be used when emitting
 The ban icon is kinda weirdly small (like the fav icon was)
-
+Something something single player on the not first banning side and the picking phase being skipped
 
 start using exceptions
 
 
-- invert without_players in Team.emit()
-- get rid of magic numbers team size and pool size
 - fix fav icon
 - clean up todo list
 - split the ban button into two or three

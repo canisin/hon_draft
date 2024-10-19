@@ -180,192 +180,208 @@ class Teams:
     def emit_observer():
         return Team( "observers", "observer", "blue" ).emit()
 
+all_heroes = {
+    "agi": [
+        Hero( "Emerald Warden", "heroes/emerald_warden" ),
+        Hero( "Moon Queen", "heroes/krixi" ),
+        Hero( "Andromeda", "heroes/andromeda" ),
+        Hero( "Artillery", "heroes/artillery" ),
+        Hero( "Blitz", "heroes/blitz" ),
+        Hero( "Night Hound", "heroes/hantumon" ),
+        Hero( "Swiftblade", "heroes/hiro" ),
+        Hero( "Master Of Arms", "heroes/master_of_arms" ),
+        Hero( "Moira", "heroes/moira" ),
+        Hero( "Monkey King", "heroes/monkey_king" ),
+        Hero( "Nitro", "heroes/nitro" ),
+        Hero( "Nomad", "heroes/nomad" ),
+        Hero( "Sapphire", "heroes/sapphire" ),
+        Hero( "Scout", "heroes/scout" ),
+        Hero( "Silhouette", "heroes/silhouette" ),
+        Hero( "Sir Benzington", "heroes/sir_benzington" ),
+        Hero( "Tarot", "heroes/tarot" ),
+        Hero( "Valkyrie", "heroes/valkyrie" ),
+        Hero( "Wildsoul", "heroes/yogi" ),
+        Hero( "Zephyr", "heroes/zephyr" ),
+        Hero( "Arachna", "heroes/arachna" ),
+        Hero( "Blood Hunter", "heroes/hunter" ),
+        Hero( "Bushwack", "heroes/bushwack" ),
+        Hero( "Chronos", "heroes/chronos" ),
+        Hero( "Dampeer", "heroes/dampeer" ),
+        Hero( "Flint Beastwood", "heroes/flint_beastwood" ),
+        Hero( "Forsaken Archer", "heroes/forsaken_archer" ),
+        Hero( "Grinex", "heroes/grinex" ),
+        Hero( "Gunblade", "heroes/gunblade" ),
+        Hero( "Shadowblade", "heroes/shadowblade" ),
+        Hero( "Calamity", "heroes/calamity" ),
+        Hero( "Corrupted Disciple", "heroes/corrupted_disciple" ),
+        Hero( "Slither", "heroes/ebulus" ),
+        Hero( "Gemini", "heroes/gemini" ),
+        Hero( "Klanx", "heroes/klanx" ),
+        Hero( "Riptide", "heroes/riptide" ),
+        Hero( "Sand Wraith", "heroes/sand_wraith" ),
+        Hero( "The Madman", "heroes/scar" ),
+        Hero( "Soulstealer", "heroes/soulstealer" ),
+        Hero( "Tremble", "heroes/tremble" ),
+        Hero( "The Dark Lady", "heroes/vanya" ),
+    ],
+    "int": [
+        Hero( "Aluna", "heroes/aluna" ),
+        Hero( "Blacksmith", "heroes/dwarf_magi" ),
+        Hero( "Bombardier", "heroes/bomb" ),
+        Hero( "Ellonia", "heroes/ellonia" ),
+        Hero( "Engineer", "heroes/engineer" ),
+        Hero( "Midas", "heroes/midas" ),
+        Hero( "Pyromancer", "heroes/pyromancer" ),
+        Hero( "Rhapsody", "heroes/rhapsody" ),
+        Hero( "Witch Slayer", "heroes/witch_slayer" ),
+        Hero( "Bubbles", "heroes/bubbles" ),
+        Hero( "Qi", "heroes/chi" ),
+        Hero( "The Chipper", "heroes/chipper" ),
+        Hero( "Empath", "heroes/empath" ),
+        Hero( "Nymphora", "heroes/fairy" ),
+        Hero( "Kinesis", "heroes/kenisis" ),
+        Hero( "Thunderbringer", "heroes/kunas" ),
+        Hero( "Martyr", "heroes/martyr" ),
+        Hero( "Monarch", "heroes/monarch" ),
+        Hero( "Oogie", "heroes/oogie" ),
+        Hero( "Ophelia", "heroes/ophelia" ),
+        Hero( "Pearl", "heroes/pearl" ),
+        Hero( "Pollywog Priest", "heroes/pollywogpriest" ),
+        Hero( "Skrap", "heroes/skrap" ),
+        Hero( "Tempest", "heroes/tempest" ),
+        Hero( "Vindicator", "heroes/vindicator" ),
+        Hero( "Warchief", "heroes/warchief" ),
+        Hero( "Defiler", "heroes/defiler" ),
+        Hero( "Demented Shaman", "heroes/shaman" ),
+        Hero( "Doctor Repulsor", "heroes/doctor_repulsor" ),
+        Hero( "Glacius", "heroes/frosty" ),
+        Hero( "Gravekeeper", "heroes/taint" ),
+        Hero( "Myrmidon", "heroes/hydromancer" ),
+        Hero( "Parasite", "heroes/parasite" ),
+        Hero( "Plague Rider", "heroes/diseasedrider" ),
+        Hero( "Revenant", "heroes/revenant" ),
+        Hero( "Soul Reaper", "heroes/helldemon" ),
+        Hero( "Succubus", "heroes/succubis" ),
+        Hero( "Wretched Hag", "heroes/babayaga" ),
+        Hero( "Artesia", "heroes/artesia" ),
+        Hero( "Circe", "heroes/circe" ),
+        Hero( "Fayde", "heroes/fade" ),
+        Hero( "Geomancer", "heroes/geomancer" ),
+        Hero( "Goldenveil", "heroes/goldenveil" ),
+        Hero( "Hellbringer", "heroes/hellbringer" ),
+        Hero( "Parallax", "heroes/parallax" ),
+        Hero( "Prophet", "heroes/prophet" ),
+        Hero( "Puppet Master", "heroes/puppetmaster" ),
+        Hero( "Riftwalker", "heroes/riftmage" ),
+        Hero( "Voodoo Jester", "heroes/voodoo" ),
+        Hero( "Torturer", "heroes/xalynx" ),
+    ],
+    "str": [
+        Hero( "Armadon", "heroes/armadon" ),
+        Hero( "Hammerstorm", "heroes/hammerstorm" ),
+        Hero( "Legionnaire", "heroes/legionnaire" ),
+        Hero( "Magebane", "heroes/javaras" ),
+        Hero( "Pandamonium", "heroes/panda" ),
+        Hero( "Predator", "heroes/predator" ),
+        Hero( "Prisoner 945", "heroes/prisoner" ),
+        Hero( "Rally", "heroes/rally" ),
+        Hero( "Behemoth", "heroes/behemoth" ),
+        Hero( "Berzerker", "heroes/berzerker" ),
+        Hero( "Drunken Master", "heroes/drunkenmaster" ),
+        Hero( "Flux", "heroes/flux" ),
+        Hero( "The Gladiator", "heroes/gladiator" ),
+        Hero( "Ichor", "heroes/ichor" ),
+        Hero( "Jeraziah", "heroes/jereziah" ),
+        Hero( "Xemplar", "heroes/mimix" ),
+        Hero( "Bramble", "heroes/plant" ),
+        Hero( "Rampage", "heroes/rampage" ),
+        Hero( "Pebbles", "heroes/rocky" ),
+        Hero( "Salomon", "heroes/salomon" ),
+        Hero( "Shellshock", "heroes/shellshock" ),
+        Hero( "Solstice", "heroes/solstice" ),
+        Hero( "Keeper of the Forest", "heroes/treant" ),
+        Hero( "Tundra", "heroes/tundra" ),
+        Hero( "Balphagore", "heroes/bephelgor" ),
+        Hero( "Magmus", "heroes/magmar" ),
+        Hero( "Maliken", "heroes/maliken" ),
+        Hero( "Ravenor", "heroes/ravenor" ),
+        Hero( "Amun-Ra", "heroes/ra" ),
+        Hero( "Accursed", "heroes/accursed" ),
+        Hero( "Adrenaline", "heroes/adrenaline" ),
+        Hero( "Apex", "heroes/apex" ),
+        Hero( "Cthulhuphant", "heroes/cthulhuphant" ),
+        Hero( "Deadlift", "heroes/deadlift" ),
+        Hero( "Deadwood", "heroes/deadwood" ),
+        Hero( "Devourer", "heroes/devourer" ),
+        Hero( "Lord Salforis", "heroes/dreadknight" ),
+        Hero( "Electrician", "heroes/electrician" ),
+        Hero( "Draconis", "heroes/flamedragon" ),
+        Hero( "Gauntlet", "heroes/gauntlet" ),
+        Hero( "Kane", "heroes/kane" ),
+        Hero( "King Klout", "heroes/king_klout" ),
+        Hero( "Kraken", "heroes/kraken" ),
+        Hero( "Lodestone", "heroes/lodestone" ),
+        Hero( "Moraxus", "heroes/moraxus" ),
+        Hero( "Pharaoh", "heroes/mumra" ),
+        Hero( "Pestilence", "heroes/pestilence" ),
+        Hero( "War Beast", "heroes/wolfman" ),
+    ],
+}
+
+class Stat:
+    def __init__( self, stat ):
+        self.stat = stat
+        self.heroes = all_heroes[ stat ]
+        self.pool = []
+
+    def reset( self ):
+        for hero in self.heroes:
+            hero.reset()
+
+        self.pool = []
+
+        for index in range( pool_size ):
+            socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
+
+    def generate( self ):
+        for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
+            self.pool.append( hero )
+            socketio.emit( "update-hero", ( self.stat, index, hero.emit() ) )
+
+    def get( self, index ):
+        return self.pool[ index ]
+
+    def calc_ban_count( self ):
+        return sum( 1 for hero in self.pool if hero.is_banned )
+
+    def get_random( self ):
+        return random.choice( [ ( self.stat, index ) for index, hero in enumerate( self.pool ) if hero.is_available() ] )
+
+    def emit( self ):
+        return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
+
 class Heroes:
-    stats = [ "agi", "int", "str" ]
-
-    all = {
-        "agi": [
-            Hero( "Emerald Warden", "heroes/emerald_warden" ),
-            Hero( "Moon Queen", "heroes/krixi" ),
-            Hero( "Andromeda", "heroes/andromeda" ),
-            Hero( "Artillery", "heroes/artillery" ),
-            Hero( "Blitz", "heroes/blitz" ),
-            Hero( "Night Hound", "heroes/hantumon" ),
-            Hero( "Swiftblade", "heroes/hiro" ),
-            Hero( "Master Of Arms", "heroes/master_of_arms" ),
-            Hero( "Moira", "heroes/moira" ),
-            Hero( "Monkey King", "heroes/monkey_king" ),
-            Hero( "Nitro", "heroes/nitro" ),
-            Hero( "Nomad", "heroes/nomad" ),
-            Hero( "Sapphire", "heroes/sapphire" ),
-            Hero( "Scout", "heroes/scout" ),
-            Hero( "Silhouette", "heroes/silhouette" ),
-            Hero( "Sir Benzington", "heroes/sir_benzington" ),
-            Hero( "Tarot", "heroes/tarot" ),
-            Hero( "Valkyrie", "heroes/valkyrie" ),
-            Hero( "Wildsoul", "heroes/yogi" ),
-            Hero( "Zephyr", "heroes/zephyr" ),
-            Hero( "Arachna", "heroes/arachna" ),
-            Hero( "Blood Hunter", "heroes/hunter" ),
-            Hero( "Bushwack", "heroes/bushwack" ),
-            Hero( "Chronos", "heroes/chronos" ),
-            Hero( "Dampeer", "heroes/dampeer" ),
-            Hero( "Flint Beastwood", "heroes/flint_beastwood" ),
-            Hero( "Forsaken Archer", "heroes/forsaken_archer" ),
-            Hero( "Grinex", "heroes/grinex" ),
-            Hero( "Gunblade", "heroes/gunblade" ),
-            Hero( "Shadowblade", "heroes/shadowblade" ),
-            Hero( "Calamity", "heroes/calamity" ),
-            Hero( "Corrupted Disciple", "heroes/corrupted_disciple" ),
-            Hero( "Slither", "heroes/ebulus" ),
-            Hero( "Gemini", "heroes/gemini" ),
-            Hero( "Klanx", "heroes/klanx" ),
-            Hero( "Riptide", "heroes/riptide" ),
-            Hero( "Sand Wraith", "heroes/sand_wraith" ),
-            Hero( "The Madman", "heroes/scar" ),
-            Hero( "Soulstealer", "heroes/soulstealer" ),
-            Hero( "Tremble", "heroes/tremble" ),
-            Hero( "The Dark Lady", "heroes/vanya" ),
-        ],
-        "int": [
-            Hero( "Aluna", "heroes/aluna" ),
-            Hero( "Blacksmith", "heroes/dwarf_magi" ),
-            Hero( "Bombardier", "heroes/bomb" ),
-            Hero( "Ellonia", "heroes/ellonia" ),
-            Hero( "Engineer", "heroes/engineer" ),
-            Hero( "Midas", "heroes/midas" ),
-            Hero( "Pyromancer", "heroes/pyromancer" ),
-            Hero( "Rhapsody", "heroes/rhapsody" ),
-            Hero( "Witch Slayer", "heroes/witch_slayer" ),
-            Hero( "Bubbles", "heroes/bubbles" ),
-            Hero( "Qi", "heroes/chi" ),
-            Hero( "The Chipper", "heroes/chipper" ),
-            Hero( "Empath", "heroes/empath" ),
-            Hero( "Nymphora", "heroes/fairy" ),
-            Hero( "Kinesis", "heroes/kenisis" ),
-            Hero( "Thunderbringer", "heroes/kunas" ),
-            Hero( "Martyr", "heroes/martyr" ),
-            Hero( "Monarch", "heroes/monarch" ),
-            Hero( "Oogie", "heroes/oogie" ),
-            Hero( "Ophelia", "heroes/ophelia" ),
-            Hero( "Pearl", "heroes/pearl" ),
-            Hero( "Pollywog Priest", "heroes/pollywogpriest" ),
-            Hero( "Skrap", "heroes/skrap" ),
-            Hero( "Tempest", "heroes/tempest" ),
-            Hero( "Vindicator", "heroes/vindicator" ),
-            Hero( "Warchief", "heroes/warchief" ),
-            Hero( "Defiler", "heroes/defiler" ),
-            Hero( "Demented Shaman", "heroes/shaman" ),
-            Hero( "Doctor Repulsor", "heroes/doctor_repulsor" ),
-            Hero( "Glacius", "heroes/frosty" ),
-            Hero( "Gravekeeper", "heroes/taint" ),
-            Hero( "Myrmidon", "heroes/hydromancer" ),
-            Hero( "Parasite", "heroes/parasite" ),
-            Hero( "Plague Rider", "heroes/diseasedrider" ),
-            Hero( "Revenant", "heroes/revenant" ),
-            Hero( "Soul Reaper", "heroes/helldemon" ),
-            Hero( "Succubus", "heroes/succubis" ),
-            Hero( "Wretched Hag", "heroes/babayaga" ),
-            Hero( "Artesia", "heroes/artesia" ),
-            Hero( "Circe", "heroes/circe" ),
-            Hero( "Fayde", "heroes/fade" ),
-            Hero( "Geomancer", "heroes/geomancer" ),
-            Hero( "Goldenveil", "heroes/goldenveil" ),
-            Hero( "Hellbringer", "heroes/hellbringer" ),
-            Hero( "Parallax", "heroes/parallax" ),
-            Hero( "Prophet", "heroes/prophet" ),
-            Hero( "Puppet Master", "heroes/puppetmaster" ),
-            Hero( "Riftwalker", "heroes/riftmage" ),
-            Hero( "Voodoo Jester", "heroes/voodoo" ),
-            Hero( "Torturer", "heroes/xalynx" ),
-        ],
-        "str": [
-            Hero( "Armadon", "heroes/armadon" ),
-            Hero( "Hammerstorm", "heroes/hammerstorm" ),
-            Hero( "Legionnaire", "heroes/legionnaire" ),
-            Hero( "Magebane", "heroes/javaras" ),
-            Hero( "Pandamonium", "heroes/panda" ),
-            Hero( "Predator", "heroes/predator" ),
-            Hero( "Prisoner 945", "heroes/prisoner" ),
-            Hero( "Rally", "heroes/rally" ),
-            Hero( "Behemoth", "heroes/behemoth" ),
-            Hero( "Berzerker", "heroes/berzerker" ),
-            Hero( "Drunken Master", "heroes/drunkenmaster" ),
-            Hero( "Flux", "heroes/flux" ),
-            Hero( "The Gladiator", "heroes/gladiator" ),
-            Hero( "Ichor", "heroes/ichor" ),
-            Hero( "Jeraziah", "heroes/jereziah" ),
-            Hero( "Xemplar", "heroes/mimix" ),
-            Hero( "Bramble", "heroes/plant" ),
-            Hero( "Rampage", "heroes/rampage" ),
-            Hero( "Pebbles", "heroes/rocky" ),
-            Hero( "Salomon", "heroes/salomon" ),
-            Hero( "Shellshock", "heroes/shellshock" ),
-            Hero( "Solstice", "heroes/solstice" ),
-            Hero( "Keeper of the Forest", "heroes/treant" ),
-            Hero( "Tundra", "heroes/tundra" ),
-            Hero( "Balphagore", "heroes/bephelgor" ),
-            Hero( "Magmus", "heroes/magmar" ),
-            Hero( "Maliken", "heroes/maliken" ),
-            Hero( "Ravenor", "heroes/ravenor" ),
-            Hero( "Amun-Ra", "heroes/ra" ),
-            Hero( "Accursed", "heroes/accursed" ),
-            Hero( "Adrenaline", "heroes/adrenaline" ),
-            Hero( "Apex", "heroes/apex" ),
-            Hero( "Cthulhuphant", "heroes/cthulhuphant" ),
-            Hero( "Deadlift", "heroes/deadlift" ),
-            Hero( "Deadwood", "heroes/deadwood" ),
-            Hero( "Devourer", "heroes/devourer" ),
-            Hero( "Lord Salforis", "heroes/dreadknight" ),
-            Hero( "Electrician", "heroes/electrician" ),
-            Hero( "Draconis", "heroes/flamedragon" ),
-            Hero( "Gauntlet", "heroes/gauntlet" ),
-            Hero( "Kane", "heroes/kane" ),
-            Hero( "King Klout", "heroes/king_klout" ),
-            Hero( "Kraken", "heroes/kraken" ),
-            Hero( "Lodestone", "heroes/lodestone" ),
-            Hero( "Moraxus", "heroes/moraxus" ),
-            Hero( "Pharaoh", "heroes/mumra" ),
-            Hero( "Pestilence", "heroes/pestilence" ),
-            Hero( "War Beast", "heroes/wolfman" ),
-        ],
-    }
-
-    draft = { stat: [] for stat in stats }
+    stats = [ Stat( stat ) for stat in all_heroes ]
 
     def reset():
         for stat in Heroes.stats:
-            for hero in Heroes.all[ stat ]:
-                hero.reset()
-
-            Heroes.draft[ stat ] = []
-
-            for index in range( pool_size ):
-                socketio.emit( "update-hero", ( stat, index, Hero.emit_null() ) )
+            stat.reset()
 
     def generate():
         for stat in Heroes.stats:
-            for index, hero in enumerate( random.sample( Heroes.all[ stat ], pool_size ) ):
-                Heroes.draft[ stat ].append( hero )
-                socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
+            stat.generate()
 
     def get( stat, index ):
-        return Heroes.draft[ stat ][ index ]
+        return next( stat for stat in Heroes.stats if stat.stat == stat ).get( index )
 
     def calc_ban_count():
-        return sum( 1 for stat in Heroes.stats for hero in Heroes.draft[ stat ] if hero.is_banned )
+        return sum( stat.calc_ban_count() for stat in Heroes.stats )
 
     def get_random():
-        available_heroes = [ ( stat, index ) for stat in Heroes.stats
-            for index, hero in enumerate( Heroes.draft[ stat ] ) if hero.is_available() ]
-        return random.choice( available_heroes )
-
-    def emit_stat( stat ):
-        heroes = Heroes.draft[ stat ]
-        return [ hero.emit() for hero in heroes ] if heroes else [ Hero.emit_null() for _ in range( pool_size ) ]
+        return random.choice( Heroes.stats ).get_random()
 
     def emit():
-        return { stat: Heroes.emit_stat( stat ) for stat in Heroes.stats }
+        return { stat.stat: stat.emit() for stat in Heroes.stats }
 
 first_ban = Teams.legion
 timer = None
