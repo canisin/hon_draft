@@ -12,8 +12,6 @@ TODO
 - break the python code into smaller files
 - make a pass on global and non-local variables
 
-Implement preselecting heroes (dibs)
-    Hide dibs from the opposing team
 Implement the ability to select first ban 
 Active team indicators
 Implement clever fate
@@ -28,6 +26,7 @@ Do a pass on style, composition and background
 Implement ellipsis or dynamic text size for longer hero and player names
 Improve chat
     Implement team chat
+    Hide dibs from the opposing team
     Color player names in chat 
     Sanitize input in chat or at least for the name command
 Add hover and click animations
@@ -39,10 +38,6 @@ Add sounds
     Denied effect for banning? Could grow old very fast
     Sound assets can probably be found in game files
 
-Can store dibs as a hero and search when picking.
-Can have a dibs button if right click does not work.
-Rename click events to pick-slot, dibs-hero, ban-hero and pick-hero.
-  Split the ban button into two or three
 Don't display controls if hero name is empty
 Indicate active team by displaying "Banning" or "Picking (n)" next to the team name.
 Active team and remaining picks need to be sent to the client. 
@@ -52,5 +47,10 @@ It seems that an element can be enlarged by transform: scale( x )
 transform: translate() can probably also be very useful to stack things just right.
 Having a single player on the not first banning side skips that player
 There seems to be a lobby countdown when draft ends
+Reconnecting leaves behind ghost players in teams
 
 
+class Players
+    reset, check_dibs, find
+
+add Team.click_slot or something
