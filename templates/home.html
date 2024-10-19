@@ -17,7 +17,7 @@
             {% set index = loop.index0 %}
             <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.icon }}"/>
+                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
                     <div class="slot-player-name">{{ player.name }}</div>
                 </div>
                 <div class="slot-hero">
@@ -70,7 +70,7 @@
             {% set index = loop.index0 %}
             <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.icon }}"/>
+                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
                     <div class="slot-player-name">{{ player.name }}</div>
                 </div>
                 <div class="slot-hero">
@@ -216,7 +216,7 @@
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
         playerName.innerHTML = player.name;
         let playerIcon = slotDiv.getElementsByClassName( "slot-player-icon" )[ 0 ];
-        playerIcon.src = player.icon;
+        playerIcon.src = player.team.icon;
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
         heroName.innerHTML = player.hero.name;
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
@@ -231,7 +231,7 @@
         playerName.innerHTML = player.name;
         playerName.style.color = player.color;
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
-        playerIcon.src = player.icon;
+        playerIcon.src = player.team.icon;
     };
 
     function onAddPlayer( player )

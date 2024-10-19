@@ -32,28 +32,31 @@ socketio = SocketIO( app )
 
 state = "lobby"
 
+def emit_icon( icon ):
+    return f"/static/images/{ icon }.png"
+
 class Hero:
     def __init__( self, name, icon ):
         self.name = name
         self.icon = icon
         self.is_banned = False
 
-null_hero = Hero( "null", "/static/images/hero-none.png" )
-null_hero_legion = Hero( "null", "/static/images/hero-legion.png" )
-null_hero_hellbourne = Hero( "null", "/static/images/hero-hellbourne.png" )
+    def emit( self ):
+        return {
+            "name": self.name,
+            "icon": emit_icon( self.icon ),
+            "is_banned": self.is_banned,
+        }
+
+null_hero = Hero( "null", "hero-none" )
 
 class Player:
     def __init__( self, name, id ):
         self.name = name
         self.id = id
-        self.set_team_impl( None )
-
-    def set_team_impl( self, team, index = None ):
-        self.team = team
-        self.index = index if team else None
-        self.icon = team.icon if team else "/static/images/observer.png"
-        self.color = team.color if team else "blue"
-        self.hero = team.null_hero if team else None
+        self.hero = None
+        self.team = None
+        self.index = None
 
     def set_name( self, name ):
         self.name = name
@@ -62,8 +65,15 @@ class Player:
             socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def set_team( self, team, index = None ):
-        self.set_team_impl( team, index )
+        if self.team:
+            socketio.emit( "update-slot", ( self.team.name, self.index, self.team.emit_null_player() ) )
+
+        self.team = team
+        self.index = index if team else None
         socketio.emit( "update-player", self.emit() )
+
+        if self.team:
+            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def set_hero( self, hero ):
         self.hero = hero
@@ -72,43 +82,56 @@ class Player:
             socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def reset_hero( self ):
-        self.set_hero( self.team.null_hero if self.team else None )
-
-    def has_picked( self ):
-        return self.hero != self.team.null_hero
+        self.set_hero( None )
 
     def emit( self ):
         return {
             "name": self.name,
             "id": self.id,
-            "icon": self.icon,
-            "color": self.color,
-            "hero": vars( self.hero ) if self.hero else None,
+            "hero": self.hero.emit() if self.hero
+                else self.team.emit_null_hero() if self.team
+                else null_hero.emit(),
+            "team": self.team.emit( without_players = True ) if self.team else observer_team.emit(),
         }
 
 class Team:
-    def __init__( self, name ):
+    def __init__( self, name, icon, color ):
         self.name = name
-        self.icon = f"static/images/team-{ name }.png"
-        self.color = "green" if name == "legion" else "red"
-        self.null_hero = Hero( "null", f"/static/images/hero-{ name }.png" )
-        self.null_player = Player( "null", None )
-        self.null_player.set_team( self )
-        self.players = list( self.null_player for _ in range( 3 ) )
+        self.icon = icon
+        self.color = color
+        self.players = []
 
-    def set_slot( self, index, player ):
-        self.players[ index ] = player
-        socketio.emit( "update-slot", ( self.name, index, player.emit() ) )
+    def add_player( self, player ):
+        self.players.append( player )
 
-    def reset_slot( self, index ):
-        self.set_slot( index, self.null_player )
+    def remove_player( self, player ):
+        self.players.remove( player )
 
-    def reset_slots( self ):
-        for index in range( 3 ):
-            self.reset_slot( index )
+    def remove_players( self ):
+        self.players = []
 
     def picking_players( self ):
-        return ( player for player in self.players if player != self.null_player and not player.has_picked() )
+        return ( player for player in self.players if not player.hero )
+
+    def emit_null_hero( self ):
+        return Hero( "null", f"hero-{ self.name }" ).emit()
+
+    def emit_null_player( self ):
+        return {
+            "name": "null",
+            "hero": self.emit_null_hero(),
+            "team": self.emit( without_players = True ),
+        }
+
+    def emit( self, without_players = False ):
+        return {
+            "name": self.name,
+            "icon": emit_icon( self.icon ),
+            "color": self.color,
+            "players": None if without_players else
+                [ next( ( player.emit() for player in self.players if player.index == index ),
+                    self.emit_null_player() ) for index in range( 3 ) ]
+        }
 
 players = []
 
@@ -116,9 +139,10 @@ def reset_players():
     for player in players:
         player.reset_hero()
 
+observer_team = Team( "observers", "observer", "blue" )
 teams = {
-    "legion": Team( "legion" ),
-    "hellbourne": Team( "hellbourne" ),
+    "legion": Team( "legion", "team-legion", "green" ),
+    "hellbourne": Team( "hellbourne", "team-hellbourne", "red" ),
 }
 
 def get_other_team( team ):
@@ -127,149 +151,149 @@ def get_other_team( team ):
 
 all_heroes = {
     "agi": [
-        Hero( "Emerald Warden", "/static/images/heroes/emerald_warden.png" ),
-        Hero( "Moon Queen", "/static/images/heroes/krixi.png" ),
-        Hero( "Andromeda", "/static/images/heroes/andromeda.png" ),
-        Hero( "Artillery", "/static/images/heroes/artillery.png" ),
-        Hero( "Blitz", "/static/images/heroes/blitz.png" ),
-        Hero( "Night Hound", "/static/images/heroes/hantumon.png" ),
-        Hero( "Swiftblade", "/static/images/heroes/hiro.png" ),
-        Hero( "Master Of Arms", "/static/images/heroes/master_of_arms.png" ),
-        Hero( "Moira", "/static/images/heroes/moira.png" ),
-        Hero( "Monkey King", "/static/images/heroes/monkey_king.png" ),
-        Hero( "Nitro", "/static/images/heroes/nitro.png" ),
-        Hero( "Nomad", "/static/images/heroes/nomad.png" ),
-        Hero( "Sapphire", "/static/images/heroes/sapphire.png" ),
-        Hero( "Scout", "/static/images/heroes/scout.png" ),
-        Hero( "Silhouette", "/static/images/heroes/silhouette.png" ),
-        Hero( "Sir Benzington", "/static/images/heroes/sir_benzington.png" ),
-        Hero( "Tarot", "/static/images/heroes/tarot.png" ),
-        Hero( "Valkyrie", "/static/images/heroes/valkyrie.png" ),
-        Hero( "Wildsoul", "/static/images/heroes/yogi.png" ),
-        Hero( "Zephyr", "/static/images/heroes/zephyr.png" ),
-        Hero( "Arachna", "/static/images/heroes/arachna.png" ),
-        Hero( "Blood Hunter", "/static/images/heroes/hunter.png" ),
-        Hero( "Bushwack", "/static/images/heroes/bushwack.png" ),
-        Hero( "Chronos", "/static/images/heroes/chronos.png" ),
-        Hero( "Dampeer", "/static/images/heroes/dampeer.png" ),
-        Hero( "Flint Beastwood", "/static/images/heroes/flint_beastwood.png" ),
-        Hero( "Forsaken Archer", "/static/images/heroes/forsaken_archer.png" ),
-        Hero( "Grinex", "/static/images/heroes/grinex.png" ),
-        Hero( "Gunblade", "/static/images/heroes/gunblade.png" ),
-        Hero( "Shadowblade", "/static/images/heroes/shadowblade.png" ),
-        Hero( "Calamity", "/static/images/heroes/calamity.png" ),
-        Hero( "Corrupted Disciple", "/static/images/heroes/corrupted_disciple.png" ),
-        Hero( "Slither", "/static/images/heroes/ebulus.png" ),
-        Hero( "Gemini", "/static/images/heroes/gemini.png" ),
-        Hero( "Klanx", "/static/images/heroes/klanx.png" ),
-        Hero( "Riptide", "/static/images/heroes/riptide.png" ),
-        Hero( "Sand Wraith", "/static/images/heroes/sand_wraith.png" ),
-        Hero( "The Madman", "/static/images/heroes/scar.png" ),
-        Hero( "Soulstealer", "/static/images/heroes/soulstealer.png" ),
-        Hero( "Tremble", "/static/images/heroes/tremble.png" ),
-        Hero( "The Dark Lady", "/static/images/heroes/vanya.png" ),
+        Hero( "Emerald Warden", "emerald_warden" ),
+        Hero( "Moon Queen", "krixi" ),
+        Hero( "Andromeda", "andromeda" ),
+        Hero( "Artillery", "artillery" ),
+        Hero( "Blitz", "blitz" ),
+        Hero( "Night Hound", "hantumon" ),
+        Hero( "Swiftblade", "hiro" ),
+        Hero( "Master Of Arms", "master_of_arms" ),
+        Hero( "Moira", "moira" ),
+        Hero( "Monkey King", "monkey_king" ),
+        Hero( "Nitro", "nitro" ),
+        Hero( "Nomad", "nomad" ),
+        Hero( "Sapphire", "sapphire" ),
+        Hero( "Scout", "scout" ),
+        Hero( "Silhouette", "silhouette" ),
+        Hero( "Sir Benzington", "sir_benzington" ),
+        Hero( "Tarot", "tarot" ),
+        Hero( "Valkyrie", "valkyrie" ),
+        Hero( "Wildsoul", "yogi" ),
+        Hero( "Zephyr", "zephyr" ),
+        Hero( "Arachna", "arachna" ),
+        Hero( "Blood Hunter", "hunter" ),
+        Hero( "Bushwack", "bushwack" ),
+        Hero( "Chronos", "chronos" ),
+        Hero( "Dampeer", "dampeer" ),
+        Hero( "Flint Beastwood", "flint_beastwood" ),
+        Hero( "Forsaken Archer", "forsaken_archer" ),
+        Hero( "Grinex", "grinex" ),
+        Hero( "Gunblade", "gunblade" ),
+        Hero( "Shadowblade", "shadowblade" ),
+        Hero( "Calamity", "calamity" ),
+        Hero( "Corrupted Disciple", "corrupted_disciple" ),
+        Hero( "Slither", "ebulus" ),
+        Hero( "Gemini", "gemini" ),
+        Hero( "Klanx", "klanx" ),
+        Hero( "Riptide", "riptide" ),
+        Hero( "Sand Wraith", "sand_wraith" ),
+        Hero( "The Madman", "scar" ),
+        Hero( "Soulstealer", "soulstealer" ),
+        Hero( "Tremble", "tremble" ),
+        Hero( "The Dark Lady", "vanya" ),
     ],
     "int": [
-        Hero( "Aluna", "/static/images/heroes/aluna.png" ),
-        Hero( "Blacksmith", "/static/images/heroes/dwarf_magi.png" ),
-        Hero( "Bombardier", "/static/images/heroes/bomb.png" ),
-        Hero( "Ellonia", "/static/images/heroes/ellonia.png" ),
-        Hero( "Engineer", "/static/images/heroes/engineer.png" ),
-        Hero( "Midas", "/static/images/heroes/midas.png" ),
-        Hero( "Pyromancer", "/static/images/heroes/pyromancer.png" ),
-        Hero( "Rhapsody", "/static/images/heroes/rhapsody.png" ),
-        Hero( "Witch Slayer", "/static/images/heroes/witch_slayer.png" ),
-        Hero( "Bubbles", "/static/images/heroes/bubbles.png" ),
-        Hero( "Qi", "/static/images/heroes/chi.png" ),
-        Hero( "The Chipper", "/static/images/heroes/chipper.png" ),
-        Hero( "Empath", "/static/images/heroes/empath.png" ),
-        Hero( "Nymphora", "/static/images/heroes/fairy.png" ),
-        Hero( "Kinesis", "/static/images/heroes/kenisis.png" ),
-        Hero( "Thunderbringer", "/static/images/heroes/kunas.png" ),
-        Hero( "Martyr", "/static/images/heroes/martyr.png" ),
-        Hero( "Monarch", "/static/images/heroes/monarch.png" ),
-        Hero( "Oogie", "/static/images/heroes/oogie.png" ),
-        Hero( "Ophelia", "/static/images/heroes/ophelia.png" ),
-        Hero( "Pearl", "/static/images/heroes/pearl.png" ),
-        Hero( "Pollywog Priest", "/static/images/heroes/pollywogpriest.png" ),
-        Hero( "Skrap", "/static/images/heroes/skrap.png" ),
-        Hero( "Tempest", "/static/images/heroes/tempest.png" ),
-        Hero( "Vindicator", "/static/images/heroes/vindicator.png" ),
-        Hero( "Warchief", "/static/images/heroes/warchief.png" ),
-        Hero( "Defiler", "/static/images/heroes/defiler.png" ),
-        Hero( "Demented Shaman", "/static/images/heroes/shaman.png" ),
-        Hero( "Doctor Repulsor", "/static/images/heroes/doctor_repulsor.png" ),
-        Hero( "Glacius", "/static/images/heroes/frosty.png" ),
-        Hero( "Gravekeeper", "/static/images/heroes/taint.png" ),
-        Hero( "Myrmidon", "/static/images/heroes/hydromancer.png" ),
-        Hero( "Parasite", "/static/images/heroes/parasite.png" ),
-        Hero( "Plague Rider", "/static/images/heroes/diseasedrider.png" ),
-        Hero( "Revenant", "/static/images/heroes/revenant.png" ),
-        Hero( "Soul Reaper", "/static/images/heroes/helldemon.png" ),
-        Hero( "Succubus", "/static/images/heroes/succubis.png" ),
-        Hero( "Wretched Hag", "/static/images/heroes/babayaga.png" ),
-        Hero( "Artesia", "/static/images/heroes/artesia.png" ),
-        Hero( "Circe", "/static/images/heroes/circe.png" ),
-        Hero( "Fayde", "/static/images/heroes/fade.png" ),
-        Hero( "Geomancer", "/static/images/heroes/geomancer.png" ),
-        Hero( "Goldenveil", "/static/images/heroes/goldenveil.png" ),
-        Hero( "Hellbringer", "/static/images/heroes/hellbringer.png" ),
-        Hero( "Parallax", "/static/images/heroes/parallax.png" ),
-        Hero( "Prophet", "/static/images/heroes/prophet.png" ),
-        Hero( "Puppet Master", "/static/images/heroes/puppetmaster.png" ),
-        Hero( "Riftwalker", "/static/images/heroes/riftmage.png" ),
-        Hero( "Voodoo Jester", "/static/images/heroes/voodoo.png" ),
-        Hero( "Torturer", "/static/images/heroes/xalynx.png" ),
+        Hero( "Aluna", "aluna" ),
+        Hero( "Blacksmith", "dwarf_magi" ),
+        Hero( "Bombardier", "bomb" ),
+        Hero( "Ellonia", "ellonia" ),
+        Hero( "Engineer", "engineer" ),
+        Hero( "Midas", "midas" ),
+        Hero( "Pyromancer", "pyromancer" ),
+        Hero( "Rhapsody", "rhapsody" ),
+        Hero( "Witch Slayer", "witch_slayer" ),
+        Hero( "Bubbles", "bubbles" ),
+        Hero( "Qi", "chi" ),
+        Hero( "The Chipper", "chipper" ),
+        Hero( "Empath", "empath" ),
+        Hero( "Nymphora", "fairy" ),
+        Hero( "Kinesis", "kenisis" ),
+        Hero( "Thunderbringer", "kunas" ),
+        Hero( "Martyr", "martyr" ),
+        Hero( "Monarch", "monarch" ),
+        Hero( "Oogie", "oogie" ),
+        Hero( "Ophelia", "ophelia" ),
+        Hero( "Pearl", "pearl" ),
+        Hero( "Pollywog Priest", "pollywogpriest" ),
+        Hero( "Skrap", "skrap" ),
+        Hero( "Tempest", "tempest" ),
+        Hero( "Vindicator", "vindicator" ),
+        Hero( "Warchief", "warchief" ),
+        Hero( "Defiler", "defiler" ),
+        Hero( "Demented Shaman", "shaman" ),
+        Hero( "Doctor Repulsor", "doctor_repulsor" ),
+        Hero( "Glacius", "frosty" ),
+        Hero( "Gravekeeper", "taint" ),
+        Hero( "Myrmidon", "hydromancer" ),
+        Hero( "Parasite", "parasite" ),
+        Hero( "Plague Rider", "diseasedrider" ),
+        Hero( "Revenant", "revenant" ),
+        Hero( "Soul Reaper", "helldemon" ),
+        Hero( "Succubus", "succubis" ),
+        Hero( "Wretched Hag", "babayaga" ),
+        Hero( "Artesia", "artesia" ),
+        Hero( "Circe", "circe" ),
+        Hero( "Fayde", "fade" ),
+        Hero( "Geomancer", "geomancer" ),
+        Hero( "Goldenveil", "goldenveil" ),
+        Hero( "Hellbringer", "hellbringer" ),
+        Hero( "Parallax", "parallax" ),
+        Hero( "Prophet", "prophet" ),
+        Hero( "Puppet Master", "puppetmaster" ),
+        Hero( "Riftwalker", "riftmage" ),
+        Hero( "Voodoo Jester", "voodoo" ),
+        Hero( "Torturer", "xalynx" ),
     ],
     "str": [
-        Hero( "Armadon", "/static/images/heroes/armadon.png" ),
-        Hero( "Hammerstorm", "/static/images/heroes/hammerstorm.png" ),
-        Hero( "Legionnaire", "/static/images/heroes/legionnaire.png" ),
-        Hero( "Magebane", "/static/images/heroes/javaras.png" ),
-        Hero( "Pandamonium", "/static/images/heroes/panda.png" ),
-        Hero( "Predator", "/static/images/heroes/predator.png" ),
-        Hero( "Prisoner 945", "/static/images/heroes/prisoner.png" ),
-        Hero( "Rally", "/static/images/heroes/rally.png" ),
-        Hero( "Behemoth", "/static/images/heroes/behemoth.png" ),
-        Hero( "Berzerker", "/static/images/heroes/berzerker.png" ),
-        Hero( "Drunken Master", "/static/images/heroes/drunkenmaster.png" ),
-        Hero( "Flux", "/static/images/heroes/flux.png" ),
-        Hero( "The Gladiator", "/static/images/heroes/gladiator.png" ),
-        Hero( "Ichor", "/static/images/heroes/ichor.png" ),
-        Hero( "Jeraziah", "/static/images/heroes/jereziah.png" ),
-        Hero( "Xemplar", "/static/images/heroes/mimix.png" ),
-        Hero( "Bramble", "/static/images/heroes/plant.png" ),
-        Hero( "Rampage", "/static/images/heroes/rampage.png" ),
-        Hero( "Pebbles", "/static/images/heroes/rocky.png" ),
-        Hero( "Salomon", "/static/images/heroes/salomon.png" ),
-        Hero( "Shellshock", "/static/images/heroes/shellshock.png" ),
-        Hero( "Solstice", "/static/images/heroes/solstice.png" ),
-        Hero( "Keeper of the Forest", "/static/images/heroes/treant.png" ),
-        Hero( "Tundra", "/static/images/heroes/tundra.png" ),
-        Hero( "Balphagore", "/static/images/heroes/bephelgor.png" ),
-        Hero( "Magmus", "/static/images/heroes/magmar.png" ),
-        Hero( "Maliken", "/static/images/heroes/maliken.png" ),
-        Hero( "Ravenor", "/static/images/heroes/ravenor.png" ),
-        Hero( "Amun-Ra", "/static/images/heroes/ra.png" ),
-        Hero( "Accursed", "/static/images/heroes/accursed.png" ),
-        Hero( "Adrenaline", "/static/images/heroes/adrenaline.png" ),
-        Hero( "Apex", "/static/images/heroes/apex.png" ),
-        Hero( "Cthulhuphant", "/static/images/heroes/cthulhuphant.png" ),
-        Hero( "Deadlift", "/static/images/heroes/deadlift.png" ),
-        Hero( "Deadwood", "/static/images/heroes/deadwood.png" ),
-        Hero( "Devourer", "/static/images/heroes/devourer.png" ),
-        Hero( "Lord Salforis", "/static/images/heroes/dreadknight.png" ),
-        Hero( "Electrician", "/static/images/heroes/electrician.png" ),
-        Hero( "Draconis", "/static/images/heroes/flamedragon.png" ),
-        Hero( "Gauntlet", "/static/images/heroes/gauntlet.png" ),
-        Hero( "Kane", "/static/images/heroes/kane.png" ),
-        Hero( "King Klout", "/static/images/heroes/king_klout.png" ),
-        Hero( "Kraken", "/static/images/heroes/kraken.png" ),
-        Hero( "Lodestone", "/static/images/heroes/lodestone.png" ),
-        Hero( "Moraxus", "/static/images/heroes/moraxus.png" ),
-        Hero( "Pharaoh", "/static/images/heroes/mumra.png" ),
-        Hero( "Pestilence", "/static/images/heroes/pestilence.png" ),
-        Hero( "War Beast", "/static/images/heroes/wolfman.png" ),
+        Hero( "Armadon", "armadon" ),
+        Hero( "Hammerstorm", "hammerstorm" ),
+        Hero( "Legionnaire", "legionnaire" ),
+        Hero( "Magebane", "javaras" ),
+        Hero( "Pandamonium", "panda" ),
+        Hero( "Predator", "predator" ),
+        Hero( "Prisoner 945", "prisoner" ),
+        Hero( "Rally", "rally" ),
+        Hero( "Behemoth", "behemoth" ),
+        Hero( "Berzerker", "berzerker" ),
+        Hero( "Drunken Master", "drunkenmaster" ),
+        Hero( "Flux", "flux" ),
+        Hero( "The Gladiator", "gladiator" ),
+        Hero( "Ichor", "ichor" ),
+        Hero( "Jeraziah", "jereziah" ),
+        Hero( "Xemplar", "mimix" ),
+        Hero( "Bramble", "plant" ),
+        Hero( "Rampage", "rampage" ),
+        Hero( "Pebbles", "rocky" ),
+        Hero( "Salomon", "salomon" ),
+        Hero( "Shellshock", "shellshock" ),
+        Hero( "Solstice", "solstice" ),
+        Hero( "Keeper of the Forest", "treant" ),
+        Hero( "Tundra", "tundra" ),
+        Hero( "Balphagore", "bephelgor" ),
+        Hero( "Magmus", "magmar" ),
+        Hero( "Maliken", "maliken" ),
+        Hero( "Ravenor", "ravenor" ),
+        Hero( "Amun-Ra", "ra" ),
+        Hero( "Accursed", "accursed" ),
+        Hero( "Adrenaline", "adrenaline" ),
+        Hero( "Apex", "apex" ),
+        Hero( "Cthulhuphant", "cthulhuphant" ),
+        Hero( "Deadlift", "deadlift" ),
+        Hero( "Deadwood", "deadwood" ),
+        Hero( "Devourer", "devourer" ),
+        Hero( "Lord Salforis", "dreadknight" ),
+        Hero( "Electrician", "electrician" ),
+        Hero( "Draconis", "flamedragon" ),
+        Hero( "Gauntlet", "gauntlet" ),
+        Hero( "Kane", "kane" ),
+        Hero( "King Klout", "king_klout" ),
+        Hero( "Kraken", "kraken" ),
+        Hero( "Lodestone", "lodestone" ),
+        Hero( "Moraxus", "moraxus" ),
+        Hero( "Pharaoh", "mumra" ),
+        Hero( "Pestilence", "pestilence" ),
+        Hero( "War Beast", "wolfman" ),
     ],
 }
 
@@ -281,7 +305,7 @@ heroes = {
 
 def set_hero( stat, index, hero ):
     heroes[ stat ][ index ] = hero
-    socketio.emit( "update-hero", ( stat, index, vars( hero ) ) )
+    socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
 
 def reset_heroes():
     for stat in heroes:
@@ -351,7 +375,7 @@ def ban_hero( player, stat, index ):
         return
 
     hero.is_banned = True
-    socketio.emit( "update-hero", ( stat, index, vars( hero ) ) )
+    socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
     socketio.emit( "message", f"{ player.name if player else "Fate" } has banned { hero.name }" )
 
     timer.cancel()
@@ -445,9 +469,9 @@ def home():
         session[ "id" ] = uuid4().hex
     return render_template( "home.html",
         state = state,
-        players = players,
-        teams = teams,
-        heroes = heroes
+        players = [ player.emit() for player in players ],
+        teams = { team: teams[ team ].emit() for team in teams },
+        heroes = { stat: [ hero.emit() for hero in heroes[ stat ] ] for stat in heroes },
     )
 
 def find_player():
@@ -492,14 +516,14 @@ def click_slot( team, index ):
         return
     player = find_player()
     team = teams[ team ]
-    slot = team.players[ index ]
-    if slot == team.null_player:
+    slot_player = next( ( player for player in team.players if player.index == index ), None )
+    if not slot_player:
         if player.team:
-            player.team.reset_slot( player.index )
+            player.team.remove_player( player )
         player.set_team( team, index )
-        team.set_slot( index, player )
-    elif slot == player:
-        team.reset_slot( index )
+        team.add_player( player )
+    elif slot_player == player:
+        team.remove_player( player )
         player.set_team( None )
     else:
         return

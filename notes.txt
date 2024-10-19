@@ -59,10 +59,8 @@ TODO:
 - convert some loops to more pyhtonic syntax
 - make a pass on global and non-local variables
 
-Implement picking 
-    Use number of picks to allow picking in any order
-    Consider how this might interact with preselected heroes
 Implement preselecting heroes
+    Test if it works with pick counts
     See if it can also be used for banning
 Implement the ability to select first ban 
 Active team indicators
@@ -72,6 +70,7 @@ Implement clever fate
 Refuse to start draft with no players
 Enable/disable buttons on the client based on current state
 Add style to state and countdown
+Move slot hero names to tooltip similar to draft heroes
 Do a pass on style, composition and background 
     Try using actual margins instead of the margin divs that you created
 Implement ellipsis or dynamic text size for longer hero and player names
@@ -87,3 +86,27 @@ Add sounds
     Denied effect for banning? Could grow old very fast
     Sound assets can probably be found in game files
 
+what happened to fav icon??
+
+stuck: i need to set a hero for render templates to work, 
+  but if I will do that then I need to set it to the dibs hero, too 
+  and then it is getting difficult to determine 
+  if a player has actually picked a hero...
+
+Hero = None should work if I add an emit function to Team, and it probably makes more sense.
+Can store dibs as a hero and search when picking.
+Can have a dibs button if right click does not work.
+Rename click events to pick-slot, dibs-hero, ban-hero and pick-hero.
+Don't display controls if hero name is empty
+Indicate active team by displaying "Banning" or "Picking (n)" next to the team name.
+Active team and remaining picks need to be sent to the client. Consider extending state to a little class for this.
+It seems that an element can be enlarged by transform: scale( x ) without disrupting the rest of the document!
+transform: translate() can probably also be very useful to stack things just right.
+Must hide dibs from the opposing team!!
+Get rid of the magic numbers 3 (team size) and 8 (pool size)
+Remove the long write up of the drafting logic from the todo document once picking is working
+Get rid of the null_* variables as much as you can, they are only necessary for the interface and should only be used when emitting
+
+
+
+start using exceptions
