@@ -110,14 +110,9 @@ The ban icon is kinda weirdly small (like the fav icon was)
 
 
 start using exceptions
-check if i need to seed the rng
 
 
 
-- check if banning is still working
-- check if picking is still working
-- tinker with null_hero
-    - add is_picked to hero and emit hero-none when picked
 - get rid of magic numbers team size and pool size
 - fix fav icon
 - clean up todo list

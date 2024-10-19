@@ -40,15 +40,29 @@ class Hero:
         self.name = name
         self.icon = icon
         self.is_banned = False
+        self.is_picked = False
+
+    def reset( self ):
+        self.is_banned = False
+        self.is_picked = False
+
+    def is_available( self ):
+        return not self.is_banned and not self.is_picked
 
     def emit( self ):
+        if self.is_picked: emit_null()
         return {
             "name": self.name,
             "icon": emit_icon( self.icon ),
             "is_banned": self.is_banned,
         }
 
-null_hero = Hero( "null", "hero-none" )
+    def emit_null():
+        return {
+            "name": "null",
+            "icon": emit_icon( "hero-none" ),
+            "is_banned": False,
+        }
 
 class Player:
     def __init__( self, name, id ):
@@ -90,7 +104,7 @@ class Player:
             "id": self.id,
             "hero": self.hero.emit() if self.hero
                 else self.team.emit_null_hero() if self.team
-                else null_hero.emit(),
+                else Hero.emit_null(),
             "team": self.team.emit( without_players = True ) if self.team else observer_team.emit(),
         }
 
@@ -298,27 +312,26 @@ all_heroes = {
 }
 
 heroes = {
-    "agi": list( null_hero for _ in range( 8 ) ),
-    "int": list( null_hero for _ in range( 8 ) ),
-    "str": list( null_hero for _ in range( 8 ) ),
+    "agi": [],
+    "int": [],
+    "str": [],
 }
-
-def set_hero( stat, index, hero ):
-    heroes[ stat ][ index ] = hero
-    socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
 
 def reset_heroes():
     for stat in all_heroes:
         for hero in all_heroes[ stat ]:
-            hero.is_banned = False
+            hero.reset()
+
     for stat in heroes:
+        heroes[ stat ] = []
         for index in range( 8 ):
-            set_hero( stat, index, null_hero )
+            socketio.emit( "update-hero", ( stat, index, Hero.emit_null() ) )
 
 def generate_heroes():
     for stat in heroes:
-        for index, hero in enumerate( random.sample( all_heroes[ stat ], 8 ) ):
-            set_hero( stat, index, hero )
+        heroes[ stat ] = random.sample( all_heroes[ stat ], 8 )
+        for index in range( 8 ):
+            socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
 
 first_ban = teams[ "legion" ]
 timer = None
@@ -396,9 +409,7 @@ def get_available_heroes():
     available_heroes = []
     for stat, stat_heroes in heroes.items():
         for index, hero in enumerate( stat_heroes ):
-            if hero == null_hero:
-                continue
-            if hero.is_banned:
+            if not hero.is_available():
                 continue
             available_heroes.append( ( stat, index ) )
     return available_heroes
@@ -440,13 +451,11 @@ def pick_hero( player, stat, index ):
         return
 
     hero = heroes[ stat ][ index ]
-    if hero == null_hero:
-        return
-    if hero.is_banned:
+    if not hero.is_available():
         return
 
     player.set_hero( hero )
-    set_hero( stat, index, null_hero )
+    hero.is_picked = True
 
     global remaining_picks
     remaining_picks -= 1
