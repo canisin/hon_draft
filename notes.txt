@@ -112,7 +112,6 @@ Something something single player on the not first banning side and the picking 
 start using exceptions
 
 
-- fix fav icon
 - clean up todo list
 - split the ban button into two or three
 - get back to dibs stuff
