@@ -311,10 +311,34 @@ all_heroes = {
     ],
 }
 
-heroes = {
-    "agi": [],
-    "int": [],
-    "str": [],
+class Pool:
+    def __init__( self, stat ):
+        self.stat = stat
+        self.heroes = []
+
+    def generate( self ):
+        self.heroes = random.sample( all_heroes[ self.stat ], 8 )
+        for index, hero in enumerate( self.heroes ):
+            socketio.emit( "update-hero", ( self.stat, index, hero.emit() ) )
+
+    def reset( self ):
+        self.heroes = []
+        for index in range( 8 ):
+            socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
+
+    def calc_ban_count( self ):
+        return sum( 1 for hero in self.heroes if hero.is_banned )
+
+    def get_available_heroes( self ):
+        return ( ( self.stat, index ) for index, hero in enumerate( self.heroes ) if hero.is_available() )
+
+    def emit( self ):
+        return [ hero.emit() for hero in self.heroes ] if self.heroes else [ Hero.emit_null() for _ in range( 8 ) ]
+
+pools = {
+    "agi": Pool( "agi" ),
+    "int": Pool( "int" ),
+    "str": Pool( "str" ),
 }
 
 def reset_heroes():
@@ -322,16 +346,12 @@ def reset_heroes():
         for hero in all_heroes[ stat ]:
             hero.reset()
 
-    for stat in heroes:
-        heroes[ stat ] = []
-        for index in range( 8 ):
-            socketio.emit( "update-hero", ( stat, index, Hero.emit_null() ) )
+    for pool in pools.values():
+        pool.reset()
 
 def generate_heroes():
-    for stat in heroes:
-        heroes[ stat ] = random.sample( all_heroes[ stat ], 8 )
-        for index in range( 8 ):
-            socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
+    for pool in pools.values():
+        pool.generate()
 
 first_ban = teams[ "legion" ]
 timer = None
@@ -386,7 +406,7 @@ def ban_hero( player, stat, index ):
     if player and player.team != active_team:
         return
 
-    hero = heroes[ stat ][ index ]
+    hero = pools[ stat ].heroes[ index ]
     if hero.is_banned:
         return
 
@@ -396,7 +416,7 @@ def ban_hero( player, stat, index ):
 
     timer.cancel()
 
-    current_ban_count = sum( 1 for stat in heroes for hero in heroes[ stat ] if hero.is_banned )
+    current_ban_count = sum( pool.calc_ban_count() for pool in pools.values() )
     if current_ban_count == ban_count:
         active_team = None
         set_state( "picking_countdown" )
@@ -406,16 +426,11 @@ def ban_hero( player, stat, index ):
         set_timer( banning_duration, banning_timer )
 
 def get_available_heroes():
-    available_heroes = []
-    for stat, stat_heroes in heroes.items():
-        for index, hero in enumerate( stat_heroes ):
-            if not hero.is_available():
-                continue
-            available_heroes.append( ( stat, index ) )
-    return available_heroes
+    for pool in pools.values():
+        yield from pool.get_available_heroes()
 
 def banning_timer():
-    stat, index = random.choice( get_available_heroes() )
+    stat, index = random.choice( list( get_available_heroes() ) )
     ban_hero( None, stat, index )
 
 def start_picking( pick_count ):
@@ -450,7 +465,7 @@ def pick_hero( player, stat, index ):
     if player.hero:
         return
 
-    hero = heroes[ stat ][ index ]
+    hero = pools[ stat ].heroes[ index ]
     if not hero.is_available():
         return
 
@@ -470,7 +485,7 @@ def pick_hero( player, stat, index ):
 def picking_timer():
     while remaining_picks > 0:
         player = next( player for player in active_team.picking_players() )
-        stat, index = random.choice( get_available_heroes() )
+        stat, index = random.choice( list( get_available_heroes() ) )
         pick_hero( player, stat, index )
 
 @app.route( "/" )
@@ -483,7 +498,7 @@ def home():
         state = state,
         players = [ player.emit() for player in players ],
         teams = { team: teams[ team ].emit() for team in teams },
-        heroes = { stat: [ hero.emit() for hero in heroes[ stat ] ] for stat in heroes },
+        heroes = { stat: pools[ stat ].emit() for stat in pools },
     )
 
 def find_player():
