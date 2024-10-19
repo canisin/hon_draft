@@ -579,7 +579,7 @@ def picking_timer():
            ( player for player in active_team.picking_players() ) )
         hero = player.dibs if player.dibs else Heroes.get_random()
         stat, index = Heroes.find( hero )
-        pick_hero( player, stat, index, is_fate = True )
+        pick_hero( player, stat, index, is_fate = not player.dibs )
 
 @app.route( "/" )
 def home():
