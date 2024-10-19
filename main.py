@@ -18,6 +18,9 @@ banning_duration = 5
 picking_countdown_duration = 5
 picking_duration = 5
 
+team_size = 3
+pool_size = 8
+
 ban_count = 4
 initial_pick_count = 1
 later_pick_count = 2
@@ -147,7 +150,7 @@ class Team:
             "color": self.color,
             "players": None if not with_players else
                 [ next( ( player.emit() for player in self.players if player.index == index ),
-                    self.emit_null_player() ) for index in range( 3 ) ]
+                    self.emit_null_player() ) for index in range( team_size ) ]
         }
 
 players = []
@@ -337,12 +340,12 @@ class Heroes:
 
             Heroes.draft[ stat ] = []
 
-            for index in range( 8 ):
+            for index in range( pool_size ):
                 socketio.emit( "update-hero", ( stat, index, Hero.emit_null() ) )
 
     def generate():
         for stat in Heroes.stats:
-            for index, hero in enumerate( random.sample( Heroes.all[ stat ], 8 ) ):
+            for index, hero in enumerate( random.sample( Heroes.all[ stat ], pool_size ) ):
                 Heroes.draft[ stat ].append( hero )
                 socketio.emit( "update-hero", ( stat, index, hero.emit() ) )
 
@@ -359,7 +362,7 @@ class Heroes:
 
     def emit_stat( stat ):
         heroes = Heroes.draft[ stat ]
-        return [ hero.emit() for hero in heroes ] if heroes else [ Hero.emit_null() for _ in range( 8 ) ]
+        return [ hero.emit() for hero in heroes ] if heroes else [ Hero.emit_null() for _ in range( pool_size ) ]
 
     def emit():
         return { stat: Heroes.emit_stat( stat ) for stat in Heroes.stats }
