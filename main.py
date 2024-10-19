@@ -105,7 +105,7 @@ class Player:
             "hero": self.hero.emit() if self.hero
                 else self.team.emit_null_hero() if self.team
                 else Hero.emit_null(),
-            "team": self.team.emit( without_players = True ) if self.team else observer_team.emit(),
+            "team": self.team.emit( without_players = True ) if self.team else Teams.emit_observer(),
         }
 
 class Team:
@@ -126,6 +126,9 @@ class Team:
 
     def picking_players( self ):
         return ( player for player in self.players if not player.hero )
+
+    def get_other( self ):
+        return Teams.get_other( self )
 
     def emit_null_hero( self ):
         return Hero( "null", f"hero-{ self.name }" ).emit()
@@ -153,15 +156,26 @@ def reset_players():
     for player in players:
         player.reset_hero()
 
-observer_team = Team( "observers", "observer", "blue" )
-teams = {
-    "legion": Team( "legion", "team-legion", "green" ),
-    "hellbourne": Team( "hellbourne", "team-hellbourne", "red" ),
-}
+class Teams:
+    legion = Team( "legion", "team-legion", "green" )
+    hellbourne = Team( "hellbourne", "team-hellbourne", "red" )
 
-def get_other_team( team ):
-    if team == teams[ "legion" ]: return teams[ "hellbourne" ]
-    if team == teams[ "hellbourne" ]: return teams[ "legion" ]
+    def get( team ):
+        if team == "legion": return Teams.legion
+        if team == "hellbourne": return Teams.hellbourne
+
+    def get_other( team ):
+        if team == Teams.legion: return Teams.hellbourne
+        if team == Teams.hellbourne: return Teams.legion
+
+    def emit():
+        return {
+            "legion": Teams.legion.emit(),
+            "hellbourne": Teams.hellbourne.emit(),
+        }
+
+    def emit_observer():
+        return Team( "observers", "observer", "blue" ).emit()
 
 class Heroes:
     stats = [ "agi", "int", "str" ]
@@ -350,7 +364,7 @@ class Heroes:
     def emit():
         return { stat: Heroes.emit_stat( stat ) for stat in Heroes.stats }
 
-first_ban = teams[ "legion" ]
+first_ban = Teams.legion
 timer = None
 active_team = None
 
@@ -418,7 +432,7 @@ def ban_hero( player, stat, index ):
         set_state( "picking_countdown" )
         set_timer( picking_countdown_duration, picking_countdown_timer )
     else:
-        active_team = get_other_team( active_team )
+        active_team = active_team.get_other()
         set_timer( banning_duration, banning_timer )
 
 def banning_timer():
@@ -471,7 +485,7 @@ def pick_hero( player, stat, index ):
 
     timer.cancel()
 
-    active_team = get_other_team( active_team )
+    active_team = active_team.get_other()
     start_picking( later_pick_count )
 
 def picking_timer():
@@ -489,7 +503,7 @@ def home():
     return render_template( "home.html",
         state = state,
         players = [ player.emit() for player in players ],
-        teams = { team: teams[ team ].emit() for team in teams },
+        teams = Teams.emit(),
         heroes = Heroes.emit(),
     )
 
@@ -534,7 +548,7 @@ def click_slot( team, index ):
     if state != "lobby":
         return
     player = find_player()
-    team = teams[ team ]
+    team = Teams.get( team )
     slot_player = next( ( player for player in team.players if player.index == index ), None )
     if not slot_player:
         if player.team:

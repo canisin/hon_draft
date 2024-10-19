@@ -112,7 +112,7 @@ The ban icon is kinda weirdly small (like the fav icon was)
 start using exceptions
 
 
-
+- invert without_players in Team.emit()
 - get rid of magic numbers team size and pool size
 - fix fav icon
 - clean up todo list
