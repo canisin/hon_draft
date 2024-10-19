@@ -436,7 +436,7 @@ def pick_hero( player, stat, index ):
     global active_team
     if player.team != active_team:
         return
-    if player.has_picked():
+    if player.hero:
         return
 
     hero = heroes[ stat ][ index ]
