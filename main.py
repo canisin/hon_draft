@@ -362,6 +362,7 @@ class Stat:
 
 class Heroes:
     stats = [ Stat( stat ) for stat in all_heroes ]
+    stats_dict = { stat.stat: stat for stat in stats }
 
     def reset():
         for stat in Heroes.stats:
@@ -372,7 +373,7 @@ class Heroes:
             stat.generate()
 
     def get( stat, index ):
-        return next( stat_iter for stat_iter in Heroes.stats if stat_iter.stat == stat ).get( index )
+        return Heroes.stats_dict[ stat ].get( index )
 
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
