@@ -49,10 +49,10 @@
 }
 
 .team-header {
+    padding-top: 15px;
     display: flex;
     align-items: center;
     gap: 5px;
-    padding-block: 15px;
 }
 
 #hellbourne .team-header {
@@ -78,7 +78,58 @@
     color: red;
 }
 
+.team-status {
+    padding-top: 10px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#legion .team-status {
+    padding-left: 30px;
+}
+
+#hellbourne .team-status {
+    padding-right: 30px;
+}
+
+.team-status-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#hellbourne .team-status-title {
+    flex-direction: row-reverse;
+}
+
+.team-status-arrows {
+    display: flex;
+    align-items: center;
+}
+
+#hellbourne .team-status-arrows {
+    transform: scaleX( -1 )
+}
+
+.team-status-arrow {
+    height: 15px;
+    padding-top: 1px;
+}
+
+.team-status-label {
+    display: inline;
+    font-size: 18px;
+}
+
+.team-status-subtitle {
+    font-size: 15px;
+}
+
 .team-slots {
+    padding-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
