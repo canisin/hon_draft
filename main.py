@@ -137,8 +137,8 @@ class Player:
             "team": self.team.emit() if self.team else Teams.emit_observer(),
         }
 
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
+    def get_formatted_name( self, no_team = False ):
+        return f"<span style=\"color: { "blue" if no_team else self.team.color }\">{ self.name }</span>"
 
 class Players:
     players = []
@@ -161,7 +161,7 @@ class Players:
         join_room( "legion" )
         join_room( "hellbourne" )
         socketio.emit( "add-player", player.emit() )
-        socketio.emit( "message", f"{ player.name } joined.", include_self = False )
+        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
         for other_player in Players.players:
             if other_player == player: continue
             emit( "add-player", other_player.emit() )
@@ -173,13 +173,13 @@ class Players:
         if not player: return
         Players.players.remove( player )
         socketio.emit( "remove-player", player.id )
-        socketio.emit( "message", f"{ player.name } left." )
+        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } left." )
 
     def rename( id, name ):
         player = Players.find( id )
-        old_name = player.name
+        old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
-        socketio.emit( "message", f"{ old_name } changed name to { player.name }" )
+        socketio.emit( "message", f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
 
     def emit():
         return [ player.emit() for player in Players.players ]
@@ -197,7 +197,7 @@ class Team:
         self.players.append( player )
         leave_room( self.get_other().name )
         player.set_team( self, index )
-        socketio.emit( "message", f"{ player.name } has joined The { self.name.capitalize() }." )
+        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } has joined { self.get_formatted_name() }." )
 
     def change_player_index( self, player, index ):
         socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
@@ -209,7 +209,7 @@ class Team:
         join_room( self.get_other().name )
         if joining_another: return
         player.set_team( None )
-        socketio.emit( "message", f"{ player.name } is now an observer." )
+        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } is now an observer." )
 
     def toggle_slot( self, player, index ):
         if state != "lobby":
@@ -250,6 +250,9 @@ class Team:
                 [ next( ( player.emit() for player in self.players if player.index == index ),
                     self.emit_null_player() ) for index in range( team_size ) ]
         }
+
+    def get_formatted_name( self ):
+        return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
 
 class Teams:
     legion = Team( "legion", "team-legion", "green" )
