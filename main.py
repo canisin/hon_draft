@@ -584,7 +584,7 @@ def start_picking( team, pick_count ):
     if remaining_picks == 0:
         active_team = None
         set_state( "lobby", 0, None )
-    else
+    else:
         set_state( "picking", picking_duration, picking_timer_callback )
 
 def picking_countdown_callback():
