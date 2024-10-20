@@ -49,8 +49,4 @@ Having a single player on the not first banning side skips that player
 There seems to be a lobby countdown when draft ends
 Reconnecting leaves behind ghost players in teams
 
-
-class Players
-    reset, check_dibs, find
-
 add Team.click_slot or something

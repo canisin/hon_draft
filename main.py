@@ -141,6 +141,48 @@ class Player:
             "team": self.team.emit() if self.team else Teams.emit_observer(),
         }
 
+class Players:
+    players = []
+
+    def reset():
+        for player in Players.players:
+            player.reset()
+
+    def check_dibs():
+        for player in Players.players:
+            player.check_dibs()
+
+    def find( id ):
+        return next( ( player for player in Players.players if player.id == id ), None )
+
+    def find_or_add( id, name ):
+        if Players.find( id ): return
+        player = Player( name, id )
+        Players.players.append( player )
+        socketio.emit( "add-player", player.emit() )
+        socketio.emit( "message", f"{ player.name } joined.", include_self = False )
+        for other_player in Players.players:
+            if other_player == player: continue
+            emit( "add-player", other_player.emit() )
+        emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
+        emit( "message", "You joined." )
+
+    def remove( id ):
+        player = Players.find( id )
+        if not player: return
+        Players.players.remove( player )
+        socketio.emit( "remove-player", player.id )
+        socketio.emit( "message", f"{ player.name } left." )
+
+    def rename( id, name ):
+        player = Players.find( id )
+        old_name = player.name
+        player.set_name( name )
+        socketio.emit( "message", f"{ old_name } changed name to { player.name }" )
+
+    def emit():
+        return [ player.emit() for player in Players.players ]
+
 class Team:
     def __init__( self, name, icon, color ):
         self.name = name
@@ -182,16 +224,6 @@ class Team:
                 [ next( ( player.emit() for player in self.players if player.index == index ),
                     self.emit_null_player() ) for index in range( team_size ) ]
         }
-
-players = []
-
-def reset_players():
-    for player in players:
-        player.reset()
-
-def check_dibs():
-    for player in players:
-        player.check_dibs()
 
 class Teams:
     legion = Team( "legion", "team-legion", "green" )
@@ -442,7 +474,7 @@ def start_draft():
         return
 
     Heroes.reset()
-    reset_players()
+    Players.reset()
     set_state( "pool_countdown" )
     set_timer( pool_countdown_duration, pool_countdown_timer )
 
@@ -500,7 +532,7 @@ def ban_hero( player, stat, index ):
     hero.set_banned()
     socketio.emit( "message", f"{ player.name if player else "Fate" } has banned { hero.name }" )
 
-    check_dibs()
+    Players.check_dibs()
 
     timer.cancel()
 
@@ -561,7 +593,7 @@ def pick_hero( player, stat, index, is_fate = False ):
         f"Fate has picked { hero.name } for { player.name }"
     )
 
-    check_dibs()
+    Players.check_dibs()
 
     global remaining_picks
     remaining_picks -= 1
@@ -589,41 +621,23 @@ def home():
         session[ "id" ] = uuid4().hex
     return render_template( "home.html",
         state = state,
-        players = [ player.emit() for player in players ],
+        players = Players.emit(),
         teams = Teams.emit(),
         heroes = Heroes.emit(),
     )
 
-def find_player():
-    global players
-    for player in players:
-        if player.id == session[ "id" ]:
-            return player
-
 @socketio.on( "connect" )
 def on_connect( auth ):
-    global players
     print( "socket connected" )
-    if find_player(): return
-    player = Player( session[ "name" ], session[ "id" ] )
-    players.append( player )
-    socketio.emit( "add-player", player.emit() )
-    socketio.emit( "message", f"{ player.name } joined.", include_self = False )
-    for other_player in players:
-        if other_player == player: continue
-        emit( "add-player", other_player.emit() )
-    emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
-    emit( "message", "You joined." )
+    id = session[ "id" ]
+    name = session[ "name" ]
+    Players.find_or_add( id, name )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
-    global players
     print( "socket disconnected" )
-    player = find_player()
-    if not player: return
-    players.remove( player )
-    socketio.emit( "remove-player", player.id )
-    socketio.emit( "message", f"{ player.name } left." )
+    id = session[ "id" ]
+    Players.remove( id )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
@@ -634,7 +648,7 @@ def on_start_draft():
 def click_slot( team, index ):
     if state != "lobby":
         return
-    player = find_player()
+    player = Players.find( session[ "id" ] )
     team = Teams.get( team )
     slot_player = next( ( player for player in team.players if player.index == index ), None )
     if not slot_player:
@@ -652,17 +666,17 @@ def click_slot( team, index ):
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
-    player = find_player()
+    player = Players.find( session[ "id" ] )
     dibs_hero( player, stat, index )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
-    player = find_player()
+    player = Players.find( session[ "id" ] )
     ban_hero( player, stat, index )
 
 @socketio.on( "pick-hero" )
 def on_pick_hero( stat, index ):
-    player = find_player()
+    player = Players.find( session[ "id" ] )
     pick_hero( player, stat, index )
 
 @socketio.on( "message" )
@@ -671,7 +685,7 @@ def on_message( message ):
     if message[:1] == "/":
         on_command( message[1:] )
         return
-    player = find_player()
+    player = Players.find( session[ "id" ] )
     socketio.emit( "message", f"{ player.name }: { message }" )
 
 def on_command( message ):
@@ -690,11 +704,9 @@ def set_name( name ):
 @app.route( "/name", methods = [ "POST" ] )
 def name():
     print( "name request" )
-    player = find_player()
+    id = session[ "id" ]
     name = request.form[ "name" ]
-    old_name = player.name
-    player.set_name( name )
-    socketio.emit( "message", f"{ old_name } changed name to { player.name }" )
+    Players.rename( id, name )
     session[ "name" ] = name
     return ""
 
