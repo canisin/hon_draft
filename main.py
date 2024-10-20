@@ -471,13 +471,10 @@ remaining_picks = 0
 def set_state( new_state ):
     global state
     state = new_state
-    print( f"sending new state { state } to socket" )
-    socketio.emit( "state-changed", state )
 
 def set_timer( seconds, callback ):
     global timer
     timer = Timer( seconds, callback )
-    socketio.emit( "set-timer", seconds )
     timer.start()
 
 def emit_state():
@@ -488,6 +485,10 @@ def emit_state():
         "remaining_picks": State.remaining_picks,
     }
 
+def push_state():
+    print( f"sending new state { state } to socket" )
+    socketio.emit( "state-changed", emit_state() )
+
 def start_draft():
     if state != "lobby":
         return
@@ -496,6 +497,7 @@ def start_draft():
     Players.reset()
     set_state( "pool_countdown" )
     set_timer( pool_countdown_duration, pool_countdown_callback )
+    push_state()
 
     time_remaining = 5
     def announce_countdown():
@@ -510,6 +512,7 @@ def pool_countdown_callback():
     Heroes.generate()
     set_state( "banning_countdown" )
     set_timer( banning_countdown_duration, banning_countdown_callback )
+    push_state()
 
 def dibs_hero( player, stat, index ):
     if state in [ "lobby", "pool_countdown" ]:
@@ -535,6 +538,7 @@ def banning_countdown_callback():
     active_team = first_ban
     set_state( "banning" )
     set_timer( banning_duration, banning_timer_callback )
+    push_state()
 
 def ban_hero( player, stat, index ):
     if state != "banning":
@@ -562,39 +566,40 @@ def ban_hero( player, stat, index ):
     else:
         active_team = active_team.get_other()
         set_timer( banning_duration, banning_timer_callback )
+    push_state()
 
 def banning_timer_callback():
     hero = Heroes.get_random()
     stat, index = Heroes.find( hero )
     ban_hero( None, stat, index )
 
-def start_picking( pick_count ):
+def start_picking( team, pick_count ):
+    set_state( "picking" )
+
     global active_team
+    active_team = team
+
     global remaining_picks
     remaining_picks = min(
         pick_count,
         sum( 1 for player in active_team.picking_players() )
     )
-    print( f"{ remaining_picks = }" )
 
-    if remaining_picks == 0:
+    if remaining_picks > 0:
+        set_timer( picking_duration, picking_timer_callback )
+    else
         active_team = None
         set_state( "lobby" )
-        return
 
-    set_timer( picking_duration, picking_timer_callback )
+    push_state()
 
 def picking_countdown_callback():
-    global active_team
-    active_team = first_ban
-    set_state( "picking" )
-    start_picking( initial_pick_count )
+    start_picking( first_ban, initial_pick_count )
 
 def pick_hero( player, stat, index, is_fate = False ):
     if state != "picking":
         return
 
-    global active_team
     if player.team != active_team:
         return
     if player.hero:
@@ -621,8 +626,7 @@ def pick_hero( player, stat, index, is_fate = False ):
 
     timer.cancel()
 
-    active_team = active_team.get_other()
-    start_picking( later_pick_count )
+    start_picking( active_team.get_other(), later_pick_count )
 
 def picking_timer_callback():
     while remaining_picks > 0:
@@ -639,7 +643,7 @@ def home():
     if "id" not in session:
         session[ "id" ] = uuid4().hex
     return render_template( "home.html",
-        state = state,
+        state = emit_state(),
         players = Players.emit(),
         teams = Teams.emit(),
         heroes = Heroes.emit(),
