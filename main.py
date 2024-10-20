@@ -528,9 +528,11 @@ def set_first_ban( team ):
     first_ban = team
     push_state()
 
-def start_draft():
+def start_draft( player ):
     if state != "lobby":
         return
+
+    socketio.emit( "message", f"{ player.get_formatted_name() } has started the draft!" )
 
     Heroes.reset()
     Players.reset()
@@ -698,7 +700,8 @@ def on_first_ban( team ):
 @socketio.on( "start-draft" )
 def on_start_draft():
     print( "received start draft request from socket" )
-    start_draft()
+    player = Players.find( session[ "id" ] )
+    start_draft( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):
