@@ -476,13 +476,14 @@ def emit_state():
         "remaining_picks": remaining_picks,
     }
 
-def set_state( new_state, seconds, callback ):
-    global state
-    state = new_state
-
+def push_state():
     print( f"sending new state { state } to socket" )
     socketio.emit( "state-changed", emit_state() )
 
+def set_state( new_state, seconds, callback ):
+    global state
+    state = new_state
+    push_state()
     set_timer( seconds, callback )
 
 def set_timer( seconds, callback ):
@@ -494,6 +495,17 @@ def set_timer( seconds, callback ):
     timer = Timer( seconds, callback )
     socketio.emit( "set-timer", seconds )
     timer.start()
+
+def set_first_ban( team ):
+    if state != "lobby":
+        return
+
+    global first_ban
+    if first_ban == team:
+        return
+
+    first_ban = team
+    push_state()
 
 def start_draft():
     if state != "lobby":
@@ -656,13 +668,18 @@ def on_disconnect():
     id = session[ "id" ]
     Players.remove( id )
 
+@socketio.on( "first-ban" )
+def on_first_ban( team ):
+    team = Teams.get( team )
+    set_first_ban( team )
+
 @socketio.on( "start-draft" )
 def on_start_draft():
     print( "received start draft request from socket" )
     start_draft()
 
 @socketio.on( "click-slot" )
-def click_slot( team, index ):
+def on_click_slot( team, index ):
     player = Players.find( session[ "id" ] )
     team = Teams.get( team )
     team.toggle_slot( player, index )

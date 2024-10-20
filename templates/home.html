@@ -14,10 +14,10 @@
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )" {{ "checked" if state.first_ban == team.name else "" }} style="visibility: {{ "visible" if state.state == "lobby" else "hidden" }}"/>
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
                 <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
             </div>
-            <div class="team-status" style="visibility: {{ "visible" if state.state != "lobby" else "hidden" }}">
+            <div class="team-status">
                 <div class="team-status-title">
                     <div class="team-status-arrows">
                         <img class="team-status-arrow"/>
@@ -86,10 +86,10 @@
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )" {{ "checked" if state.first_ban == team.name else "" }} style="visibility: {{ "visible" if state.state == "lobby" else "hidden" }}"/>
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
                 <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
             </div>
-            <div class="team-status" style="visibility: {{ "visible" if state.state != "lobby" else "hidden" }}">
+            <div class="team-status">
                 <div class="team-status-title">
                     <div class="team-status-arrows">
                         <img class="team-status-arrow"/>
@@ -188,6 +188,15 @@
         socketio.emit( "pick-hero", stat, index );
     };
 
+    function clickFirstBan( team )
+    {
+        console.log( "clicking first ban" );
+        // undo the click to let the server decide
+        let checkbox = document.getElementById( `${ team }-first-ban-checkbox` );
+        checkbox.checked = !checkbox.checked;
+        socketio.emit( "first-ban", team );
+    }
+
     function startDraft()
     {
         socketio.emit( "start-draft" );
@@ -203,6 +212,25 @@
         if( input.value == "" ) return;
         socketio.emit( "message", input.value );
         input.value = "";
+    };
+
+    function setTeamStatusVisibility( state )
+    {
+        let isLobby = state.state == "lobby" || state.state == "pool_countdown";
+
+        Array.from( document.getElementsByClassName( "first-ban" ) ).forEach( firstBan =>
+            firstBan.style.visibility = isLobby ? "visible" : "hidden" );
+        Array.from( document.getElementsByClassName( "team-status" ) ).forEach( teamStatus =>
+            teamStatus.style.visibility = !isLobby ? "visible" : "hidden" );
+    };
+
+    function setFirstBan( state )
+    {
+        let legionFirstBan = document.getElementById( "legion-first-ban-checkbox" );
+        let hellbourneFirstBan = document.getElementById( "hellbourne-first-ban-checkbox" );
+
+        legionFirstBan.checked = state.first_ban == "legion";
+        hellbourneFirstBan.checked = state.first_ban == "hellbourne";
     };
 
     function setTeamStatus( state, team )
@@ -238,8 +266,10 @@
         }
     };
 
+    setFirstBan( {{ state|tojson }} );
     setTeamStatus( {{ state|tojson }}, "legion" );
     setTeamStatus( {{ state|tojson }}, "hellbourne" );
+    setTeamStatusVisibility( {{ state|tojson }} );
 
     function onStateChanged( state )
     {
@@ -247,8 +277,10 @@
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
 
+        setFirstBan( state );
         setTeamStatus( state, "legion" );
         setTeamStatus( state, "hellbourne" );
+        setTeamStatusVisibility( state );
     };
     socketio.on( "state-changed", onStateChanged );
 
