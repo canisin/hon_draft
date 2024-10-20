@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="header">
-    <div id="state">{{ state }}</div>
+    <div id="state">{{ state.state }}</div>
     <div id="countdown">0</div>
 </div>
 <div class="main">
@@ -175,7 +175,7 @@
     {
         console.log( "changing state" );
         let stateLabel = document.getElementById( "state" );
-        stateLabel.innerHTML = state;
+        stateLabel.innerHTML = state.state;
     };
     socketio.on( "state-changed", onStateChanged );
 
