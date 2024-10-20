@@ -21,21 +21,18 @@ Add style to state and countdown
 Move slot hero names to tooltip similar to draft heroes
 Do a pass on style, composition and background 
     Try using actual margins instead of the margin divs that you created
-Implement ellipsis or dynamic text size for longer hero and player names
+Test even longer player and hero names
 Improve chat
-    Implement team chat
     Hide dibs from the opposing team
-    Color player names in chat 
     Sanitize input in chat or at least for the name command
 Add hover and click animations
 Add animation to the active team indicaitor
 Add sounds
     Button sounds (hover and click)
-    Countdowns ticks below five seconds
-    "ban a hero!"
+    Slot sounds (on sitting and leaving)
+    "ban a hero!" / "choose wisely!"
     Hero pick sounds
-    Denied effect for banning? Could grow old very fast
-    Sound assets can probably be found in game files
+    Easter egg: Play "counter pick" if a dibs is picked
 
 Don't display controls if hero name is empty
 It seems that an element can be enlarged by transform: scale( x ) 
