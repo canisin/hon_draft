@@ -15,13 +15,13 @@
         <div class="team-status">
             <div class="team-status-title">
                 <div class="team-status-arrows">
-                    <img class="team-status-arrow" src="/static/images/arrow_green.png"/>
-                    <img class="team-status-arrow" src="/static/images/arrow_green.png"/>
-                    <img class="team-status-arrow" src="/static/images/arrow_green.png"/>
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
                 </div>
-                <div class="team-status-label" style="color: green">Picking</div>
+                <div class="team-status-label"></div>
             </div>
-            <div class="team-status-subtitle" style="color: green">(Remaining Picks: 2)</div>
+            <div class="team-status-subtitle"></div>
         </div>
         <div class="team-slots">
             {% for player in team.players %}
@@ -81,11 +81,11 @@
         <div class="team-status">
             <div class="team-status-title">
                 <div class="team-status-arrows">
-                    <img class="team-status-arrow" src="/static/images/arrow_red.png"/>
-                    <img class="team-status-arrow" src="/static/images/arrow_red.png"/>
-                    <img class="team-status-arrow" src="/static/images/arrow_red.png"/>
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
                 </div>
-                <div class="team-status-label" style="color: red">Banning</div>
+                <div class="team-status-label"></div>
             </div>
             <div class="team-status-subtitle"></div>
         </div>
@@ -193,11 +193,47 @@
         input.value = "";
     };
 
+    function setTeamStatus( state, team )
+    {
+        let teamDiv = document.getElementById( team );
+        let arrows = teamDiv.getElementsByClassName( "team-status-arrow" );
+        let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
+        let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
+
+        if ( state.state == "banning" && team == state.active_team )
+        {
+            Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow_red.png" );
+            title.innerHTML = "Banning";
+            title.style.color = "red";
+            subtitle.innerHTML = "";
+            subtitle.style.color = "";
+        }
+        else if ( state.state == "picking" && team == state.active_team )
+        {
+            Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow_green.png" );
+            title.innerHTML = "Picking";
+            title.style.color = "green";
+            subtitle.innerHTML = `(Remaining Picks: ${ state.remaining_picks })`;
+            subtitle.style.color = "green";
+        }
+        else
+        {
+            Array.from( arrows ).forEach( arrow => arrow.src = "" );
+            title.innerHTML = "";
+            title.style.color = "";
+            subtitle.innerHTML = "";
+            subtitle.style.color = "";
+        }
+    };
+
     function onStateChanged( state )
     {
         console.log( "changing state" );
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
+
+        setTeamStatus( state, "legion" );
+        setTeamStatus( state, "hellbourne" );
     };
     socketio.on( "state-changed", onStateChanged );
 
