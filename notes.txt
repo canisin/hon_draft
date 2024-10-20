@@ -35,9 +35,18 @@ Add sounds
     Easter egg: Play "counter pick" if a dibs is picked
 
 Don't display controls if hero name is empty
-It seems that an element can be enlarged by transform: scale( x ) 
-  without disrupting the rest of the document!
-transform: translate() can probably also be very useful to stack things just right.
 Having a single player on the not first banning side skips that player
 There seems to be a lobby countdown when draft ends
 Reconnecting leaves behind ghost players in teams
+
+
+enable/disable specific stats (no agi, etc) + "clever fate"
+enable/disable buttons on the client
+hide dibs from the opposing team
+fix reconnecting players
+make the current state pretty
+general composition
+add a lot more sounds
+animate the active team indicator
+
+
