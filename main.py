@@ -25,6 +25,8 @@ ban_count = 4
 initial_pick_count = 1
 later_pick_count = 2
 
+fate_formatted = "<span style=\"color:orange\">Fate</span>"
+
 revision = popen( "git rev-list --count HEAD" ).read().strip()
 sha = popen( "git rev-parse --short HEAD" ).read().strip()
 
@@ -134,6 +136,9 @@ class Player:
             "is_dibs": self.dibs is not None,
             "team": self.team.emit() if self.team else Teams.emit_observer(),
         }
+
+    def get_formatted_name( self ):
+        return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
 
 class Players:
     players = []
@@ -558,7 +563,7 @@ def dibs_hero( player, stat, index ):
         return
 
     player.set_dibs( hero if player.dibs != hero else None )
-    socketio.emit( "message", f"{ player.name } has called dibs on { hero.name }" )
+    socketio.emit( "message", f"{ player.get_formatted_name() } has called dibs on { hero.name }" )
 
 def banning_countdown_callback():
     global active_team
@@ -578,7 +583,8 @@ def ban_hero( player, stat, index ):
         return
 
     hero.set_banned()
-    socketio.emit( "message", f"{ player.name if player else "Fate" } has banned { hero.name }" )
+    message_actor = player.get_formatted_name() if player else fate_formatted
+    socketio.emit( "message", f"{ message_actor } has banned { hero.name }" )
 
     Players.check_dibs()
 
@@ -631,9 +637,9 @@ def pick_hero( player, stat, index, is_fate = False ):
     player.set_hero( hero )
     hero.set_picked()
     socketio.emit( "message", 
-        f"{ player.name } has picked { hero.name }"
+        f"{ player.get_formatted_name() } has picked { hero.name }"
         if not is_fate else
-        f"Fate has picked { hero.name } for { player.name }"
+        f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }"
     )
 
     Players.check_dibs()
