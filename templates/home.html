@@ -134,6 +134,9 @@
     </div>
 </div>
 
+<audio id="clock-tick-audio" src="/static/sounds/clock-tick.ogg"/>
+<audio id="banning-draft-audio" src="/static/sounds/banning-draft.ogg"/>
+
 <script type="text/javascript">
     "use strict";
 
@@ -271,9 +274,12 @@
     setTeamStatus( {{ state|tojson }}, "hellbourne" );
     setTeamStatusVisibility( {{ state|tojson }} );
 
+    let current_state = "{{ state.state }}";
     function onStateChanged( state )
     {
         console.log( "changing state" );
+        current_state = state.state;
+
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
 
@@ -288,13 +294,30 @@
     function onSetTimer( seconds )
     {
         console.log( "setting timer" );
+
         let countdownLabel = document.getElementById( "countdown" );
-        countdownLabel.innerHTML = seconds;
+        let tickAudio = document.getElementById( "clock-tick-audio" );
+        let modeAudio = document.getElementById( "banning-draft-audio" );
+
+        let tick = () => {
+            countdownLabel.innerHTML = seconds;
+
+            if ( current_state == "pool_countdown" )
+            {
+                if ( seconds > 0 )
+                    tickAudio.play()
+                else
+                    modeAudio.play()
+            }
+        };
+
         clearInterval( timer );
+        tick();
         if( seconds == 0 ) return;
+
         timer = setInterval( () => {
             --seconds;
-            countdownLabel.innerHTML = seconds;
+            tick();
             if( seconds == 0 )
                 clearInterval( timer );
         }, 1000 );
