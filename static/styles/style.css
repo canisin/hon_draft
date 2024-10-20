@@ -278,6 +278,10 @@
     display: grid;
 }
 
+.hero:hover {
+    transform: scale( 2 );
+}
+
 .hero-icon-container {
     grid-area: 1/1;
     display: grid;
