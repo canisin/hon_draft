@@ -12,16 +12,22 @@
             <img class="team-header-icon" src={{ team.icon }}/>
             <div class="team-header-name">{{ team.name }}</div>
         </div>
-        <div class="team-status">
-            <div class="team-status-title">
-                <div class="team-status-arrows">
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                </div>
-                <div class="team-status-label"></div>
+        <div class="first-ban-or-team-status">
+            <div class="first-ban">
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )" {{ "checked" if state.first_ban == team.name else "" }} style="visibility: {{ "visible" if state.state == "lobby" else "hidden" }}"/>
+                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
             </div>
-            <div class="team-status-subtitle"></div>
+            <div class="team-status" style="visibility: {{ "visible" if state.state != "lobby" else "hidden" }}">
+                <div class="team-status-title">
+                    <div class="team-status-arrows">
+                        <img class="team-status-arrow"/>
+                        <img class="team-status-arrow"/>
+                        <img class="team-status-arrow"/>
+                    </div>
+                    <div class="team-status-label"></div>
+                </div>
+                <div class="team-status-subtitle"></div>
+            </div>
         </div>
         <div class="team-slots">
             {% for player in team.players %}
@@ -78,16 +84,22 @@
             <img class="team-header-icon" src={{ team.icon }}/>
             <div class="team-header-name">{{ team.name }}</div>
         </div>
-        <div class="team-status">
-            <div class="team-status-title">
-                <div class="team-status-arrows">
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                </div>
-                <div class="team-status-label"></div>
+        <div class="first-ban-or-team-status">
+            <div class="first-ban">
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )" {{ "checked" if state.first_ban == team.name else "" }} style="visibility: {{ "visible" if state.state == "lobby" else "hidden" }}"/>
+                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
             </div>
-            <div class="team-status-subtitle"></div>
+            <div class="team-status" style="visibility: {{ "visible" if state.state != "lobby" else "hidden" }}">
+                <div class="team-status-title">
+                    <div class="team-status-arrows">
+                        <img class="team-status-arrow"/>
+                        <img class="team-status-arrow"/>
+                        <img class="team-status-arrow"/>
+                    </div>
+                    <div class="team-status-label"></div>
+                </div>
+                <div class="team-status-subtitle"></div>
+            </div>
         </div>
         <div class="team-slots">
             {% for player in team.players %}

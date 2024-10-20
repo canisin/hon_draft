@@ -79,7 +79,35 @@
     color: red;
 }
 
+.first-ban-or-team-status {
+    display: grid;
+}
+
+.first-ban {
+    grid-area: 1/1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#legion .first-ban {
+    padding-left: 20px;
+    flex-direction: row;
+}
+
+#hellbourne .first-ban {
+    padding-right: 20px;
+    flex-direction: row-reverse;
+}
+
+.first-ban-checkbox {
+}
+
+.first-ban-label {
+}
+
 .team-status {
+    grid-area: 1/1;
     padding-top: 10px;
     height: 50px;
     display: flex;
