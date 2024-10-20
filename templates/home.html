@@ -226,6 +226,9 @@
         }
     };
 
+    setTeamStatus( {{ state|tojson }}, "legion" );
+    setTeamStatus( {{ state|tojson }}, "hellbourne" );
+
     function onStateChanged( state )
     {
         console.log( "changing state" );
