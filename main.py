@@ -190,14 +190,26 @@ class Team:
         self.color = color
         self.players = []
 
-    def add_player( self, player ):
+    def add_player( self, player, index ):
+        if player.team:
+            player.team.players.remove( player )
+        player.set_team( self, index )
         self.players.append( player )
+        socketio.emit( "message", f"{ player.name } is now playing in { self.name } at position { index }." )
 
     def remove_player( self, player ):
         self.players.remove( player )
+        player.set_team( None )
+        socketio.emit( "message", f"{ player.name } is now an observer." )
 
-    def remove_players( self ):
-        self.players = []
+    def toggle_slot( self, player, index ):
+        if state != "lobby":
+            return
+        slot_player = next( ( player for player in self.players if player.index == index ), None )
+        if not slot_player:
+            self.add_player( player, index )
+        elif slot_player == player:
+            self.remove_player( player )
 
     def picking_players( self ):
         return ( player for player in self.players if not player.hero )
@@ -646,23 +658,9 @@ def on_start_draft():
 
 @socketio.on( "click-slot" )
 def click_slot( team, index ):
-    if state != "lobby":
-        return
     player = Players.find( session[ "id" ] )
     team = Teams.get( team )
-    slot_player = next( ( player for player in team.players if player.index == index ), None )
-    if not slot_player:
-        if player.team:
-            player.team.remove_player( player )
-        player.set_team( team, index )
-        team.add_player( player )
-    elif slot_player == player:
-        team.remove_player( player )
-        player.set_team( None )
-    else:
-        return
-    socketio.emit( "message", f"{ player.name } is now playing in { player.team.name } at position { player.index }."
-        if player.team else f"{ player.name } is now an observer." )
+    team.toggle_slot( player, index )
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
