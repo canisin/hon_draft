@@ -56,6 +56,10 @@
     gap: 5px;
 }
 
+#legion .team-header {
+    flex-direction: row;
+}
+
 #hellbourne .team-header {
     flex-direction: row-reverse;
 }
@@ -130,6 +134,10 @@
     gap: 5px;
 }
 
+#legion .team-status-title {
+    flex-direction: row;
+}
+
 #hellbourne .team-status-title {
     flex-direction: row-reverse;
 }
@@ -137,6 +145,10 @@
 .team-status-arrows {
     display: flex;
     align-items: center;
+}
+
+#legion .team-status-arrows {
+    transform: scaleX( 1 )
 }
 
 #hellbourne .team-status-arrows {
@@ -185,6 +197,10 @@
 }
 
 #hellbourne .slot-player {
+    flex-direction: row;
+}
+
+#hellbourne .slot-player {
     flex-direction: row-reverse;
 }
 
@@ -196,14 +212,20 @@
 .slot-player-name {
     display: inline;
     font-size: 14px;
+    width: 70px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #legion .slot-player-name {
     color: green;
+    text-align: left;
 }
 
 #hellbourne .slot-player-name {
     color: red;
+    text-align: right;
 }
 
 .slot-hero {
