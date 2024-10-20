@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 from threading import Thread
 from threading import Timer
@@ -94,9 +94,6 @@ class Player:
             socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
 
     def set_team( self, team, index = None ):
-        if self.team:
-            socketio.emit( "update-slot", ( self.team.name, self.index, self.team.emit_null_player() ) )
-
         self.team = team
         self.index = index if team else None
         self.push_update()
@@ -156,6 +153,8 @@ class Players:
         if Players.find( id ): return
         player = Player( name, id )
         Players.players.append( player )
+        join_room( "legion" )
+        join_room( "hellbourne" )
         socketio.emit( "add-player", player.emit() )
         socketio.emit( "message", f"{ player.name } joined.", include_self = False )
         for other_player in Players.players:
@@ -189,23 +188,36 @@ class Team:
 
     def add_player( self, player, index ):
         if player.team:
-            player.team.players.remove( player )
-        player.set_team( self, index )
+            player.team.remove_player( player, joining_another = True )
         self.players.append( player )
-        socketio.emit( "message", f"{ player.name } is now playing in { self.name } at position { index }." )
+        leave_room( self.get_other().name )
+        player.set_team( self, index )
+        socketio.emit( "message", f"{ player.name } has joined The { self.name.capitalize() }." )
 
-    def remove_player( self, player ):
+    def change_player_index( self, player, index ):
+        socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
+        player.set_team( self, index )
+
+    def remove_player( self, player, joining_another = False ):
         self.players.remove( player )
+        socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
+        join_room( self.get_other().name )
+        if joining_another: return
         player.set_team( None )
         socketio.emit( "message", f"{ player.name } is now an observer." )
 
     def toggle_slot( self, player, index ):
         if state != "lobby":
             return
-        slot_player = next( ( player for player in self.players if player.index == index ), None )
-        if not slot_player:
-            self.add_player( player, index )
-        elif slot_player == player:
+        slot = next( ( player for player in self.players if player.index == index ), None )
+        slot_is_empty = not slot
+        slot_is_self = slot == player
+        if slot_is_empty:
+            if player.team == self:
+                self.change_player_index( player, index )
+            else:
+                self.add_player( player, index )
+        elif slot_is_self:
             self.remove_player( player )
 
     def picking_players( self ):
@@ -707,7 +719,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.find( session[ "id" ] )
-    socketio.emit( "message", f"{ player.name }: { message }" )
+    socketio.emit( "message", f"{ player.name }: { message }", to = player.team.name if player.team else None )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
