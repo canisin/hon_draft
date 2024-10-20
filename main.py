@@ -488,7 +488,8 @@ def set_state( new_state, seconds, callback ):
 
 def set_timer( seconds, callback ):
     if seconds == 0:
-        callback()
+        if callback:
+            callback()
         return
 
     global timer
