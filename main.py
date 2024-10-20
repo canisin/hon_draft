@@ -471,8 +471,8 @@ remaining_picks = 0
 def emit_state():
     return {
         "state": state,
-        "first_ban": first_ban,
-        "active_team": active_team,
+        "first_ban": first_ban.name,
+        "active_team": active_team.name if active_team else None,
         "remaining_picks": remaining_picks,
     }
 
