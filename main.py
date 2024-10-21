@@ -12,11 +12,11 @@ from os import popen
 
 load_dotenv()
 
-pool_countdown_duration = int( getenv( "POOL_COUNTDOWN_DURATION" ) ) or 5
-banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) ) or 10
-banning_duration = int( getenv( "BANNING_DURATION" ) ) or 30
-picking_countdown_duration = int( getenv( "PICKING_COUNTDOWN_DURATION" ) ) or 10
-picking_duration = int( getenv( "PICKING_DURATION" ) ) or 30
+pool_countdown_duration = int( getenv( "POOL_COUNTDOWN_DURATION" ) or 5 )
+banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) or 10 )
+banning_duration = int( getenv( "BANNING_DURATION" ) or 30 )
+picking_countdown_duration = int( getenv( "PICKING_COUNTDOWN_DURATION" ) or 10 )
+picking_duration = int( getenv( "PICKING_DURATION" ) or 30 )
 
 team_size = 3
 pool_size = 8
