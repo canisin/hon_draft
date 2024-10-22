@@ -67,8 +67,8 @@
                             <div class="hero-name">{{ hero.name }}</div>
                         </div>
                         <div class="hero-button-container">
-                            <button class="hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">B</button>
-                            <button class="hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">P</button>
+                            <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
+                            <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
                         </div>
                     </div>
                 </div>
@@ -294,11 +294,31 @@
         }
     };
 
+    function setHeroButtons( state )
+    {
+        if ( state.state == "banning" )
+        {
+            Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "" );
+            Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        }
+        else if ( state.state == "picking" )
+        {
+            Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
+            Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "" );
+        }
+        else
+        {
+            Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
+            Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        }
+    };
+
     setFirstBan( {{ state|tojson }} );
     setTeamStatus( {{ state|tojson }}, "legion" );
     setTeamStatus( {{ state|tojson }}, "hellbourne" );
     setTeamStatusVisibility( {{ state|tojson }} );
     setStatToggles( {{ state|tojson }} );
+    setHeroButtons( {{ state|tojson }} );
 
     let current_state = "{{ state.state }}";
     function onStateChanged( state )
@@ -314,6 +334,7 @@
         setTeamStatus( state, "hellbourne" );
         setTeamStatusVisibility( state );
         setStatToggles( state );
+        setHeroButtons( state );
     };
     socketio.on( "state-changed", onStateChanged );
 

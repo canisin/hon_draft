@@ -318,7 +318,11 @@
     justify-content: center;
 }
 
-.hero-button {
+.ban-hero-button {
+    font-size: 10px;
+}
+
+.pick-hero-button {
     font-size: 10px;
 }
 
