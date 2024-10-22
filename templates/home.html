@@ -136,6 +136,8 @@
 
 <audio id="clock-tick-audio" src="/static/sounds/clock-tick.ogg"/>
 <audio id="banning-draft-audio" src="/static/sounds/banning-draft.ogg"/>
+<audio id="ban-hero-audio" src="/static/sounds/ban-hero.ogg"/>
+<audio id="pick-hero-audio" src="/static/sounds/pick-hero.ogg"/>
 
 <script type="text/javascript">
     "use strict";
@@ -321,6 +323,7 @@
     setHeroButtons( {{ state|tojson }} );
 
     let current_state = "{{ state.state }}";
+    let my_team = "observer";
     function onStateChanged( state )
     {
         console.log( "changing state" );
@@ -328,6 +331,18 @@
 
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
+
+        if ( state.state == "banning" && state.active_team == my_team )
+        {
+            let banAudio = document.getElementById( "ban-hero-audio" );
+            banAudio.play();
+        }
+
+        if ( state.state == "picking" && state.active_team == my_team )
+        {
+            let pickAudio = document.getElementById( "pick-hero-audio" );
+            pickAudio.play();
+        }
 
         setFirstBan( state );
         setTeamStatus( state, "legion" );
@@ -337,6 +352,13 @@
         setHeroButtons( state );
     };
     socketio.on( "state-changed", onStateChanged );
+
+    function onMyTeam( team )
+    {
+        console.log( "changing my team" );
+        my_team = team;
+    };
+    socketio.on( "my-team", onMyTeam );
 
     let timer;
     function onSetTimer( seconds )
@@ -353,9 +375,9 @@
             if ( current_state == "pool_countdown" )
             {
                 if ( seconds > 0 )
-                    tickAudio.play()
+                    tickAudio.play();
                 else
-                    modeAudio.play()
+                    modeAudio.play();
             }
         };
 

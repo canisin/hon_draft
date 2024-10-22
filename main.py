@@ -198,6 +198,7 @@ class Team:
         leave_room( self.get_other().name )
         player.set_team( self, index )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } has joined { self.get_formatted_name() }." )
+        emit( "my-team", self.name )
 
     def change_player_index( self, player, index ):
         socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
@@ -210,6 +211,7 @@ class Team:
         if joining_another: return
         player.set_team( None )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } is now an observer." )
+        emit( "my-team", "observer" )
 
     def toggle_slot( self, player, index ):
         if state != "lobby":
