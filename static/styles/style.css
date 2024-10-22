@@ -269,7 +269,7 @@
 }
 
 .stat-checkbox {
-    align-self: end;
+    transform: scale( 1.6 );
 }
 
 .stat-heroes {
