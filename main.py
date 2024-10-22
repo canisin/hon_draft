@@ -483,7 +483,7 @@ class Heroes:
             stat.generate()
 
     def get( stat, index = None ):
-        if not index: return Heroes.stats_dict[ stat ]
+        if index is None: return Heroes.stats_dict[ stat ]
         return Heroes.get( stat ).get( index )
 
     def find( hero ):
