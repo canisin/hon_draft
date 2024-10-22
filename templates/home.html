@@ -57,7 +57,7 @@
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
                 {% set hero = heroes[ stat ][ index ] %}
-                <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )">
+                <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )" oncontextmenu="dibsHero( event, '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
                         <img class="hero-icon" src="{{ hero.icon }}"/>
                         <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
@@ -67,7 +67,6 @@
                             <div class="hero-name">{{ hero.name }}</div>
                         </div>
                         <div class="hero-button-container">
-                            <button class="hero-button" onClick="dibsHero( '{{ stat }}', {{ index }} )">D</button>
                             <button class="hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">B</button>
                             <button class="hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">P</button>
                         </div>
@@ -174,8 +173,9 @@
         selectedHero = ( stat, index );
     };
 
-    function dibsHero( stat, index )
+    function dibsHero( event, stat, index )
     {
+        event.preventDefault();
         console.log( "dibsing hero" );
         socketio.emit( "dibs-hero", stat, index );
     };
