@@ -138,7 +138,7 @@ class Player:
         }
 
     def get_formatted_name( self, no_team = False ):
-        return f"<span style=\"color: { "blue" if no_team else self.team.color }\">{ self.name }</span>"
+        return f"<span style=\"color: { "blue" if no_team or not self.team else self.team.color }\">{ self.name }</span>"
 
 class Players:
     players = []
