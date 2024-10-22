@@ -14,7 +14,6 @@ TODO
 
 Implement clever fate
     Fate bans and picks should support one hero of each stat for each team
-    Add the ability to select active stats if necessary
 Refuse to start draft with no players
 Enable/disable buttons on the client based on current state
 Add style to state and countdown
@@ -23,7 +22,6 @@ Do a pass on style, composition and background
     Try using actual margins instead of the margin divs that you created
 Test even longer player and hero names
 Improve chat
-    Hide dibs from the opposing team
     Sanitize input in chat or at least for the name command
 Add hover and click animations
 Add animation to the active team indicaitor
@@ -40,9 +38,8 @@ There seems to be a lobby countdown when draft ends
 Reconnecting leaves behind ghost players in teams
 
 
-enable/disable specific stats (no agi, etc) + "clever fate"
+"clever fate"
 enable/disable buttons on the client
-hide dibs from the opposing team
 fix reconnecting players
 make the current state pretty
 general composition
