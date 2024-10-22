@@ -43,6 +43,7 @@ enable/disable buttons on the client
 fix reconnecting players
 make the current state pretty
 general composition
+  see if you can find a team icon with a background to use for null hero
 add a lot more sounds
 animate the active team indicator
 

@@ -232,12 +232,12 @@ class Team:
         return Teams.get_other( self )
 
     def emit_null_hero( self ):
-        return Hero( "null", None, f"hero-{ self.name }" ).emit()
+        return Hero( "null", None, f"team-{ self.name }" ).emit()
 
     def emit_null_player( self ):
         return {
             "name": "null",
-            "hero": self.emit_null_hero(),
+            "hero": Hero( "null", None, f"hero-{ self.name }" ).emit(),
             "team": self.emit(),
         }
 
