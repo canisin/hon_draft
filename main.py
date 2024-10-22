@@ -426,8 +426,16 @@ all_heroes = {
 class Stat:
     def __init__( self, stat ):
         self.stat = stat
+        self.is_enabled = True
         self.heroes = all_heroes[ stat ]
         self.pool = []
+
+    def toggle( self ):
+        if state != "lobby":
+            return
+
+        self.is_enabled = not self.is_enabled
+        push_state()
 
     def reset( self ):
         for hero in self.heroes:
@@ -439,6 +447,7 @@ class Stat:
             socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
 
     def generate( self ):
+        if not self.is_enabled: return
         for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
             self.pool.append( hero )
             hero.push_update()
@@ -447,6 +456,7 @@ class Stat:
         return self.pool[ index ]
 
     def calc_ban_count( self ):
+        if not self.is_enabled: return 0
         return sum( 1 for hero in self.pool if hero.is_banned )
 
     def get_random( self ):
@@ -454,6 +464,11 @@ class Stat:
 
     def emit( self ):
         return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
+
+    def emit_state( self ):
+        return {
+            "is_enabled": self.is_enabled,
+        }
 
 class Heroes:
     stats = [ Stat( stat ) for stat in all_heroes ]
@@ -467,17 +482,18 @@ class Heroes:
         for stat in Heroes.stats:
             stat.generate()
 
-    def get( stat, index ):
-        return Heroes.stats_dict[ stat ].get( index )
+    def get( stat, index = None ):
+        if not index: return Heroes.stats_dict[ stat ]
+        return Heroes.get( stat ).get( index )
 
     def find( hero ):
-        return ( hero.stat, Heroes.stats_dict[ hero.stat ].pool.index( hero ) )
+        return ( hero.stat, Heroes.get( hero.stat ).pool.index( hero ) )
 
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
 
     def get_random():
-        return random.choice( Heroes.stats ).get_random()
+        return random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] ).get_random()
 
     def emit():
         return { stat.stat: stat.emit() for stat in Heroes.stats }
@@ -492,6 +508,7 @@ def emit_state():
     return {
         "state": state,
         "first_ban": first_ban.name,
+        "stats": { stat.stat: stat.emit_state() for stat in Heroes.stats },
         "active_team": active_team.name if active_team else None,
         "remaining_picks": remaining_picks,
     }
@@ -696,6 +713,11 @@ def on_disconnect():
 def on_first_ban( team ):
     team = Teams.get( team )
     set_first_ban( team )
+
+@socketio.on( "toggle-stat" )
+def on_first_ban( stat ):
+    stat = Heroes.get( stat )
+    stat.toggle()
 
 @socketio.on( "start-draft" )
 def on_start_draft():

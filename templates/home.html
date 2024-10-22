@@ -52,6 +52,7 @@
             <div class="stat-header">
                 <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png"/>
                 <div class="stat-header-name">{{ stat_name }}</div>
+                <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox" onClick="clickToggleStat( '{{ stat }}' )"/>
             </div>
             <div class="stat-heroes">
                 {% for index in range( 8 ) %}
@@ -198,7 +199,16 @@
         let checkbox = document.getElementById( `${ team }-first-ban-checkbox` );
         checkbox.checked = !checkbox.checked;
         socketio.emit( "first-ban", team );
-    }
+    };
+
+    function clickToggleStat( stat )
+    {
+        console.log( "clicking toggle stat" );
+        // undo the click to let the server decide
+        let checkbox = document.getElementById( `${ stat }-checkbox` );
+        checkbox.checked = !checkbox.checked;
+        socketio.emit( "toggle-stat", stat );
+    };
 
     function startDraft()
     {
@@ -269,10 +279,20 @@
         }
     };
 
+    function setStatToggles( state )
+    {
+        for ( let stat in state.stats )
+        {
+            let checkbox = document.getElementById( `${ stat }-checkbox` );
+            checkbox.checked = state.stats[ stat ].is_enabled;
+        }
+    };
+
     setFirstBan( {{ state|tojson }} );
     setTeamStatus( {{ state|tojson }}, "legion" );
     setTeamStatus( {{ state|tojson }}, "hellbourne" );
     setTeamStatusVisibility( {{ state|tojson }} );
+    setStatToggles( {{ state|tojson }} );
 
     let current_state = "{{ state.state }}";
     function onStateChanged( state )
@@ -287,6 +307,7 @@
         setTeamStatus( state, "legion" );
         setTeamStatus( state, "hellbourne" );
         setTeamStatusVisibility( state );
+        setStatToggles( state );
     };
     socketio.on( "state-changed", onStateChanged );
 
