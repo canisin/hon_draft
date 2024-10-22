@@ -108,7 +108,7 @@ class Player:
     def set_dibs( self, hero ):
         assert not self.hero
         self.dibs = hero
-        self.push_update()
+        self.push_update( to_team = True )
 
     def check_dibs( self ):
         if not self.dibs: return
@@ -120,10 +120,10 @@ class Player:
         self.dibs = None
         self.push_update()
 
-    def push_update( self ):
+    def push_update( self, to_team = False ):
         socketio.emit( "update-player", self.emit() )
         if self.team:
-            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
+            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ), to = self.team.name if to_team and self.team else None )
 
     def emit( self ):
         return {
@@ -585,7 +585,7 @@ def dibs_hero( player, stat, index ):
         return
 
     player.set_dibs( hero if player.dibs != hero else None )
-    socketio.emit( "message", f"{ player.get_formatted_name() } has called dibs on { hero.name }" )
+    socketio.emit( "message", f"{ player.get_formatted_name() } has called dibs on { hero.name }", to = player.team.name if player.team else None )
 
 def banning_countdown_callback():
     global active_team
