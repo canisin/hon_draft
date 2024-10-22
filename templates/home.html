@@ -283,8 +283,14 @@
     {
         for ( let stat in state.stats )
         {
+            let is_enabled = state.stats[ stat ].is_enabled;
+
             let checkbox = document.getElementById( `${ stat }-checkbox` );
-            checkbox.checked = state.stats[ stat ].is_enabled;
+            checkbox.checked = is_enabled;
+
+            let statDiv = document.getElementById( stat );
+            let label = statDiv.getElementsByClassName( "stat-header-name" )[ 0 ];
+            label.style.textDecoration = is_enabled ? "" : "line-through";
         }
     };
 
