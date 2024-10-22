@@ -298,12 +298,12 @@
 
     function setHeroButtons( state )
     {
-        if ( state.state == "banning" )
+        if ( state.state == "banning" && state.active_team == my_team )
         {
             Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "" );
             Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
         }
-        else if ( state.state == "picking" )
+        else if ( state.state == "picking" && state.active_team == my_team )
         {
             Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
             Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "" );
