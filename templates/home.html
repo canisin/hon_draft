@@ -332,6 +332,9 @@
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
 
+        let startButton = document.getElementById( "start-button" );
+        startButton.disabled = state.state != "lobby";
+
         if ( state.state == "banning" && state.active_team == my_team )
         {
             let banAudio = document.getElementById( "ban-hero-audio" );
