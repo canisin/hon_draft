@@ -27,7 +27,7 @@ later_pick_count = 2
 
 fate_formatted = "<span style=\"color:orange\">Fate</span>"
 
-revision = popen( "git rev-list --count HEAD" ).read().strip()
+revision = open( "revision.txt" ).read().strip()
 sha = popen( "git rev-parse --short HEAD" ).read().strip()
 
 app = Flask( __name__ )

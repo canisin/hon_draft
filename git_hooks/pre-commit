@@ -1,0 +1,5 @@
+#!/bin/sh
+
+git rev-list --count HEAD > revision.txt
+git add revision.txt -f
+echo "updated revision count"
