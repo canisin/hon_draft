@@ -47,16 +47,10 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        self.push_update()
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        self.push_update()
-
-    def push_update( self ):
-        _, index = Heroes.find( self )
-        push_update_hero( self.stat, index, self.emit() )
 
     def reset( self ):
         self.is_banned = False
@@ -452,7 +446,7 @@ class Stat:
         if not self.is_enabled: return
         for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
             self.pool.append( hero )
-            hero.push_update()
+            push_update_hero( self.stat, index, hero.emit() )
 
     def get( self, index ):
         return self.pool[ index ]
@@ -606,6 +600,7 @@ def ban_hero( player, stat, index ):
     hero.set_banned()
     message_actor = player.get_formatted_name() if player else fate_formatted
     socketio.emit( "message", f"{ message_actor } has banned { hero.name }" )
+    push_update_hero( stat, index, hero.emit() )
 
     Players.check_dibs()
 
@@ -662,6 +657,7 @@ def pick_hero( player, stat, index, is_fate = False ):
         if not is_fate else
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }"
     )
+    push_update_hero( stat, index, hero.emit() )
 
     Players.check_dibs()
 
