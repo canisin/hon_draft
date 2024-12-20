@@ -56,7 +56,7 @@ class Hero:
 
     def push_update( self ):
         _, index = Heroes.find( self )
-        socketio.emit( "update-hero", ( self.stat, index, self.emit() ) )
+        push_update_hero( self.stat, index, self.emit() )
 
     def reset( self ):
         self.is_banned = False
@@ -93,7 +93,7 @@ class Player:
         self.name = name
         socketio.emit( "update-player", self.emit() )
         if self.team:
-            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ) )
+            push_update_slot( self.team.name, self.index, self.emit() )
 
     def set_team( self, team, index = None ):
         self.team = team
@@ -123,7 +123,7 @@ class Player:
     def push_update( self, to_team = False ):
         socketio.emit( "update-player", self.emit() )
         if self.team:
-            socketio.emit( "update-slot", ( self.team.name, self.index, self.emit() ), to = self.team.name if to_team and self.team else None )
+            push_update_slot( self.team.name, self.index, self.emit(), to_team )
 
     def emit( self ):
         return {
@@ -198,20 +198,20 @@ class Team:
         leave_room( self.get_other().name )
         player.set_team( self, index )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } has joined { self.get_formatted_name() }." )
-        emit( "my-team", self.name )
+        push_my_team( self.name )
 
     def change_player_index( self, player, index ):
-        socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
+        push_update_slot( self.name, player.index, self.emit_null_player() )
         player.set_team( self, index )
 
     def remove_player( self, player, joining_another = False ):
         self.players.remove( player )
-        socketio.emit( "update-slot", ( self.name, player.index, self.emit_null_player() ) )
+        push_update_slot( self.name, player.index, self.emit_null_player )
         join_room( self.get_other().name )
         if joining_another: return
         player.set_team( None )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } is now an observer." )
-        emit( "my-team", "observer" )
+        push_my_team( "observer" )
 
     def toggle_slot( self, player, index ):
         if state != "lobby":
@@ -437,7 +437,7 @@ class Stat:
             return
 
         self.is_enabled = not self.is_enabled
-        push_state()
+        push_update_state()
 
     def reset( self ):
         for hero in self.heroes:
@@ -446,7 +446,7 @@ class Stat:
         self.pool = []
 
         for index in range( pool_size ):
-            socketio.emit( "update-hero", ( self.stat, index, Hero.emit_null() ) )
+            push_update_hero( self.stat, index, Hero.emit_null() )
 
     def generate( self ):
         if not self.is_enabled: return
@@ -500,6 +500,7 @@ class Heroes:
     def emit():
         return { stat.stat: stat.emit() for stat in Heroes.stats }
 
+## STATE ##
 state = "lobby"
 timer = None
 first_ban = Teams.legion
@@ -515,14 +516,10 @@ def emit_state():
         "remaining_picks": remaining_picks,
     }
 
-def push_state():
-    print( f"sending new state { state } to socket" )
-    socketio.emit( "state-changed", emit_state() )
-
 def set_state( new_state, seconds, callback ):
     global state
     state = new_state
-    push_state()
+    push_update_state()
     set_timer( seconds, callback )
 
 def set_timer( seconds, callback ):
@@ -533,8 +530,8 @@ def set_timer( seconds, callback ):
 
     global timer
     timer = Timer( seconds, callback )
-    socketio.emit( "set-timer", seconds )
     timer.start()
+    push_set_timer( seconds )
 
 def set_first_ban( team ):
     if state != "lobby":
@@ -545,7 +542,7 @@ def set_first_ban( team ):
         return
 
     first_ban = team
-    push_state()
+    push_update_state()
 
 def start_draft( player ):
     if state != "lobby":
@@ -685,6 +682,7 @@ def picking_timer_callback():
         stat, index = Heroes.find( hero )
         pick_hero( player, stat, index, is_fate = not player.dibs )
 
+## ROUTES ##
 @app.route( "/" )
 def home():
     if "name" not in session:
@@ -698,6 +696,16 @@ def home():
         heroes = Heroes.emit(),
     )
 
+@app.route( "/name", methods = [ "POST" ] )
+def name():
+    print( "name request" )
+    id = session[ "id" ]
+    name = request.form[ "name" ]
+    Players.rename( id, name )
+    session[ "name" ] = name
+    return ""
+
+## INCOMING SOCKET EVENTS ##
 @socketio.on( "connect" )
 def on_connect( auth ):
     print( "socket connected" )
@@ -770,14 +778,34 @@ def set_name( name ):
     # tell the client to make a request to set the cookie
     emit( "set-name", name )
 
-@app.route( "/name", methods = [ "POST" ] )
-def name():
-    print( "name request" )
-    id = session[ "id" ]
-    name = request.form[ "name" ]
-    Players.rename( id, name )
-    session[ "name" ] = name
-    return ""
+## OUTGOING SOCKET EVENTS ##
+def push_update_state():
+    print( f"sending new state { state } to socket" )
+    socketio.emit( "state-changed", emit_state() )
+
+# TODO: Update to push_team_change
+def push_my_team( team ):
+    emit( "my-team", team )
+
+def push_set_timer( seconds ):
+    socketio.emit( "set-timer", seconds )
+
+def push_update_hero( stat, index, hero ):
+    socketio.emit( "update-hero", ( stat, index, hero ) )
+
+def push_update_slot( team, index, player, to_team = False ):
+    socketio.emit( "update-slot", ( team, index, player ), to = team if to_team else None )
+
+def push_add_player():
+    # TODO: NYI
+    pass
+
+# TODO: Create functions that handle all updates relating to team change or becoming observer
+# TODO: Create a function to handle all updates for a name change
+
+def push_remove_player():
+    # TODO: NYI
+    pass
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
