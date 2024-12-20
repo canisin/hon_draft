@@ -717,7 +717,7 @@ def on_first_ban( team ):
     set_first_ban( team )
 
 @socketio.on( "toggle-stat" )
-def on_first_ban( stat ):
+def on_toggle_stat( stat ):
     stat = Heroes.get( stat )
     stat.toggle()
 
