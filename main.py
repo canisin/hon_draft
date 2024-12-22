@@ -85,9 +85,6 @@ class Player:
 
     def set_name( self, name ):
         self.name = name
-        socketio.emit( "update-player", self.emit() )
-        if self.team:
-            push_update_slot( self.team.name, self.index, self.emit() )
 
     def set_team( self, team, index = None ):
         self.team = team
@@ -173,6 +170,9 @@ class Players:
         player = Players.find( id )
         old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
+        push_update_player( player )
+        if player.team:
+            push_update_slot( player.team.name, player.index, player.emit() )
         socketio.emit( "message", f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
 
     def emit():
@@ -802,6 +802,9 @@ def push_add_player():
 def push_remove_player():
     # TODO: NYI
     pass
+
+def push_update_player( player ):
+    socketio.emit( "update-player", player.emit() )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
