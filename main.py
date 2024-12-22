@@ -94,14 +94,48 @@ class Player:
         self.push_update()
 
     def set_team( self, team, index):
+        old_team = self.team
+        if old_team:
+            old_team.remove_player( self )
+            push_update_slot( old_team, self.index, None )
         self.team = team
         self.index = index
+        team.add_player( self )
+        self.update_rooms()
         self.push_update()
+        push_my_team( team.name )
+        socketio.emit( "message", f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
 
     def set_observer( self ):
+        old_team = self.team
+        if old_team:
+            old_team.remove_player( self )
+            push_update_slot( old_team, self.index, None )
         self.team = None
         self.index = None
+        self.update_rooms()
         self.push_update()
+        push_my_team( "observer" )
+        socketio.emit( "message", f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
+
+    def set_index( self, index ):
+        push_update_slot( self.team, self.index, None )
+        self.index = index
+        push_update_slot( self.team, self.index, self )
+
+    def click_slot( self, team, index ):
+        if state != "lobby":
+            return
+        slot_player = team.get_player( index )
+        slot_is_empty = not slot_player
+        slot_is_self = slot_player == player
+        if slot_is_empty:
+            if self.team == team:
+                self.set_index( index )
+            else:
+                self.set_team( team, index )
+        elif slot_is_self:
+            self.set_observer()
 
     def set_hero( self, hero ):
         self.dibs = None
@@ -122,6 +156,15 @@ class Player:
         self.hero = None
         self.dibs = None
         self.push_update()
+
+    def update_rooms():
+        team = self.team
+        if team:
+            join_room( team.name )
+            leave_room( team.get_other().name )
+        else:
+            for team in Teams.teams:
+                join_room( team.name )
 
     def push_update( self, to_team = False ):
         push_update_player( self )
@@ -194,48 +237,14 @@ class Team:
         self.color = color
         self.players = []
 
-    def add_player( self, player, index ):
-        old_team = player.team
-        if old_team:
-            # TODO: Handle in Player.set_team()?
-            push_update_slot( old_team, player.index, None )
-            old_team.players.remove( player )
-            join_room( self.name )
-        self.players.append( player )
-        leave_room( self.get_other().name )
-        player.set_team( self, index )
-        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } has joined { self.get_formatted_name() }." )
-        # TODO: Handle in Player.set_team()?
-        push_my_team( self.name )
+    def get_player( self, index ):
+        return next( ( player for player in self.players if player.index == index ), None )
 
-    def change_player_index( self, player, index ):
-        # TODO: Handle in Player.set_team()?
-        push_update_slot( self, player.index, None )
-        player.set_team( self, index )
+    def add_player( self, player ):
+        players.append( player )
 
     def remove_player( self, player ):
-        # TODO: Handle in Player.set_team()?
-        push_update_slot( self, player.index, None )
-        self.players.remove( player )
-        join_room( self.get_other().name )
-        player.set_observer()
-        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } is now an observer." )
-        # TODO: Handle in Player.set_team()?
-        push_my_team( "observer" )
-
-    def toggle_slot( self, player, index ):
-        if state != "lobby":
-            return
-        slot = next( ( player for player in self.players if player.index == index ), None )
-        slot_is_empty = not slot
-        slot_is_self = slot == player
-        if slot_is_empty:
-            if player.team == self:
-                self.change_player_index( player, index )
-            else:
-                self.add_player( player, index )
-        elif slot_is_self:
-            self.remove_player( player )
+        players.remove( player )
 
     def picking_players( self ):
         return ( player for player in self.players if not player.hero )
@@ -269,6 +278,7 @@ class Team:
 class Teams:
     legion = Team( "legion", "team-legion", "green" )
     hellbourne = Team( "hellbourne", "team-hellbourne", "red" )
+    teams = [ legion, hellbourne ]
 
     def get( team ):
         if team == "legion": return Teams.legion
@@ -750,7 +760,7 @@ def on_start_draft():
 def on_click_slot( team, index ):
     player = Players.find( session[ "id" ] )
     team = Teams.get( team )
-    team.toggle_slot( player, index )
+    player.click_slot( team, index )
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
@@ -794,7 +804,6 @@ def push_update_state():
     print( f"sending new state { state } to socket" )
     socketio.emit( "state-changed", emit_state() )
 
-# TODO: Update to push_team_change
 def push_my_team( team ):
     emit( "my-team", team )
 
@@ -806,17 +815,6 @@ def push_update_hero( stat, index, hero ):
 
 def push_update_slot( team, index, player, to_team = False ):
     socketio.emit( "update-slot", ( team.name, index, player.emit() if player else team.emit_null_player() ), to = team if to_team else None )
-
-def push_add_player():
-    # TODO: NYI
-    pass
-
-# TODO: Create functions that handle all updates relating to team change or becoming observer
-# TODO: Create a function to handle all updates for a name change
-
-def push_remove_player():
-    # TODO: NYI
-    pass
 
 def push_update_player( player ):
     socketio.emit( "update-player", player.emit() )
