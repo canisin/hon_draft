@@ -37,49 +37,6 @@ socketio = SocketIO( app )
 def emit_icon( icon ):
     return f"/static/images/{ icon }.png"
 
-class Hero:
-    def __init__( self, name, stat, icon ):
-        self.name = name
-        self.stat = stat
-        self.icon = icon
-        self.is_banned = False
-        self.is_picked = False
-
-    def set_banned( self ):
-        self.is_banned = True
-        self.push_update()
-
-    def set_picked( self ):
-        assert not self.is_banned
-        self.is_picked = True
-        self.push_update()
-
-    def push_update( self ):
-        _, index = Heroes.find( self )
-        push_update_hero( self.stat, index, self )
-
-    def reset( self ):
-        self.is_banned = False
-        self.is_picked = False
-
-    def is_available( self ):
-        return not self.is_banned and not self.is_picked
-
-    def emit( self ):
-        if self.is_picked: return Hero.emit_null()
-        return {
-            "name": self.name,
-            "icon": emit_icon( self.icon ),
-            "is_banned": self.is_banned,
-        }
-
-    def emit_null():
-        return {
-            "name": "null",
-            "icon": emit_icon( "hero-none" ),
-            "is_banned": False,
-        }
-
 class Player:
     def __init__( self, name, id ):
         self.name = name
@@ -297,6 +254,123 @@ class Teams:
     def emit_observer():
         return Team( "observers", "observer", "blue" ).emit()
 
+class Hero:
+    def __init__( self, name, stat, icon ):
+        self.name = name
+        self.stat = Heroes.get( stat )
+        self.icon = icon
+        self.is_banned = False
+        self.is_picked = False
+
+    def set_banned( self ):
+        self.is_banned = True
+        self.push_update()
+
+    def set_picked( self ):
+        assert not self.is_banned
+        self.is_picked = True
+        self.push_update()
+
+    def push_update( self ):
+        _, index = Heroes.find( self )
+        push_update_hero( self.stat, index, self )
+
+    def reset( self ):
+        self.is_banned = False
+        self.is_picked = False
+
+    def is_available( self ):
+        return not self.is_banned and not self.is_picked
+
+    def emit( self ):
+        if self.is_picked: return Hero.emit_null()
+        return {
+            "name": self.name,
+            "icon": emit_icon( self.icon ),
+            "is_banned": self.is_banned,
+        }
+
+    def emit_null():
+        return {
+            "name": "null",
+            "icon": emit_icon( "hero-none" ),
+            "is_banned": False,
+        }
+
+class Stat:
+    def __init__( self, name ):
+        self.name = name
+        self.is_enabled = True
+        self.pool = []
+
+    def toggle( self ):
+        if state != "lobby":
+            return
+
+        self.is_enabled = not self.is_enabled
+        push_update_state()
+
+    def reset( self ):
+        for hero in self.pool:
+            hero.reset()
+
+        self.pool = []
+
+        for index in range( pool_size ):
+            push_update_hero( self, index, None )
+
+    def generate( self ):
+        if not self.is_enabled: return
+        for index, hero in enumerate( random.sample( all_heroes[ self.name ], pool_size ) ):
+            self.pool.append( hero )
+            push_update_hero( self, index, hero )
+
+    def get( self, index ):
+        return self.pool[ index ]
+
+    def calc_ban_count( self ):
+        if not self.is_enabled: return 0
+        return sum( 1 for hero in self.pool if hero.is_banned )
+
+    def get_random( self ):
+        return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
+
+    def emit( self ):
+        return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
+
+    def emit_state( self ):
+        return {
+            "is_enabled": self.is_enabled,
+        }
+
+class Heroes:
+    agi = Stat( "agi" )
+    int = Stat( "int" )
+    str = Stat( "str" )
+    stats = [ agi, int, str ]
+    stats_dict = { stat.name: stat for stat in stats }
+
+    def reset():
+        for stat in Heroes.stats:
+            stat.reset()
+
+    def generate():
+        for stat in Heroes.stats:
+            stat.generate()
+
+    def get( stat, index = None ):
+        if index is None: return Heroes.stats_dict[ stat ]
+        return Heroes.get( stat ).get( index )
+
+    def calc_ban_count():
+        return sum( stat.calc_ban_count() for stat in Heroes.stats )
+
+    def get_random():
+        return random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] ).get_random()
+
+    def emit():
+        return { stat.stat: stat.emit() for stat in Heroes.stats }
+
 all_heroes = {
     "agi": [
         Hero( "Emerald Warden", "agi", "heroes/emerald_warden" ),
@@ -445,82 +519,6 @@ all_heroes = {
     ],
 }
 
-class Stat:
-    def __init__( self, stat ):
-        self.stat = stat
-        self.is_enabled = True
-        self.heroes = all_heroes[ stat ]
-        self.pool = []
-
-    def toggle( self ):
-        if state != "lobby":
-            return
-
-        self.is_enabled = not self.is_enabled
-        push_update_state()
-
-    def reset( self ):
-        for hero in self.heroes:
-            hero.reset()
-
-        self.pool = []
-
-        for index in range( pool_size ):
-            push_update_hero( self, index, None )
-
-    def generate( self ):
-        if not self.is_enabled: return
-        for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
-            self.pool.append( hero )
-            push_update_hero( self, index, hero )
-
-    def get( self, index ):
-        return self.pool[ index ]
-
-    def calc_ban_count( self ):
-        if not self.is_enabled: return 0
-        return sum( 1 for hero in self.pool if hero.is_banned )
-
-    def get_random( self ):
-        return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
-
-    def emit( self ):
-        return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
-
-    # TODO: Merge to (global) emit_state
-    def emit_state( self ):
-        return {
-            "is_enabled": self.is_enabled,
-        }
-
-class Heroes:
-    stats = [ Stat( stat ) for stat in all_heroes ]
-    stats_dict = { stat.stat: stat for stat in stats }
-
-    def reset():
-        for stat in Heroes.stats:
-            stat.reset()
-
-    def generate():
-        for stat in Heroes.stats:
-            stat.generate()
-
-    def get( stat, index = None ):
-        if index is None: return Heroes.stats_dict[ stat ]
-        return Heroes.get( stat ).get( index )
-
-    def find( hero ):
-        return ( hero.stat, Heroes.get( hero.stat ).pool.index( hero ) )
-
-    def calc_ban_count():
-        return sum( stat.calc_ban_count() for stat in Heroes.stats )
-
-    def get_random():
-        return random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] ).get_random()
-
-    def emit():
-        return { stat.stat: stat.emit() for stat in Heroes.stats }
-
 ## STATE ##
 state = "lobby"
 timer = None
@@ -532,7 +530,7 @@ def emit_state():
     return {
         "state": state,
         "first_ban": first_ban.name,
-        "stats": { stat.stat: stat.emit_state() for stat in Heroes.stats },
+        "stats": { stat.name: stat.emit_state() for stat in Heroes.stats },
         "active_team": active_team.name if active_team else None,
         "remaining_picks": remaining_picks,
     }
@@ -588,7 +586,7 @@ def pool_countdown_callback():
     Heroes.generate()
     set_state( "banning_countdown", banning_countdown_duration, banning_countdown_callback )
 
-def dibs_hero( player, stat, index ):
+def dibs_hero( player, hero ):
     if state in [ "lobby", "pool_countdown" ]:
         return
 
@@ -598,12 +596,12 @@ def dibs_hero( player, stat, index ):
     if player.hero:
         return
 
-    hero = Heroes.get( stat, index )
     if hero.is_banned:
         return
     if hero.is_picked:
         return
 
+    # TODO: Can this toggle dibs? If yes, emitted message should reflect that
     player.set_dibs( hero if player.dibs != hero else None )
     socketio.emit( "message", f"{ player.get_formatted_name() } has called dibs on { hero.name }", to = player.team.name if player.team else None )
 
@@ -612,7 +610,7 @@ def banning_countdown_callback():
     active_team = first_ban
     set_state( "banning", banning_duration, banning_timer_callback )
 
-def ban_hero( player, stat, index ):
+def ban_hero( player, hero ):
     if state != "banning":
         return
 
@@ -620,7 +618,6 @@ def ban_hero( player, stat, index ):
     if player and player.team != active_team:
         return
 
-    hero = Heroes.get( stat, index )
     if hero.is_banned:
         return
 
@@ -641,8 +638,7 @@ def ban_hero( player, stat, index ):
 
 def banning_timer_callback():
     hero = Heroes.get_random()
-    stat, index = Heroes.find( hero )
-    ban_hero( None, stat, index )
+    ban_hero( None, hero )
 
 def start_picking( team, pick_count ):
     global active_team
@@ -663,7 +659,7 @@ def start_picking( team, pick_count ):
 def picking_countdown_callback():
     start_picking( first_ban, initial_pick_count )
 
-def pick_hero( player, stat, index, is_fate = False ):
+def pick_hero( player, hero, is_fate = False ):
     if state != "picking":
         return
 
@@ -672,7 +668,6 @@ def pick_hero( player, stat, index, is_fate = False ):
     if player.hero:
         return
 
-    hero = Heroes.get( stat, index )
     if not hero.is_available():
         return
 
@@ -700,8 +695,7 @@ def picking_timer_callback():
         player = next( ( player for player in active_team.picking_players() if player.dibs ),
            next( player for player in active_team.picking_players() ) )
         hero = player.dibs if player.dibs else Heroes.get_random()
-        stat, index = Heroes.find( hero )
-        pick_hero( player, stat, index, is_fate = not player.dibs )
+        pick_hero( player, hero, is_fate = not player.dibs )
 
 ## ROUTES ##
 @app.route( "/" )
@@ -765,17 +759,20 @@ def on_click_slot( team, index ):
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
     player = Players.find( session[ "id" ] )
-    dibs_hero( player, stat, index )
+    hero = Heroes.get( stat, index )
+    dibs_hero( player, hero )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
     player = Players.find( session[ "id" ] )
-    ban_hero( player, stat, index )
+    hero = Heroes.get( stat, index )
+    ban_hero( player, hero )
 
 @socketio.on( "pick-hero" )
 def on_pick_hero( stat, index ):
     player = Players.find( session[ "id" ] )
-    pick_hero( player, stat, index )
+    hero = Heroes.get( stat, index )
+    pick_hero( player, hero )
 
 @socketio.on( "message" )
 def on_message( message ):
@@ -811,7 +808,7 @@ def push_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
 def push_update_hero( stat, index, hero ):
-    socketio.emit( "update-hero", ( stat.stat, index, hero.emit() if hero else Hero.emit_null() ) )
+    socketio.emit( "update-hero", ( stat.name, index, hero.emit() if hero else Hero.emit_null() ) )
 
 def push_update_slot( team, index, player, to_team = False ):
     socketio.emit( "update-slot", ( team.name, index, player.emit() if player else team.emit_null_player() ), to = team if to_team else None )
