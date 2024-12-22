@@ -47,10 +47,16 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
+        self.push_update()
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
+        self.push_update()
+
+    def push_update( self ):
+        _, index = Heroes.find( self )
+        push_update_hero( self.stat, index, self )
 
     def reset( self ):
         self.is_banned = False
@@ -85,44 +91,43 @@ class Player:
 
     def set_name( self, name ):
         self.name = name
+        self.push_update()
 
     def set_team( self, team, index):
         self.team = team
         self.index = index
+        self.push_update()
 
     def set_observer( self ):
         self.team = None
         self.index = None
+        self.push_update()
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
+        self.push_update()
 
     def set_dibs( self, hero ):
         assert not self.hero
         self.dibs = hero
+        self.push_update( to_team = True )
 
     def check_dibs( self ):
         if not self.dibs: return
         if not self.dibs.is_available():
             self.set_dibs( None )
-            push_update_slot( self.team, self.index, self, to_team = True )
 
     def reset( self ):
         self.hero = None
         self.dibs = None
         self.push_update()
 
-    # TODO: Consider being more specific with the pushes: chat member and team member
-    # TODO: How is this any different than what's happening in set_name?
     def push_update( self, to_team = False ):
-        socketio.emit( "update-player", self.emit() )
+        push_update_player( self )
         if self.team:
-            push_update_slot( self.team.name, self.index, self.emit(), to_team )
+            push_update_slot( self.team, self.index, self, to_team )
 
-    # TODO: A player can emit one of the following icons: Team icon, dibs icon, hero icon
-    # TODO: Previous implementation seems to be more elegant than this new idea
-    # TODO: It seems a player does not emit an icon, instead it has (potentially) a hero and a team
     def emit( self ):
         return {
             "name": self.name,
@@ -177,9 +182,6 @@ class Players:
         player = Players.find( id )
         old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
-        push_update_player( player )
-        if player.team:
-            push_update_slot( player.team, player.index, player )
         socketio.emit( "message", f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
 
     def emit():
@@ -195,29 +197,30 @@ class Team:
     def add_player( self, player, index ):
         old_team = player.team
         if old_team:
+            # TODO: Handle in Player.set_team()?
             push_update_slot( old_team, player.index, None )
             old_team.players.remove( player )
             join_room( self.name )
         self.players.append( player )
         leave_room( self.get_other().name )
         player.set_team( self, index )
-        push_update_player( player )
-        push_update_slot( self, index, player )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } has joined { self.get_formatted_name() }." )
+        # TODO: Handle in Player.set_team()?
         push_my_team( self.name )
 
     def change_player_index( self, player, index ):
+        # TODO: Handle in Player.set_team()?
         push_update_slot( self, player.index, None )
         player.set_team( self, index )
-        push_update_slot( self, index, player )
 
     def remove_player( self, player ):
+        # TODO: Handle in Player.set_team()?
         push_update_slot( self, player.index, None )
         self.players.remove( player )
         join_room( self.get_other().name )
         player.set_observer()
-        push_update_player( player )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } is now an observer." )
+        # TODO: Handle in Player.set_team()?
         push_my_team( "observer" )
 
     def toggle_slot( self, player, index ):
@@ -453,13 +456,13 @@ class Stat:
         self.pool = []
 
         for index in range( pool_size ):
-            push_update_hero( self.stat, index, Hero.emit_null() )
+            push_update_hero( self, index, None )
 
     def generate( self ):
         if not self.is_enabled: return
         for index, hero in enumerate( random.sample( self.heroes, pool_size ) ):
             self.pool.append( hero )
-            push_update_hero( self.stat, index, hero.emit() )
+            push_update_hero( self, index, hero )
 
     def get( self, index ):
         return self.pool[ index ]
@@ -592,7 +595,6 @@ def dibs_hero( player, stat, index ):
         return
 
     player.set_dibs( hero if player.dibs != hero else None )
-    push_update_slot( player.team, player.index, player, to_team = True )
     socketio.emit( "message", f"{ player.get_formatted_name() } has called dibs on { hero.name }", to = player.team.name if player.team else None )
 
 def banning_countdown_callback():
@@ -615,7 +617,6 @@ def ban_hero( player, stat, index ):
     hero.set_banned()
     message_actor = player.get_formatted_name() if player else fate_formatted
     socketio.emit( "message", f"{ message_actor } has banned { hero.name }" )
-    push_update_hero( stat, index, hero.emit() )
 
     Players.check_dibs()
 
@@ -666,14 +667,12 @@ def pick_hero( player, stat, index, is_fate = False ):
         return
 
     player.set_hero( hero )
-    push_update_slot( player.team, player.index, player )
     hero.set_picked()
     socketio.emit( "message", 
         f"{ player.get_formatted_name() } has picked { hero.name }"
         if not is_fate else
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }"
     )
-    push_update_hero( stat, index, hero.emit() )
 
     Players.check_dibs()
 
@@ -803,7 +802,7 @@ def push_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
 def push_update_hero( stat, index, hero ):
-    socketio.emit( "update-hero", ( stat, index, hero ) )
+    socketio.emit( "update-hero", ( stat.stat, index, hero.emit() if hero else Hero.emit_null() ) )
 
 def push_update_slot( team, index, player, to_team = False ):
     socketio.emit( "update-slot", ( team.name, index, player.emit() if player else team.emit_null_player() ), to = team if to_team else None )
