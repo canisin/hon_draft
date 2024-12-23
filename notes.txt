@@ -22,6 +22,11 @@ python versions
 - render    3.12.1
 - latest    3.13.0
 
+how to start with python venv
+- py -m venv .venv
+- .venv\Scripts\activate
+- pip install -r requirements.txt
+
 TODO
 - break the python code into smaller files
 - make a pass on global and non-local variables
