@@ -67,8 +67,7 @@ animate the active team indicator
 reduce volume on all sounds
 
 
-- first ban does not display who changed it
-- same as above for toggle stat
+- tertiary in formatted string
 
 - in home.html, in function applyHeroSelection, rename variable banButton to heroButtons
 

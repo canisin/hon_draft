@@ -294,17 +294,21 @@ class Hero:
         }
 
 class Stat:
-    def __init__( self, name ):
+    def __init__( self, name, full_name, color ):
         self.name = name
+        self.name = full_name
+        self.color = color
         self.is_enabled = True
         self.pool = []
 
-    def toggle( self ):
+    def toggle( self, player ):
         if state != "lobby":
             return
 
         self.is_enabled = not self.is_enabled
         emit_update_state()
+        # TODO: Tertiary in formatted string
+        emit_message( f"{ player.get_formatted_name() } has { ( self.is_enabled ? "enabled" : "disabled" ) } { self.get_formatted_name() } heroes." )
 
     def reset( self ):
         for hero in self.pool:
@@ -342,10 +346,13 @@ class Stat:
             "is_enabled": self.is_enabled,
         }
 
+    def get_formatted_name( self ):
+        return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
+
 class Heroes:
-    agi = Stat( "agi" )
-    int = Stat( "int" )
-    str = Stat( "str" )
+    agi = Stat( "agi", "agility", "green" )
+    int = Stat( "int", "intelligence", "blue" )
+    str = Stat( "str", "strength", "red" )
     stats = [ agi, int, str ]
     stats_dict = { stat.name: stat for stat in stats }
 
@@ -551,7 +558,7 @@ def set_timer( seconds, callback ):
     timer.start()
     emit_set_timer( seconds )
 
-def set_first_ban( team ):
+def set_first_ban( player, team ):
     if state != "lobby":
         return
 
@@ -561,6 +568,7 @@ def set_first_ban( team ):
 
     first_ban = team
     emit_update_state()
+    emit_message( f"{ player.get_formatted_name() } has set { team.get_formatted_name() } to ban first." )
 
 def start_draft( player ):
     if state != "lobby":
@@ -600,9 +608,13 @@ def dibs_hero( player, hero ):
     if hero.is_picked:
         return
 
-    # TODO: Can this toggle dibs? If yes, emitted message should reflect that
-    player.set_dibs( hero if player.dibs != hero else None )
-    emit_message( f"{ player.get_formatted_name() } has called dibs on { hero.name }", team = player.team )
+    is_dibs = player.dibs != hero
+    player.set_dibs( hero if is_dibs else None )
+    emit_message(
+        f"{ player.get_formatted_name() } has called dibs on { hero.name }."
+        if is_dibs else
+        f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
+        team = player.team )
 
 def banning_countdown_callback():
     global active_team
@@ -622,7 +634,7 @@ def ban_hero( player, hero ):
 
     hero.set_banned()
     message_actor = player.get_formatted_name() if player else fate_formatted
-    emit_message( f"{ message_actor } has banned { hero.name }" )
+    emit_message( f"{ message_actor } has banned { hero.name }." )
 
     Players.check_dibs()
 
@@ -673,9 +685,9 @@ def pick_hero( player, hero, is_fate = False ):
     player.set_hero( hero )
     hero.set_picked()
     emit_message( 
-        f"{ player.get_formatted_name() } has picked { hero.name }"
+        f"{ player.get_formatted_name() } has picked { hero.name }."
         if not is_fate else
-        f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }"
+        f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
     )
 
     Players.check_dibs()
@@ -735,13 +747,15 @@ def on_disconnect():
 
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
+    player = Players.find( session[ "id" ] )
     team = Teams.get( team )
-    set_first_ban( team )
+    set_first_ban( player, team )
 
 @socketio.on( "toggle-stat" )
 def on_toggle_stat( stat ):
+    player = Players.find( session[ "id" ] )
     stat = Heroes.get( stat )
-    stat.toggle()
+    stat.toggle( player )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
