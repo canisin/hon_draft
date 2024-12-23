@@ -84,14 +84,12 @@ class Player:
         if state != "lobby":
             return
         slot_player = team.get_player( index )
-        slot_is_empty = not slot_player
-        slot_is_self = slot_player == player
-        if slot_is_empty:
+        if slot_player is None:
             if self.team == team:
                 self.set_index( index )
             else:
                 self.set_team( team, index )
-        elif slot_is_self:
+        elif slot_player == self:
             self.set_observer()
 
     def set_hero( self, hero ):
@@ -114,7 +112,7 @@ class Player:
         self.dibs = None
         self.push_update()
 
-    def update_rooms():
+    def update_rooms( self ):
         team = self.team
         if team:
             join_room( team.name )
@@ -196,10 +194,10 @@ class Team:
         return next( ( player for player in self.players if player.index == index ), None )
 
     def add_player( self, player ):
-        players.append( player )
+        self.players.append( player )
 
     def remove_player( self, player ):
-        players.remove( player )
+        self.players.remove( player )
 
     def picking_players( self ):
         return ( player for player in self.players if not player.hero )
@@ -296,7 +294,7 @@ class Hero:
 class Stat:
     def __init__( self, name, full_name, color ):
         self.name = name
-        self.name = full_name
+        self.full_name = full_name
         self.color = color
         self.is_enabled = True
         self.pool = []
@@ -308,7 +306,10 @@ class Stat:
         self.is_enabled = not self.is_enabled
         emit_update_state()
         # TODO: Tertiary in formatted string
-        emit_message( f"{ player.get_formatted_name() } has { ( self.is_enabled ? "enabled" : "disabled" ) } { self.get_formatted_name() } heroes." )
+        if self.is_enabled:
+            emit_message( f"{ player.get_formatted_name() } has enabled { self.get_formatted_name() } heroes." )
+        else:
+            emit_message( f"{ player.get_formatted_name() } has disabled { self.get_formatted_name() } heroes." )
 
     def reset( self ):
         for hero in self.pool:
