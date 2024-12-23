@@ -223,8 +223,7 @@ class Team:
             "icon": emit_icon( self.icon ),
             "color": self.color,
             "players": None if not with_players else
-                [ next( ( player.emit() for player in self.players if player.index == index ),
-                    self.emit_null_player() ) for index in range( team_size ) ]
+                [ player.emit() if player := self.get_player( index ) else self.emit_null_player() for index in range( team_size ) ]
         }
 
     def get_formatted_name( self ):
