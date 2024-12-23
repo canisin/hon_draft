@@ -254,7 +254,7 @@ class Teams:
 class Hero:
     def __init__( self, name, stat, icon ):
         self.name = name
-        self.stat = Heroes.get( stat )
+        self.stat = Heroes.get( stat ) if stat else None
         self.icon = icon
         self.is_banned = False
         self.is_picked = False
@@ -368,7 +368,7 @@ class Heroes:
         return random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] ).get_random()
 
     def emit():
-        return { stat.stat: stat.emit() for stat in Heroes.stats }
+        return { stat.name: stat.emit() for stat in Heroes.stats }
 
 all_heroes = {
     "agi": [
