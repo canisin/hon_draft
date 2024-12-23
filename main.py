@@ -270,9 +270,7 @@ class Hero:
         self.push_update()
 
     def push_update( self ):
-        # TODO: Heroes.find was removed, fix this.
-        _, index = Heroes.find( self )
-        emit_update_hero( self.stat, index, self )
+        emit_update_hero( self.stat, self.stat.index( self ), self )
 
     def reset( self ):
         self.is_banned = False
@@ -326,6 +324,9 @@ class Stat:
 
     def get( self, index ):
         return self.pool[ index ]
+
+    def index( self, hero ):
+        return self.pool.index( hero )
 
     def calc_ban_count( self ):
         if not self.is_enabled: return 0
