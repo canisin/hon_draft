@@ -1,3 +1,17 @@
+links
+https://hon-draft.onrender.com/
+
+resources
+https://flask.palletsprojects.com/en/stable/quickstart
+https://jinja.palletsprojects.com/en/stable/templates/
+https://flask-socketio.readthedocs.io/en/latest/api.html
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox
+https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout
+https://piratefsh.github.io/how-to/2016/01/27/how-to-think-in-css.html
+https://learnlayout.com/
+https://css-tricks.com/snippets/css/a-guide-to-flexbox/
+
 tutorials
 https://www.youtube.com/watch?v=mkXdvs8H7TA
 https://www.youtube.com/watch?v=jQjjqEjZK58
@@ -44,5 +58,16 @@ general composition
   see if you can find a team icon with a background to use for null hero
 add a lot more sounds
 animate the active team indicator
+
+reduce volume on all sounds
+
+
+- first ban does not display who changed it
+- same as above for toggle stat
+
+- in home.html, in function applyHeroSelection, rename variable banButton to heroButtons
+
+- state-changed -> update-state
+
 
 
