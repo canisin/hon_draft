@@ -160,16 +160,14 @@ class Players:
     def find_or_add( id, name ):
         if Players.find( id ): return
         player = Player( name, id )
-        Players.players.append( player )
-        join_room( "legion" )
-        join_room( "hellbourne" )
         socketio.emit( "add-player", player.emit() )
-        push_message( f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
         for other_player in Players.players:
-            if other_player == player: continue
             emit( "add-player", other_player.emit() )
         emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
         emit( "message", "You joined." )
+        Players.players.append( player )
+        player.update_rooms()
+        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
 
     def remove( id ):
         player = Players.find( id )
@@ -816,8 +814,8 @@ def push_update_slot( team, index, player, to_team = False ):
 def push_update_player( player ):
     socketio.emit( "update-player", player.emit() )
 
-def push_message( message, team = None, include_self = True ):
-    socketio.emit( "message", message, to = team.name if team else None, include_self = include_self )
+def push_message( message, team = None ):
+    socketio.emit( "message", message, to = team.name if team else None )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
