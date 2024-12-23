@@ -54,31 +54,31 @@ class Player:
         old_team = self.team
         if old_team:
             old_team.remove_player( self )
-            push_update_slot( old_team, self.index, None )
+            emit_update_slot( old_team, self.index, None )
         self.team = team
         self.index = index
         team.add_player( self )
         self.update_rooms()
         self.push_update()
-        push_my_team( team.name )
-        push_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
+        emit_my_team( team.name )
+        emit_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
 
     def set_observer( self ):
         old_team = self.team
         if old_team:
             old_team.remove_player( self )
-            push_update_slot( old_team, self.index, None )
+            emit_update_slot( old_team, self.index, None )
         self.team = None
         self.index = None
         self.update_rooms()
         self.push_update()
-        push_my_team( "observer" )
-        push_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
+        emit_my_team( "observer" )
+        emit_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
 
     def set_index( self, index ):
-        push_update_slot( self.team, self.index, None )
+        emit_update_slot( self.team, self.index, None )
         self.index = index
-        push_update_slot( self.team, self.index, self )
+        emit_update_slot( self.team, self.index, self )
 
     def click_slot( self, team, index ):
         if state != "lobby":
@@ -124,9 +124,9 @@ class Player:
                 join_room( team.name )
 
     def push_update( self, to_team = False ):
-        push_update_player( self )
+        emit_update_player( self )
         if self.team:
-            push_update_slot( self.team, self.index, self, to_team )
+            emit_update_slot( self.team, self.index, self, to_team )
 
     def emit( self ):
         return {
@@ -174,13 +174,13 @@ class Players:
         if not player: return
         Players.players.remove( player )
         socketio.emit( "remove-player", player.id )
-        push_message( f"{ player.get_formatted_name( no_team = True ) } left." )
+        emit_message( f"{ player.get_formatted_name( no_team = True ) } left." )
 
     def rename( id, name ):
         player = Players.find( id )
         old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
-        push_message( f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
+        emit_message( f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
 
     def emit():
         return [ player.emit() for player in Players.players ]
@@ -270,8 +270,9 @@ class Hero:
         self.push_update()
 
     def push_update( self ):
+        # TODO: Heroes.find was removed, fix this.
         _, index = Heroes.find( self )
-        push_update_hero( self.stat, index, self )
+        emit_update_hero( self.stat, index, self )
 
     def reset( self ):
         self.is_banned = False
@@ -306,7 +307,7 @@ class Stat:
             return
 
         self.is_enabled = not self.is_enabled
-        push_update_state()
+        emit_update_state()
 
     def reset( self ):
         for hero in self.pool:
@@ -315,13 +316,13 @@ class Stat:
         self.pool = []
 
         for index in range( pool_size ):
-            push_update_hero( self, index, None )
+            emit_update_hero( self, index, None )
 
     def generate( self ):
         if not self.is_enabled: return
         for index, hero in enumerate( random.sample( all_heroes[ self.name ], pool_size ) ):
             self.pool.append( hero )
-            push_update_hero( self, index, hero )
+            emit_update_hero( self, index, hero )
 
     def get( self, index ):
         return self.pool[ index ]
@@ -536,7 +537,7 @@ def emit_state():
 def set_state( new_state, seconds, callback ):
     global state
     state = new_state
-    push_update_state()
+    emit_update_state()
     set_timer( seconds, callback )
 
 def set_timer( seconds, callback ):
@@ -548,7 +549,7 @@ def set_timer( seconds, callback ):
     global timer
     timer = Timer( seconds, callback )
     timer.start()
-    push_set_timer( seconds )
+    emit_set_timer( seconds )
 
 def set_first_ban( team ):
     if state != "lobby":
@@ -559,13 +560,13 @@ def set_first_ban( team ):
         return
 
     first_ban = team
-    push_update_state()
+    emit_update_state()
 
 def start_draft( player ):
     if state != "lobby":
         return
 
-    push_message( f"{ player.get_formatted_name() } has started the draft!" )
+    emit_message( f"{ player.get_formatted_name() } has started the draft!" )
 
     Heroes.reset()
     Players.reset()
@@ -574,7 +575,7 @@ def start_draft( player ):
     time_remaining = 5
     def announce_countdown():
         nonlocal time_remaining
-        push_message( f"Draft starting in { time_remaining } seconds.." )
+        emit_message( f"Draft starting in { time_remaining } seconds.." )
         time_remaining -= 1
         if time_remaining == 0: return
         Timer( 1, announce_countdown ).start()
@@ -601,7 +602,7 @@ def dibs_hero( player, hero ):
 
     # TODO: Can this toggle dibs? If yes, emitted message should reflect that
     player.set_dibs( hero if player.dibs != hero else None )
-    push_message( f"{ player.get_formatted_name() } has called dibs on { hero.name }", team = player.team )
+    emit_message( f"{ player.get_formatted_name() } has called dibs on { hero.name }", team = player.team )
 
 def banning_countdown_callback():
     global active_team
@@ -621,7 +622,7 @@ def ban_hero( player, hero ):
 
     hero.set_banned()
     message_actor = player.get_formatted_name() if player else fate_formatted
-    push_message( f"{ message_actor } has banned { hero.name }" )
+    emit_message( f"{ message_actor } has banned { hero.name }" )
 
     Players.check_dibs()
 
@@ -671,7 +672,7 @@ def pick_hero( player, hero, is_fate = False ):
 
     player.set_hero( hero )
     hero.set_picked()
-    push_message( 
+    emit_message( 
         f"{ player.get_formatted_name() } has picked { hero.name }"
         if not is_fate else
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }"
@@ -779,7 +780,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.find( session[ "id" ] )
-    push_message( f"{ player.name }: { message }", team = player.team )
+    emit_message( f"{ player.name }: { message }", team = player.team )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
@@ -795,26 +796,26 @@ def set_name( name ):
     emit( "set-name", name )
 
 ## OUTGOING SOCKET EVENTS ##
-def push_update_state():
+def emit_update_state():
     print( f"sending new state { state } to socket" )
     socketio.emit( "state-changed", emit_state() )
 
-def push_my_team( team ):
+def emit_my_team( team ):
     emit( "my-team", team )
 
-def push_set_timer( seconds ):
+def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
-def push_update_hero( stat, index, hero ):
+def emit_update_hero( stat, index, hero ):
     socketio.emit( "update-hero", ( stat.name, index, hero.emit() if hero else Hero.emit_null() ) )
 
-def push_update_slot( team, index, player, to_team = False ):
+def emit_update_slot( team, index, player, to_team = False ):
     socketio.emit( "update-slot", ( team.name, index, player.emit() if player else team.emit_null_player() ), to = team.name if to_team else None )
 
-def push_update_player( player ):
+def emit_update_player( player ):
     socketio.emit( "update-player", player.emit() )
 
-def push_message( message, team = None ):
+def emit_message( message, team = None ):
     socketio.emit( "message", message, to = team.name if team else None )
 
 if __name__ == "__main__":
