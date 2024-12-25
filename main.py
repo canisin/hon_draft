@@ -49,7 +49,7 @@ class Player:
 
     def set_name( self, name ):
         self.name = name
-        self.push_update()
+        self.emit_update()
 
     def set_team( self, team, index):
         old_team = self.team
@@ -60,7 +60,7 @@ class Player:
         self.index = index
         team.add_player( self )
         self.update_rooms()
-        self.push_update()
+        self.emit_update()
         emit_my_team( team.name )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
 
@@ -72,7 +72,7 @@ class Player:
         self.team = None
         self.index = None
         self.update_rooms()
-        self.push_update()
+        self.emit_update()
         emit_my_team( "observer" )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
 
@@ -87,7 +87,7 @@ class Player:
             emit_message( f"{ self.get_formatted_name() } has lost connection." )
         else:
             emit_message( f"{ self.get_formatted_name() } has regained connection." )
-        self.push_update()
+        self.emit_update()
 
     def click_slot( self, team, index ):
         if state != "lobby":
@@ -104,12 +104,12 @@ class Player:
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        self.push_update()
+        self.emit_update()
 
     def set_dibs( self, hero ):
         assert not self.hero
         self.dibs = hero
-        self.push_update( to_team = True )
+        self.emit_update( to_team = True )
 
     def check_dibs( self ):
         if not self.dibs: return
@@ -119,7 +119,7 @@ class Player:
     def reset( self ):
         self.hero = None
         self.dibs = None
-        self.push_update()
+        self.emit_update()
 
     def update_rooms( self ):
         team = self.team
@@ -130,7 +130,7 @@ class Player:
             for team in Teams.teams:
                 join_room( team.name )
 
-    def push_update( self, to_team = False ):
+    def emit_update( self, to_team = False ):
         emit_update_player( self )
         if self.team:
             emit_update_slot( self.team, self.index, self, to_team )
@@ -213,9 +213,9 @@ class Players:
     def emit():
         return [ player.emit() for player in Players.players ]
 
-    def push_all():
+    def emit_all():
         for player in Players.players:
-            player.push_update()
+            player.emit_update()
 
 class Team:
     def __init__( self, name, icon, color ):
@@ -258,7 +258,7 @@ class Team:
                 [ player.emit() if ( player := self.get_player( index ) ) else self.emit_null_player() for index in range( team_size ) ]
         }
 
-    def push_all( self ):
+    def emit_all( self ):
         for index in range( team_size ):
             emit_update_slot( self, index, self.get_player( index ) )
 
@@ -284,9 +284,9 @@ class Teams:
             "hellbourne": Teams.hellbourne.emit( with_players = True ),
         }
 
-    def push_all():
+    def emit_all():
         for team in Teams.teams:
-            team.push_all()
+            team.emit_all()
 
     def emit_observer():
         return Team( "observers", "observer", "blue" ).emit()
@@ -301,14 +301,14 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        self.push_update()
+        self.emit_update()
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        self.push_update()
+        self.emit_update()
 
-    def push_update( self ):
+    def emit_update( self ):
         emit_update_hero( self.stat, self.stat.index( self ), self )
 
     def reset( self ):
@@ -380,9 +380,9 @@ class Stat:
     def emit( self ):
         return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
 
-    def push_all( self ):
+    def emit_all( self ):
         for hero in self.pool:
-            hero.push_update()
+            hero.emit_update()
 
     def emit_state( self ):
         return {
@@ -420,9 +420,9 @@ class Heroes:
     def emit():
         return { stat.name: stat.emit() for stat in Heroes.stats }
 
-    def push_all():
+    def emit_all():
         for stat in Heroes.stats:
-            stat.push_all()
+            stat.emit_all()
 
 all_heroes = {
     "agi": [
@@ -786,9 +786,9 @@ def on_connect( auth ):
     name = session[ "name" ]
     Players.connect( id, name )
 
-    Players.push_all()
-    Teams.push_all()
-    Heroes.push_all()
+    Players.emit_all()
+    Teams.emit_all()
+    Heroes.emit_all()
     emit_update_state()
 
 @socketio.on( "disconnect" )
