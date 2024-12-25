@@ -213,6 +213,10 @@ class Players:
     def emit():
         return [ player.emit() for player in Players.players ]
 
+    def push_all():
+        for player in Players.players:
+            player.push_update()
+
 class Team:
     def __init__( self, name, icon, color ):
         self.name = name
@@ -254,6 +258,10 @@ class Team:
                 [ player.emit() if ( player := self.get_player( index ) ) else self.emit_null_player() for index in range( team_size ) ]
         }
 
+    def push_all( self ):
+        for index in range( team_size ):
+            emit_update_slot( self, index, self.get_player( index ) )
+
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
 
@@ -275,6 +283,10 @@ class Teams:
             "legion": Teams.legion.emit( with_players = True ),
             "hellbourne": Teams.hellbourne.emit( with_players = True ),
         }
+
+    def push_all():
+        for team in Teams.teams:
+            team.push_all()
 
     def emit_observer():
         return Team( "observers", "observer", "blue" ).emit()
@@ -368,6 +380,10 @@ class Stat:
     def emit( self ):
         return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
 
+    def push_all( self ):
+        for hero in self.pool:
+            hero.push_update()
+
     def emit_state( self ):
         return {
             "is_enabled": self.is_enabled,
@@ -403,6 +419,10 @@ class Heroes:
 
     def emit():
         return { stat.name: stat.emit() for stat in Heroes.stats }
+
+    def push_all():
+        for stat in Heroes.stats:
+            stat.push_all()
 
 all_heroes = {
     "agi": [
@@ -765,6 +785,11 @@ def on_connect( auth ):
     id = session[ "id" ]
     name = session[ "name" ]
     Players.connect( id, name )
+
+    Players.push_all()
+    Teams.push_all()
+    Heroes.push_all()
+    emit_update_state()
 
 @socketio.on( "disconnect" )
 def on_disconnect():
