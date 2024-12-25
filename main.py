@@ -172,6 +172,7 @@ class Players:
         player = Players.get( id )
         if player:
             player.set_disconnected( False )
+            player.update_rooms()
         else:
             Players.add( Player( name, id ) )
 
