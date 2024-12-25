@@ -45,6 +45,7 @@ class Player:
         self.dibs = None
         self.team = None
         self.index = None
+        self.is_disconnected = False
 
     def set_name( self, name ):
         self.name = name
@@ -79,6 +80,14 @@ class Player:
         emit_update_slot( self.team, self.index, None )
         self.index = index
         emit_update_slot( self.team, self.index, self )
+
+    def set_disconnected( self, is_disconnected ):
+        self.is_disconnected = is_disconnected
+        if is_disconnected:
+            emit_message( f"{ self.get_formatted_name() } has lost connection." )
+        else:
+            emit_message( f"{ self.get_formatted_name() } has regained connection." )
+        self.push_update()
 
     def click_slot( self, team, index ):
         if state != "lobby":
@@ -130,6 +139,7 @@ class Player:
         return {
             "name": self.name,
             "id": self.id,
+            "is_disconnected": self.is_disconnected,
             "hero": self.hero.emit() if self.hero
                 else self.dibs.emit() if self.dibs
                 else self.team.emit_null_hero() if self.team
@@ -146,18 +156,34 @@ class Players:
 
     def reset():
         for player in Players.players:
+            if player.is_disconnected:
+                Players.remove( player )
+        for player in Players.players:
             player.reset()
 
     def check_dibs():
         for player in Players.players:
             player.check_dibs()
 
-    def find( id ):
+    def get( id ):
         return next( ( player for player in Players.players if player.id == id ), None )
 
-    def find_or_add( id, name ):
-        if Players.find( id ): return
-        player = Player( name, id )
+    def connect( id, name ):
+        player = Players.get( id )
+        if player:
+            player.set_disconnected( False )
+        else:
+            Players.add( Player( name, id ) )
+
+    def disconnect( id ):
+        player = Players.get( id )
+        if not player: return
+        if state == "lobby":
+            Players.remove( player )
+        else:
+            player.set_disconnected( True )
+
+    def add( player ):
         socketio.emit( "add-player", player.emit() )
         for other_player in Players.players:
             emit( "add-player", other_player.emit() )
@@ -167,15 +193,19 @@ class Players:
         player.update_rooms()
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
 
-    def remove( id ):
-        player = Players.find( id )
-        if not player: return
+    def remove( player ):
         Players.players.remove( player )
+        if player.team:
+            player.team.remove_player( player )
+            emit_update_slot( player.team, player.index, None )
         socketio.emit( "remove-player", player.id )
-        emit_message( f"{ player.get_formatted_name( no_team = True ) } left." )
+        if player.is_disconnected:
+            emit_message( f"{ player.get_formatted_name( no_team = True ) } has been removed." )
+        else:
+            emit_message( f"{ player.get_formatted_name( no_team = True ) } left." )
 
     def rename( id, name ):
-        player = Players.find( id )
+        player = Players.get( id )
         old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
         emit_message( f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
@@ -734,53 +764,53 @@ def on_connect( auth ):
     print( "socket connected" )
     id = session[ "id" ]
     name = session[ "name" ]
-    Players.find_or_add( id, name )
+    Players.connect( id, name )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
     print( "socket disconnected" )
     id = session[ "id" ]
-    Players.remove( id )
+    Players.disconnect( id )
 
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     team = Teams.get( team )
     set_first_ban( player, team )
 
 @socketio.on( "toggle-stat" )
 def on_toggle_stat( stat ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     stat = Heroes.get( stat )
     stat.toggle( player )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
     print( "received start draft request from socket" )
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     start_draft( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     team = Teams.get( team )
     player.click_slot( team, index )
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     hero = Heroes.get( stat, index )
     dibs_hero( player, hero )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     hero = Heroes.get( stat, index )
     ban_hero( player, hero )
 
 @socketio.on( "pick-hero" )
 def on_pick_hero( stat, index ):
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     hero = Heroes.get( stat, index )
     pick_hero( player, hero )
 
@@ -790,7 +820,7 @@ def on_message( message ):
     if message[:1] == "/":
         on_command( message[1:] )
         return
-    player = Players.find( session[ "id" ] )
+    player = Players.get( session[ "id" ] )
     emit_message( f"{ player.name }: { message }", team = player.team )
 
 def on_command( message ):
