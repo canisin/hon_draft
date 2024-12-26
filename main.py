@@ -891,7 +891,7 @@ def set_name( name ):
 ## OUTGOING SOCKET EVENTS ##
 def emit_update_state():
     print( f"sending new state { state } to socket" )
-    socketio.emit( "state-changed", emit_state() )
+    socketio.emit( "update-state", emit_state() )
 
 def emit_my_team( team ):
     emit( "my-team", team )
