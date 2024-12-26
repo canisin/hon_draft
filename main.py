@@ -61,7 +61,7 @@ class Player:
         team.add_player( self )
         self.update_rooms()
         self.emit_update()
-        emit_my_team( team.name )
+        emit_local_team( team.name )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
 
     def set_observer( self ):
@@ -73,7 +73,7 @@ class Player:
         self.index = None
         self.update_rooms()
         self.emit_update()
-        emit_my_team( "observer" )
+        emit_local_team( "observer" )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
 
     def set_index( self, index ):
@@ -893,8 +893,8 @@ def emit_update_state():
     print( f"sending new state { state } to socket" )
     socketio.emit( "update-state", emit_state() )
 
-def emit_my_team( team ):
-    emit( "my-team", team )
+def emit_local_team( team ):
+    emit( "local-team", team )
 
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
