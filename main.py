@@ -602,14 +602,15 @@ def set_state( new_state, seconds, callback ):
     set_timer( seconds, callback )
 
 def set_timer( seconds, callback ):
-    if seconds == 0:
-        if callback:
-            callback()
-        return
-
     global timer
-    timer = Timer( seconds, callback )
-    timer.start()
+    if timer: timer.cancel()
+
+    if seconds == 0:
+        if callback: callback()
+    else:
+        timer = Timer( seconds, callback )
+        timer.start()
+
     emit_set_timer( seconds )
 
 def set_first_ban( player, team ):
@@ -639,12 +640,23 @@ def start_draft( player ):
 
     time_remaining = 5
     def announce_countdown():
+        if state != "pool_countdown": return
         nonlocal time_remaining
         emit_message( f"Draft starting in { time_remaining } seconds.." )
         time_remaining -= 1
         if time_remaining == 0: return
         Timer( 1, announce_countdown ).start()
     announce_countdown()
+
+def cancel_draft( player ):
+    if state == "lobby":
+        return
+    global active_team
+    active_team = None
+    global remaining_picks
+    remaining_picks = 0
+    set_state( "lobby", 0, None )
+    emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
 
 def pool_countdown_callback():
     Heroes.generate()
@@ -824,6 +836,11 @@ def on_start_draft():
     print( "received start draft request from socket" )
     player = Players.get( session[ "id" ] )
     start_draft( player )
+
+@socketio.on( "cancel-draft" )
+def on_cancel_draft():
+    player = Players.get( session[ "id" ] )
+    cancel_draft( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):

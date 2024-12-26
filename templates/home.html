@@ -119,7 +119,10 @@
     </div>
     <div class="outer-margin"></div>
 </div>
-<button id="start-button" onClick="startDraft()">Start Draft</button>
+<div class="draft-controls">
+	<button id="start-draft-button" onClick="startDraft()">Start Draft</button>
+	<button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
+</div>
 <div class="chat-area">
     <div class="messages">
         <div id="message-log"></div>
@@ -215,6 +218,11 @@
     function startDraft()
     {
         socketio.emit( "start-draft" );
+    };
+
+    function cancelDraft()
+    {
+        socketio.emit( "cancel-draft" );
     };
 
     let messageForm = document.getElementById( "message-form" );
@@ -332,8 +340,11 @@
         let stateLabel = document.getElementById( "state" );
         stateLabel.innerHTML = state.state;
 
-        let startButton = document.getElementById( "start-button" );
-        startButton.disabled = state.state != "lobby";
+        let startDraftButton = document.getElementById( "start-draft-button" );
+        startDraftButton.disabled = state.state != "lobby";
+
+        let cancelDraftButton = document.getElementById( "cancel-draft-button" );
+        cancelDraftButton.disabled = state.state == "lobby";
 
         if ( state.state == "banning" && state.active_team == my_team )
         {

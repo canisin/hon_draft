@@ -350,7 +350,10 @@
     border: 5px solid red;
 }
 
-#start-button {
+.draft-controls {
+}
+
+.draft-controls button {
     padding: 10px;
     margin: 10px;
 }
