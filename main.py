@@ -228,6 +228,9 @@ class Team:
     def get_player( self, index ):
         return next( ( player for player in self.players if player.index == index ), None )
 
+    def is_empty( self ):
+        return not self.players
+
     def add_player( self, player ):
         self.players.append( player )
 
@@ -278,6 +281,9 @@ class Teams:
     def get_other( team ):
         if team == Teams.legion: return Teams.hellbourne
         if team == Teams.hellbourne: return Teams.legion
+
+    def can_draft():
+        return not any( team.is_empty() for team in Teams.teams )
 
     def emit():
         return {
@@ -620,6 +626,9 @@ def set_first_ban( player, team ):
 
 def start_draft( player ):
     if state != "lobby":
+        return
+
+    if not Teams.can_draft():
         return
 
     emit_message( f"{ player.get_formatted_name() } has started the draft!" )
