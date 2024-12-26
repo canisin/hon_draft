@@ -158,8 +158,8 @@
         heroDiv.style.borderColor = isSelected ? "yellow" : "";
         let controls = heroDiv.getElementsByClassName( "hero-controls" )[ 0 ];
         controls.style.display = isSelected ? "grid" : "";
-        let banButton = heroDiv.getElementsByClassName( "hero-button-container" )[ 0 ];
-        banButton.style.display = isSelected ? "flex" : "";
+        let heroButtons = heroDiv.getElementsByClassName( "hero-button-container" )[ 0 ];
+        heroButtons.style.display = isSelected ? "flex" : "";
     };
 
     let selectedHero = ( "", -1 );
