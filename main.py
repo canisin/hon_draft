@@ -354,7 +354,7 @@ class Stat:
 
         self.is_enabled = not self.is_enabled
         emit_update_state()
-        emit.message( f"{ player.get_formatted_name() } has { "enabled" if self.is_enabled else "disabled" } { self.get_formatted_name() } heroes." )
+        emit_message( f"{ player.get_formatted_name() } has { "enabled" if self.is_enabled else "disabled" } { self.get_formatted_name() } heroes." )
 
     def reset( self ):
         for hero in self.pool:
