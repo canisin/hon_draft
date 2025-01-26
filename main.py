@@ -110,7 +110,7 @@ class Player:
     def set_dibs( self, hero ):
         assert not self.hero
         self.dibs = hero
-        self.emit_update( to_team = True )
+        self.emit_update()
 
     def check_dibs( self ):
         if not self.dibs: return
@@ -127,26 +127,32 @@ class Player:
         if team:
             join_room( team.name )
             leave_room( team.get_other().name )
+            leave_room( Teams.observer.name )
         else:
-            for team in Teams.teams:
-                join_room( team.name )
+            leave_room( Teams.legion.name )
+            leave_room( Teams.hellbourne.name )
+            join_room( Teams.observer.name )
 
-    def emit_update( self, to_team = False ):
+    def emit_update( self ):
         emit_update_player( self )
         if self.team:
-            emit_update_slot( self.team, self.index, self, to_team )
+            emit_update_slot( self.team, self.index, self )
 
     def emit( self ):
         return {
             "name": self.name,
             "id": self.id,
             "is_disconnected": self.is_disconnected,
-            "hero": self.hero.emit() if self.hero
-                else self.dibs.emit() if self.dibs
-                else Hero.emit_null(),
-            "is_dibs": self.dibs is not None,
+            "hero": self.hero.emit() if self.hero else Hero.emit_null(),
             "team": self.team.emit() if self.team else Teams.observer,
         }
+
+    def emit_with_dibs( self ):
+        ret = self.emit()
+        if self.dibs:
+            ret[ "hero" ] = self.dibs.emit()
+            ret[ "is_dibs" ] = True
+        return ret
 
     def get_formatted_name( self, no_team = False ):
         return f"<span style=\"color: { "blue" if no_team or not self.team else self.team.color }\">{ self.name }</span>"
@@ -892,7 +898,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.get( session[ "id" ] )
-    emit_message( f"{ player.name }: { message }", team = player.team )
+    emit_message( f"{ player.name }: { message }", team = player.team if player.team else Teams.observer )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
@@ -921,15 +927,25 @@ def emit_set_timer( seconds ):
 def emit_update_hero( stat, index, hero ):
     socketio.emit( "update-hero", ( stat.name, index, hero.emit() if hero else Hero.emit_null() ) )
 
-def emit_update_slot( team, index, player, to_team = False ):
-    socketio.emit( "update-slot", ( team.name, index, player.emit() if player else team.emit_null_player() ), to = team.name if to_team else None )
+def emit_update_slot( team, index, player ):
+    if not player:
+        socketio.emit( "update-slot", ( team.name, index, team.emit_null_player() ) )
+    else:
+        socketio.emit( "update-slot", ( team.name, index, player.emit_with_dibs() ), to = team.name )
+        socketio.emit( "update-slot", ( team.name, index, player.emit_with_dibs() ), to = Teams.observer.name )
+        socketio.emit( "update-slot", ( team.name, index, player.emit() ), to = team.get_other().name )
 
 def emit_update_player( player ):
     socketio.emit( "update-player", player.emit() )
 
 def emit_message( message, team = None, **kwargs ):
-    if team: kwargs[ "to" ] = team.name
-    socketio.emit( "message", message, **kwargs )
+    if team == Teams.observer:
+        socketio.emit( "message", message, to = Teams.observer.name, **kwargs )
+    elif team:
+        socketio.emit( "message", message, to = team.name, **kwargs )
+        socketio.emit( "message", message, to = Teams.observer.name, **kwargs )
+    else:
+        socketio.emit( "message", message, **kwargs )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
