@@ -787,7 +787,7 @@ def pick_hero( player, hero, is_fate = False ):
     start_picking( active_team.get_other(), later_pick_count )
 
 def picking_timer_callback():
-    while remaining_picks > 0:
+    for _ in range( remaining_picks ):
         player = next( ( player for player in active_team.picking_players() if player.dibs ),
            next( player for player in active_team.picking_players() ) )
         hero = player.dibs if player.dibs else Heroes.get_random()
