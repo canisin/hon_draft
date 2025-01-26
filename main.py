@@ -174,10 +174,18 @@ class Players:
     def connect( id, name ):
         player = Players.get( id )
         if player:
-            player.set_disconnected( False )
+            # TODO: Deduplicate the following code
+            socketio.emit( "add-player", player.emit() )
+            for other_player in Players.players:
+                emit( "add-player", other_player.emit() )
+            emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
+            emit( "message", "You joined." )
             player.update_rooms()
+            player.set_disconnected( False )
         else:
-            Players.add( Player( name, id ) )
+            player = Player( name, id )
+            Players.add( player )
+        return player
 
     def disconnect( id ):
         player = Players.get( id )
@@ -193,8 +201,8 @@ class Players:
             emit( "add-player", other_player.emit() )
         emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
         emit( "message", "You joined." )
-        Players.players.append( player )
         player.update_rooms()
+        Players.players.append( player )
         socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
 
     def remove( player ):
@@ -216,10 +224,6 @@ class Players:
 
     def emit():
         return [ player.emit() for player in Players.players ]
-
-    def emit_all():
-        for player in Players.players:
-            player.emit_update()
 
     def add_test_players():
         for team in Teams.teams:
@@ -280,10 +284,6 @@ class Team:
                 [ player.emit() if ( player := self.get_player( index ) ) else self.emit_null_player() for index in range( team_size ) ]
         }
 
-    def emit_all( self ):
-        for index in range( team_size ):
-            emit_update_slot( self, index, self.get_player( index ) )
-
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
 
@@ -308,10 +308,6 @@ class Teams:
             "legion": Teams.legion.emit( with_players = True ),
             "hellbourne": Teams.hellbourne.emit( with_players = True ),
         }
-
-    def emit_all():
-        for team in Teams.teams:
-            team.emit_all()
 
     def emit_observer():
         return Team( "observers", "observer", "blue" ).emit()
@@ -405,10 +401,6 @@ class Stat:
     def emit( self ):
         return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
 
-    def emit_all( self ):
-        for hero in self.pool:
-            hero.emit_update()
-
     def emit_state( self ):
         return {
             "is_enabled": self.is_enabled,
@@ -449,10 +441,6 @@ class Heroes:
 
     def emit():
         return { stat.name: stat.emit() for stat in Heroes.stats }
-
-    def emit_all():
-        for stat in Heroes.stats:
-            stat.emit_all()
 
 all_heroes = {
     "agi": [
@@ -832,12 +820,14 @@ def on_connect( auth ):
     print( "socket connected" )
     id = session[ "id" ]
     name = session[ "name" ]
-    Players.connect( id, name )
+    player = Players.connect( id, name )
 
-    Players.emit_all()
-    Teams.emit_all()
-    Heroes.emit_all()
-    emit_update_state()
+    # TODO: update player and update slot are redundant,
+    # they already happen in response to the connect attempt
+    emit_update_player( player )
+    if player.team:
+        emit_update_slot( player.team, player.index, player )
+        emit_update_client_team( player.team.name )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
