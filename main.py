@@ -145,7 +145,7 @@ class Player:
                 else self.dibs.emit() if self.dibs
                 else Hero.emit_null(),
             "is_dibs": self.dibs is not None,
-            "team": self.team.emit() if self.team else Teams.emit_observer(),
+            "team": self.team.emit() if self.team else Teams.observer,
         }
 
     def get_formatted_name( self, no_team = False ):
@@ -295,6 +295,7 @@ class Teams:
     legion = Team( "legion", "team-legion", "green" )
     hellbourne = Team( "hellbourne", "team-hellbourne", "red" )
     teams = [ legion, hellbourne ]
+    observer = Team( "observers", "observer", "blue" )
 
     def get( team ):
         if team == "legion": return Teams.legion
@@ -312,9 +313,6 @@ class Teams:
             "legion": Teams.legion.emit( with_players = True ),
             "hellbourne": Teams.hellbourne.emit( with_players = True ),
         }
-
-    def emit_observer():
-        return Team( "observers", "observer", "blue" ).emit()
 
 class Hero:
     def __init__( self, name, stat, icon ):
