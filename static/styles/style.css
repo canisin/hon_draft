@@ -284,6 +284,7 @@
 
 .hero:hover {
     transform: scale( 2 );
+    z-index: 10;
 }
 
 .hero-icon-container {
