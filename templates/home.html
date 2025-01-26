@@ -306,12 +306,12 @@
 
     function setHeroButtons( state )
     {
-        if ( state.state == "banning" && state.active_team == local_team )
+        if ( state.state == "banning" && state.active_team == client_team )
         {
             Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "" );
             Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
         }
-        else if ( state.state == "picking" && state.active_team == local_team )
+        else if ( state.state == "picking" && state.active_team == client_team )
         {
             Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
             Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "" );
@@ -346,13 +346,13 @@
         let cancelDraftButton = document.getElementById( "cancel-draft-button" );
         cancelDraftButton.disabled = state.state == "lobby";
 
-        if ( state.state == "banning" && state.active_team == local_team )
+        if ( state.state == "banning" && state.active_team == client_team )
         {
             let banAudio = document.getElementById( "ban-hero-audio" );
             banAudio.play();
         }
 
-        if ( state.state == "picking" && state.active_team == local_team )
+        if ( state.state == "picking" && state.active_team == client_team )
         {
             let pickAudio = document.getElementById( "pick-hero-audio" );
             pickAudio.play();
@@ -367,12 +367,12 @@
     };
     socketio.on( "update-state", onUpdateState );
 
-    function onLocalTeam( team )
+    function onUpdateClientTeam( team )
     {
-        console.log( "changing local team" );
-        local_team = team;
+        console.log( "updating client team" );
+        client_team = team;
     };
-    socketio.on( "update-client-team", onLocalTeam );
+    socketio.on( "update-client-team", onUpdateClientTeam );
 
     let timer;
     function onSetTimer( seconds )
