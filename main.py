@@ -17,6 +17,7 @@ banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) or 10 )
 banning_duration = int( getenv( "BANNING_DURATION" ) or 30 )
 picking_countdown_duration = int( getenv( "PICKING_COUNTDOWN_DURATION" ) or 10 )
 picking_duration = int( getenv( "PICKING_DURATION" ) or 30 )
+add_test_players = bool( getenv( "ADD_TEST_PLAYERS" ) ) or False
 
 team_size = 3
 pool_size = 8
@@ -165,6 +166,9 @@ class Players:
         for player in Players.players:
             player.check_dibs()
 
+    def generate_id():
+        return uuid4().hex
+
     def get( id ):
         return next( ( player for player in Players.players if player.id == id ), None )
 
@@ -217,6 +221,15 @@ class Players:
     def emit_all():
         for player in Players.players:
             player.emit_update()
+
+    def add_test_players():
+        for team in Teams.teams:
+            for index in range( team_size ):
+                player = Player( f"{ team.name }_{ index }", Players.generate_id() )
+                player.team = team
+                player.index = index
+                team.add_player( player )
+                Players.players.append( player )
 
 class Team:
     def __init__( self, name, icon, color ):
@@ -586,6 +599,9 @@ first_ban = Teams.legion
 active_team = None
 remaining_picks = 0
 
+if add_test_players:
+    Players.add_test_players()
+
 def emit_state():
     return {
         "state": state,
@@ -783,7 +799,7 @@ def home():
     if "name" not in session:
         session[ "name" ] = "Unnamed Player"
     if "id" not in session:
-        session[ "id" ] = uuid4().hex
+        session[ "id" ] = Players.generate_id()
     return render_template( "home.html",
         state = emit_state(),
         players = Players.emit(),
