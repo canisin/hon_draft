@@ -253,6 +253,15 @@ class Team:
     def picking_players( self ):
         return ( player for player in self.players if not player.hero )
 
+    def missing_stats( self ):
+        counts = { stat: 0 for stat in Heroes.stats if stat.is_enabled }
+        for player in self.players:
+            if not player.hero: continue
+            counts[ player.hero.stat ] += 1
+        min_count = min( counts.values() )
+        for count in counts.values(): count -= min_count
+        return [ stat for stat, count in counts.items() if count == 0 ]
+
     def get_other( self ):
         return Teams.get_other( self )
 
@@ -434,8 +443,13 @@ class Heroes:
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
 
-    def get_random():
-        return random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] ).get_random()
+    def get_random_ban():
+        stat = random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] )
+        return stat.get_random()
+
+    def get_random_pick( team ):
+        stat = random.choice( team.missing_stats() )
+        return stat.get_random()
 
     def emit():
         return { stat.name: stat.emit() for stat in Heroes.stats }
@@ -733,7 +747,7 @@ def ban_hero( player, hero ):
         set_state( "banning", banning_duration, banning_timer_callback )
 
 def banning_timer_callback():
-    hero = Heroes.get_random()
+    hero = Heroes.get_random_ban()
     ban_hero( None, hero )
 
 def start_picking( team, pick_count ):
@@ -790,7 +804,7 @@ def picking_timer_callback():
     for _ in range( remaining_picks ):
         player = next( ( player for player in active_team.picking_players() if player.dibs ),
            next( player for player in active_team.picking_players() ) )
-        hero = player.dibs if player.dibs else Heroes.get_random()
+        hero = player.dibs if player.dibs else Heroes.get_random_pick( active_team )
         pick_hero( player, hero, is_fate = not player.dibs )
 
 ## ROUTES ##
