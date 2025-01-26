@@ -372,7 +372,7 @@
         console.log( "changing local team" );
         local_team = team;
     };
-    socketio.on( "local-team", onLocalTeam );
+    socketio.on( "update-client-team", onLocalTeam );
 
     let timer;
     function onSetTimer( seconds )
