@@ -85,9 +85,9 @@ class Player:
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
         if is_disconnected:
-            emit_message( f"{ self.get_formatted_name() } has lost connection." )
+            emit_message( f"{ self.get_formatted_name() } has disconnected." )
         else:
-            emit_message( f"{ self.get_formatted_name() } has regained connection." )
+            emit_message( f"{ self.get_formatted_name() } has reconnected." )
         self.emit_update()
 
     def click_slot( self, team, index ):
@@ -174,14 +174,7 @@ class Players:
     def connect( id, name ):
         player = Players.get( id )
         if player:
-            # TODO: Deduplicate the following code
-            socketio.emit( "add-player", player.emit() )
-            for other_player in Players.players:
-                emit( "add-player", other_player.emit() )
-            emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
-            emit( "message", "You joined." )
-            player.update_rooms()
-            player.set_disconnected( False )
+            Players.restore( player )
         else:
             player = Player( name, id )
             Players.add( player )
@@ -196,14 +189,25 @@ class Players:
             player.set_disconnected( True )
 
     def add( player ):
+        # TODO: Deduplicate the following code
+        Players.players.append( player )
         socketio.emit( "add-player", player.emit() )
         for other_player in Players.players:
+            if other_player == player: continue
             emit( "add-player", other_player.emit() )
-        emit( "message", f"Welcome to HoNDraft [.{revision}-{sha}]" )
-        emit( "message", "You joined." )
+        emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
         player.update_rooms()
-        Players.players.append( player )
-        socketio.emit( "message", f"{ player.get_formatted_name( no_team = True ) } joined.", include_self = False )
+        emit_message( f"{ player.get_formatted_name( no_team = True ) } joined." )
+
+    def restore( player ):
+        # TODO: Deduplicate the following code
+        emit( "add-player", player.emit() )
+        for other_player in Players.players:
+            if other_player == player: continue
+            emit( "add-player", other_player.emit() )
+        emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
+        player.update_rooms()
+        player.set_disconnected( False )
 
     def remove( player ):
         Players.players.remove( player )
@@ -220,7 +224,7 @@ class Players:
         player = Players.get( id )
         old_name = player.get_formatted_name( no_team = True )
         player.set_name( name )
-        emit_message( f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }" )
+        emit_message( f"{ old_name } changed name to { player.get_formatted_name( no_team = True ) }." )
 
     def emit():
         return [ player.emit() for player in Players.players ]
@@ -697,7 +701,7 @@ def dibs_hero( player, hero ):
         f"{ player.get_formatted_name() } has called dibs on { hero.name }."
         if is_dibs else
         f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
-        team = player.team )
+        to = player.team.name )
 
 def banning_countdown_callback():
     global active_team
@@ -889,7 +893,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.get( session[ "id" ] )
-    emit_message( f"{ player.name }: { message }", team = player.team )
+    emit_message( f"{ player.name }: { message }", to = player.team.name )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
@@ -897,7 +901,7 @@ def on_command( message ):
         set_name( parameters )
         return
     print( "unrecognized command" )
-    emit( "message", "unrecognized command" )
+    emit_message( "unrecognized command", to = request.id )
 
 def set_name( name ):
     print( "received name change command" )
@@ -924,8 +928,9 @@ def emit_update_slot( team, index, player, to_team = False ):
 def emit_update_player( player ):
     socketio.emit( "update-player", player.emit() )
 
-def emit_message( message, team = None ):
-    socketio.emit( "message", message, to = team.name if team else None )
+# TODO: Consider restoring team = player.team syntax
+def emit_message( message, **kwargs ):
+    socketio.emit( "message", message, **kwargs )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
