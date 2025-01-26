@@ -372,7 +372,8 @@ class Stat:
 
         self.is_enabled = not self.is_enabled
         emit_update_state()
-        emit_message( f"{ player.get_formatted_name() } has { "enabled" if self.is_enabled else "disabled" } { self.get_formatted_name() } heroes." )
+        action = "enabled" if self.is_enabled else "disabled"
+        emit_message( f"{ player.get_formatted_name() } has { action } { self.get_formatted_name() } heroes." )
 
     def reset( self ):
         for hero in self.pool:
@@ -701,7 +702,7 @@ def dibs_hero( player, hero ):
         f"{ player.get_formatted_name() } has called dibs on { hero.name }."
         if is_dibs else
         f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
-        to = player.team.name )
+        team = player.team )
 
 def banning_countdown_callback():
     global active_team
@@ -893,7 +894,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.get( session[ "id" ] )
-    emit_message( f"{ player.name }: { message }", to = player.team.name )
+    emit_message( f"{ player.name }: { message }", team = player.team )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
@@ -928,8 +929,8 @@ def emit_update_slot( team, index, player, to_team = False ):
 def emit_update_player( player ):
     socketio.emit( "update-player", player.emit() )
 
-# TODO: Consider restoring team = player.team syntax
-def emit_message( message, **kwargs ):
+def emit_message( message, team = None, **kwargs ):
+    if team: kwargs[ "to" ] = team.name
     socketio.emit( "message", message, **kwargs )
 
 if __name__ == "__main__":
