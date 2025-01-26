@@ -830,13 +830,7 @@ def on_connect( auth ):
     id = session[ "id" ]
     name = session[ "name" ]
     player = Players.connect( id, name )
-
-    # TODO: update player and update slot are redundant,
-    # they already happen in response to the connect attempt
-    emit_update_player( player )
-    if player.team:
-        emit_update_slot( player.team, player.index, player )
-        emit_update_client_team( player.team )
+    emit_update_client_team( player.team )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
