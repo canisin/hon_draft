@@ -62,7 +62,7 @@ class Player:
         team.add_player( self )
         self.update_rooms()
         self.emit_update()
-        emit_update_client_team( team.name )
+        emit_update_client_team( team )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
 
     def set_observer( self ):
@@ -74,7 +74,7 @@ class Player:
         self.index = None
         self.update_rooms()
         self.emit_update()
-        emit_update_client_team( "observer" )
+        emit_update_client_team( None )
         emit_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
 
     def set_index( self, index ):
@@ -832,7 +832,7 @@ def on_connect( auth ):
     emit_update_player( player )
     if player.team:
         emit_update_slot( player.team, player.index, player )
-        emit_update_client_team( player.team.name )
+        emit_update_client_team( player.team )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
@@ -915,7 +915,7 @@ def emit_update_state():
     socketio.emit( "update-state", emit_state() )
 
 def emit_update_client_team( team ):
-    emit( "update-client-team", team )
+    emit( "update-client-team", team.name if team else None )
 
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
