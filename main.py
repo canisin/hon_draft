@@ -144,7 +144,7 @@ class Player:
             "id": self.id,
             "is_disconnected": self.is_disconnected,
             "hero": self.hero.emit() if self.hero else Hero.emit_null(),
-            "team": self.team.emit() if self.team else Teams.observer,
+            "team": self.team.emit() if self.team else Teams.observer.emit(),
         }
 
     def emit_with_dibs( self ):
