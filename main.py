@@ -143,7 +143,6 @@ class Player:
             "is_disconnected": self.is_disconnected,
             "hero": self.hero.emit() if self.hero
                 else self.dibs.emit() if self.dibs
-                else self.team.emit_null_hero() if self.team
                 else Hero.emit_null(),
             "is_dibs": self.dibs is not None,
             "team": self.team.emit() if self.team else Teams.emit_observer(),
@@ -265,13 +264,10 @@ class Team:
     def get_other( self ):
         return Teams.get_other( self )
 
-    def emit_null_hero( self ):
-        return Hero( "null", None, f"team-{ self.name }" ).emit()
-
     def emit_null_player( self ):
         return {
             "name": "null",
-            "hero": Hero( "null", None, f"hero-{ self.name }" ).emit(),
+            "hero": Hero( "null", None, f"slot-{ self.name }" ).emit(),
             "team": self.emit(),
         }
 
