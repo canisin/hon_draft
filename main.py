@@ -156,9 +156,6 @@ class Player:
             ret[ "is_dibs" ] = True
         return ret
 
-    def get_formatted_name( self, no_team = False ):
-        return f"<span style=\"color: { "blue" if no_team or not self.team else self.team.color }\">{ self.name }</span>"
-
 class Players:
     players = []
 
@@ -298,9 +295,6 @@ class Team:
                 [ player.emit() if ( player := self.get_player( index ) ) else None for index in range( team_size ) ]
         }
 
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
-
 class Teams:
     legion = Team( "legion", "team-legion", "green" )
     hellbourne = Team( "hellbourne", "team-hellbourne", "red" )
@@ -418,9 +412,6 @@ class Stat:
         return {
             "is_enabled": self.is_enabled,
         }
-
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
 
 class Heroes:
     agi = Stat( "agi", "agility", "green" )
@@ -809,6 +800,35 @@ def picking_timer_callback():
            next( player for player in active_team.picking_players() ) )
         hero = player.dibs if player.dibs else Heroes.get_random_pick( active_team )
         pick_hero( player, hero, is_fate = not player.dibs )
+
+def get_color( team ):
+    if not team: return "blue"
+    match team.name:
+        case "legion": return "green"
+        case "hellbourne": return "red"
+
+def format( object, **kwargs ):
+    match object:
+        case Player() as player:
+            no_team = kwargs[ "no_team" ] or False
+            color = get_color( player.team if not no_team else None )
+            name = player.name
+        case Team() as team:
+            color = get_color( team )
+            name = f"The { team.name.capitalize() }"
+        case Stat() as stat:
+            match stat.name:
+                case "agi":
+                    color = "green"
+                    name = "Agility"
+                case "int":
+                    color = "blue"
+                    name = "Intelligence"
+                case "str":
+                    color = "red"
+                    name = "Strength"
+
+    return f"<span style=\"color: { color }\">{ name }</span>"
 
 ## ROUTES ##
 @app.route( "/" )
