@@ -39,8 +39,8 @@
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else icon( "slot-" ~ team.name ) }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
+					<img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name if player and player.hero else "null" }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -111,8 +111,8 @@
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else icon( "slot-" ~ team.name ) }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
+					<img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name if player and player.hero else "null" }}</div>
                 </div>
             </div>
             {% endfor %}
