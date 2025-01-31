@@ -1,4 +1,5 @@
 {% extends 'base.html.jinja' %}
+{% macro icon( icon ) %}/static/images/{{ icon }}.png{% endmacro %}
 {% block content %}
 <div class="header">
     <div id="state">{{ state.state }}</div>
@@ -10,7 +11,7 @@
     {% set team = teams[ team_name ] %}
     <div class="team" id="{{ team_name }}">
         <div class="team-header">
-            <img class="team-header-icon" src="/static/images/team-{{ team_name }}.png"/>
+            <img class="team-header-icon" src="{{ icon( "team-" ~ team_name ) }}"/>
             <div class="team-header-name">{{ team_name }}</div>
         </div>
         <div class="first-ban-or-team-status">
@@ -35,11 +36,11 @@
             {% set index = loop.index0 %}
             <div class="slot" id="{{ team_name }}-{{ index }}" onClick="clickSlot( '{{ team_name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="/static/images/team-{{ team_name }}.png"/>
+                    <img class="slot-player-icon" src="{{ icon( "team-" ~ team_name ) }}"/>
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else "/static/images/slot-" ~ team_name ~ ".png" }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else icon( "slot-" ~ team_name ) }}"/>
                     <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
                 </div>
             </div>
@@ -83,7 +84,7 @@
     {% set team = teams[ team_name ] %}
     <div class="team" id="{{ team_name }}">
         <div class="team-header">
-            <img class="team-header-icon" src="/static/images/team-{{ team_name }}.png"/>
+            <img class="team-header-icon" src="{{ icon( "team-" ~ team_name ) }}"/>
             <div class="team-header-name">{{ team_name }}</div>
         </div>
         <div class="first-ban-or-team-status">
@@ -108,11 +109,11 @@
             {% set index = loop.index0 %}
             <div class="slot" id="{{ team_name }}-{{ index }}" onClick="clickSlot( '{{ team_name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="/static/images/team-{{ team_name }}.png"/>
+                    <img class="slot-player-icon" src="{{ icon( "team-" ~ team_name ) }}"/>
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else "/static/images/slot-" ~ team_name ~ ".png" }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else icon( "slot-" ~ team_name ) }}"/>
                     <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
                 </div>
             </div>
