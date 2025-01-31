@@ -52,6 +52,7 @@ Add a scoll bar to the player list
 
 Add a /reset command
 
+Make the state variables work correctly on download
 
 
 NEW APPROACH :)
@@ -74,3 +75,7 @@ x players without a hero in the download
 - stat "full names"
 - stat colors
 - remove all usages of emit icon
+
+
+use a copy of the icon macro for sounds
+

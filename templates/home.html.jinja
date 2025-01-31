@@ -146,6 +146,12 @@
 <script type="text/javascript">
     "use strict";
 
+    // TOOD: I could not find a way to avoid duplication between this and the jinja macro
+    function icon( icon )
+    {
+        return `/static/images/${ icon }.png`;
+    };
+
     var socketio = io();
 
     function clickSlot( team, index )
@@ -443,8 +449,6 @@
         let slotDiv = document.getElementById( `${ team }-${ index }` );
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
         playerName.innerHTML = player.name;
-        let playerIcon = slotDiv.getElementsByClassName( "slot-player-icon" )[ 0 ];
-        playerIcon.src = player.team.icon;
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
         heroName.innerHTML = player.hero.name;
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
@@ -460,7 +464,7 @@
         playerName.innerHTML = player.name;
         playerName.style.color = player.color;
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
-        playerIcon.src = player.team.icon;
+        playerIcon.src = icon( player.team ? "team-" + player.team.name : "observer" );
     };
 
     function onAddPlayer( player )
