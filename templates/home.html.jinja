@@ -266,7 +266,7 @@
 
         if ( state.state == "banning" && team == state.active_team )
         {
-            Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
+            Array.from( arrows ).forEach( arrow => arrow.src = "{{ icon( "arrow-red" ) }}" );
             title.innerHTML = "Banning";
             title.style.color = "red";
             subtitle.innerHTML = "";
@@ -274,7 +274,7 @@
         }
         else if ( state.state == "picking" && team == state.active_team )
         {
-            Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
+            Array.from( arrows ).forEach( arrow => arrow.src = "{{ icon( "arrow-green" ) }}" );
             title.innerHTML = "Picking";
             title.style.color = "green";
             subtitle.innerHTML = `(Remaining Picks: ${ state.remaining_picks })`;
