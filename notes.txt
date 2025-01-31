@@ -52,3 +52,20 @@ Add a scoll bar to the player list
 
 Add a /reset command
 
+
+
+NEW APPROACH :)
+- there will be no difference between the data that is emitted for initial connection vs any updates
+- the python code will not insert null names or team icons, or any icons at all, just pure logic information
+- all of the above will be handled by java script
+  o IMPORTANT: Will it be possible to avoid duplication?
+- things like messages and dibs updates will only be emitted to specific clients
+- but still, things such as coloring a player's name by their team or greying a dibs will happen in javascript
+
+- the initial download should have additional data containing static information such as team size and pool size
+
+- wonder if i can declare a function in the template thingy so that I don't have to type "static/images/**.png" all the time
+
+
+- now that we will be making better use of jinja templates, perhaps home.html should be renamed to home.html.jinja
+

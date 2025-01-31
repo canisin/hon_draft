@@ -26,6 +26,7 @@ ban_count = 4
 initial_pick_count = 1
 later_pick_count = 2
 
+# TODO: Move to js
 fate_formatted = "<span style=\"color:orange\">Fate</span>"
 
 revision = open( "revision.txt" ).read().strip()
@@ -35,6 +36,7 @@ app = Flask( __name__ )
 app.secret_key = "honzor"
 socketio = SocketIO( app )
 
+# TODO: Eventually delete
 def emit_icon( icon ):
     return f"/static/images/{ icon }.png"
 
@@ -249,7 +251,7 @@ class Team:
         self.name = name
         self.icon = icon
         self.color = color
-        self.players = []
+        self.players = []   # TODO: Consider converting this to a map from index to player so that the player doesn't have to keep track of their index
 
     def get_player( self, index ):
         return next( ( player for player in self.players if player.index == index ), None )
@@ -278,6 +280,7 @@ class Team:
     def get_other( self ):
         return Teams.get_other( self )
 
+    # TODO: Delete
     def emit_null_player( self ):
         return {
             "name": "null",
@@ -290,8 +293,9 @@ class Team:
             "name": self.name,
             "icon": emit_icon( self.icon ),
             "color": self.color,
+            # TODO: List or map?
             "players": None if not with_players else
-                [ player.emit() if ( player := self.get_player( index ) ) else self.emit_null_player() for index in range( team_size ) ]
+                [ player.emit() if ( player := self.get_player( index ) ) else None for index in range( team_size ) ]
         }
 
     def get_formatted_name( self ):
@@ -609,6 +613,12 @@ remaining_picks = 0
 if add_test_players:
     Players.add_test_players()
 
+def emit_constants():
+    return {
+        "team_size": team_size,
+        "pool_size": pool_size,
+    }
+
 def emit_state():
     return {
         "state": state,
@@ -808,6 +818,7 @@ def home():
     if "id" not in session:
         session[ "id" ] = Players.generate_id()
     return render_template( "home.html",
+        constants = emit_constants(),
         state = emit_state(),
         players = Players.emit(),
         teams = Teams.emit(),

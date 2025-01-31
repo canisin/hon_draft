@@ -6,16 +6,17 @@
 </div>
 <div class="main">
     <div class="outer-margin"></div>
-    {% set team = teams[ "legion" ] %}
-    <div class="team" id="{{ team.name }}">
+	{% set team_name = "legion" %}
+    {% set team = teams[ team_name ] %}
+    <div class="team" id="{{ team_name }}">
         <div class="team-header">
-            <img class="team-header-icon" src={{ team.icon }}/>
-            <div class="team-header-name">{{ team.name }}</div>
+            <img class="team-header-icon" src="/static/images/team-{{ team_name }}.png"/>
+            <div class="team-header-name">{{ team_name }}</div>
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
-                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team_name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team_name }}' )"/>
+                <label class="first-ban-label" for="{{ team_name }}-first-ban-checkbox">First Ban</label>
             </div>
             <div class="team-status">
                 <div class="team-status-title">
@@ -32,14 +33,14 @@
         <div class="team-slots">
             {% for player in team.players %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
+            <div class="slot" id="{{ team_name }}-{{ index }}" onClick="clickSlot( '{{ team_name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
-                    <div class="slot-player-name">{{ player.name }}</div>
+                    <img class="slot-player-icon" src="/static/images/team-{{ team_name }}.png"/>
+                    <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else "/static/images/slot-" ~ team_name ~ ".png" }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -78,16 +79,17 @@
         {% endfor %}
     </div>
     <div class="inner-margin"></div>
-    {% set team = teams[ "hellbourne" ] %}
-    <div class="team" id="{{ team.name }}">
+	{% set team_name = "hellbourne" %}
+    {% set team = teams[ team_name ] %}
+    <div class="team" id="{{ team_name }}">
         <div class="team-header">
-            <img class="team-header-icon" src={{ team.icon }}/>
-            <div class="team-header-name">{{ team.name }}</div>
+            <img class="team-header-icon" src="/static/images/team-{{ team_name }}.png"/>
+            <div class="team-header-name">{{ team_name }}</div>
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
-                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
+                <input type="checkbox" class="first-ban-checkbox" id="{{ team_name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team_name }}' )"/>
+                <label class="first-ban-label" for="{{ team_name }}-first-ban-checkbox">First Ban</label>
             </div>
             <div class="team-status">
                 <div class="team-status-title">
@@ -104,14 +106,14 @@
         <div class="team-slots">
             {% for player in team.players %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
+            <div class="slot" id="{{ team_name }}-{{ index }}" onClick="clickSlot( '{{ team_name }}', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
-                    <div class="slot-player-name">{{ player.name }}</div>
+                    <img class="slot-player-icon" src="/static/images/team-{{ team_name }}.png"/>
+                    <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player else "/static/images/slot-" ~ team_name ~ ".png" }}"/>
+                    <div class="slot-hero-name">{{ player.hero.name if player else "null" }}</div>
                 </div>
             </div>
             {% endfor %}
