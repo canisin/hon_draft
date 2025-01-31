@@ -74,7 +74,7 @@ x players without a hero in the download
 - team colors
 - stat "full names"
 - stat colors
-- remove all usages of emit icon
+- remove all usages of emit icon -> hero icons
 
 
 use a copy of the icon macro for sounds

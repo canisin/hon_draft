@@ -39,7 +39,7 @@
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-					<img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
                     <div class="slot-hero-name">{{ player.hero.name if player and player.hero else "null" }}</div>
                 </div>
             </div>
@@ -111,7 +111,7 @@
                     <div class="slot-player-name">{{ player.name if player else "null" }}</div>
                 </div>
                 <div class="slot-hero">
-					<img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
+                    <img class="slot-hero-icon" src="{{ player.hero.icon if player and player.hero else icon( "hero-none" ) if player else icon( "slot-" ~ team.name ) }}"/>
                     <div class="slot-hero-name">{{ player.hero.name if player and player.hero else "null" }}</div>
                 </div>
             </div>
@@ -121,8 +121,8 @@
     <div class="outer-margin"></div>
 </div>
 <div class="draft-controls">
-	<button id="start-draft-button" onClick="startDraft()">Start Draft</button>
-	<button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
+    <button id="start-draft-button" onClick="startDraft()">Start Draft</button>
+    <button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
 </div>
 <div class="chat-area">
     <div class="messages">
@@ -462,7 +462,18 @@
         let playerDiv = document.getElementById( player.id );
         let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
         playerName.innerHTML = player.name;
-        playerName.style.color = player.color;
+        switch( player.team )
+        {
+            case "legion":
+                playerName.style.color = "green";
+                break;
+            case "hellbourne":
+                playerName.style.color = "red";
+                break;
+            case null:
+                playerName.style.color = "blue";
+                break;
+        }
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
         playerIcon.src = icon( player.team ? "team-" + player.team.name : "observer" );
     };
