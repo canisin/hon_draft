@@ -67,5 +67,3 @@ NEW APPROACH :)
 - wonder if i can declare a function in the template thingy so that I don't have to type "static/images/**.png" all the time
 
 
-- now that we will be making better use of jinja templates, perhaps home.html should be renamed to home.html.jinja
-

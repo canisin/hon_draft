@@ -817,7 +817,7 @@ def home():
         session[ "name" ] = "Unnamed Player"
     if "id" not in session:
         session[ "id" ] = Players.generate_id()
-    return render_template( "home.html",
+    return render_template( "home.html.jinja",
         constants = emit_constants(),
         state = emit_state(),
         players = Players.emit(),
