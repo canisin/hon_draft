@@ -67,8 +67,8 @@ NEW APPROACH :)
 - wonder if i can declare a function in the template thingy so that I don't have to type "static/images/**.png" all the time
 
 x teams containing none players in the download
-- pools containing none heroes in the download
-- players without a hero in the download
+x pools containing none heroes in the download
+x players without a hero in the download
 - team icons
 - team colors
 - stat "full names"

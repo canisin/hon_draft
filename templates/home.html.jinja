@@ -51,21 +51,21 @@
         {% for stat, stat_name in [ ( "agi", "agility" ), ( "int", "intelligence" ), ( "str", "strength" ) ] %}
         <div class="stat" id="{{ stat }}">
             <div class="stat-header">
-                <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png"/>
+                <img class="stat-header-icon" src="{{ icon( stat_name ) }}"/>
                 <div class="stat-header-name">{{ stat_name }}</div>
                 <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox" onClick="clickToggleStat( '{{ stat }}' )"/>
             </div>
             <div class="stat-heroes">
-                {% for index in range( 8 ) %}
-                {% set hero = heroes[ stat ][ index ] %}
+                {% for index in range( constants.pool_size ) %}
+                {% set hero = heroes[ stat ][ index ] if heroes[ stat ] else None %}
                 <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )" oncontextmenu="dibsHero( event, '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
-                        <img class="hero-icon" src="{{ hero.icon }}"/>
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
+                        <img class="hero-icon" src="{{ hero.icon if hero else icon( "hero-none" ) }}"/>
+                        <img class="hero-icon-banned" src="{{ icon( "hero-banned" ) }}" style="visibility: {{ "visible" if hero and hero.is_banned else "hidden" }}"/>
                     </div>
                     <div class="hero-controls">
                         <div class="hero-name-container">
-                            <div class="hero-name">{{ hero.name }}</div>
+                            <div class="hero-name">{{ hero.name if hero else "null" }}</div>
                         </div>
                         <div class="hero-button-container">
                             <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>

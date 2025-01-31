@@ -145,8 +145,8 @@ class Player:
             "name": self.name,
             "id": self.id,
             "is_disconnected": self.is_disconnected,
-            "hero": self.hero.emit() if self.hero else Hero.emit_null(),
-            "team": self.team.emit() if self.team else Teams.observer.emit(),
+            "hero": self.hero.emit() if self.hero else None,
+            "team": self.team.emit() if self.team else None,
         }
 
     def emit_with_dibs( self ):
@@ -412,7 +412,7 @@ class Stat:
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
 
     def emit( self ):
-        return [ hero.emit() for hero in self.pool ] if self.pool else [ Hero.emit_null() for _ in range( pool_size ) ]
+        return [ hero.emit() for hero in self.pool ] if self.pool else None
 
     def emit_state( self ):
         return {
