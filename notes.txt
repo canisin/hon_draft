@@ -54,8 +54,6 @@ Add an icon for disconnected players
 Add a /reset command
 
 
-
-- belki ban dibs - ama fikren kafama çok oturmuyor gibi
 - click sounds
 - add a button to name yourself
   o as a relatively simple way to implement this, it could simply add /name to the chat box
@@ -63,133 +61,29 @@ Add a /reset command
 - remove hero names from teams
 - add tooltips for heroes
 
-
-- a reconnecting player doesn't seem to get the state correctly
-- hide dibs on client?
-
-- There needs to be a better way of differentiating between socketio.emit and emit
-
-
-
-player.get_formatted_name( no_team = True ) is super cumbersome.. also why??
-reconnecting player does not receive slot information
-
 it would be nice if clicking on hero controls would not select (or deselect?) hero
 
 ban button is still visible on an already banned hero..
 .. i suppose the pick button will be there on already banned or picked heroes, too :(
 
-
-- hide dibs and replace picked hero icons on the client rather than in the emits from the server
+- hide dibs on the client
 - include client_team when downloading home (if possible)
 - this might remove the need for the player return from Players.connect
-- consider restoring old rooms (consider if observer messages will be visible to everyone.. you can still add an observer room that only observers are a part of)
-- consider if there is a possibility of removing the recursion between player and team when emitting
 
-
-- Dibs will remain a secret update
-- A reconnecting player's team's dibs will be sent to them after they reconnect
-- A player will never emit itself with its dibs unless explicitly asked to do so, which will only happen in the dinner update
-- A player's team will be part of the original home download
-- A hero will always emit itself with all of its information, even if it has already been picked. Hero pool emits will explicitly emit the null hero instead of a picked hero 
-- With the (hopefully final) changes to dibs emitting, I should be able to add an observer room and simplify message sending
-- Consider if some of the heavy lifting for the server vs client information hiding or transformations can be done by the outgoing messages functions.
-- Once this mess is over: 
 - Fix ban button on banned heroes and potential similar issues with pick button 
-- Fix that a click on the van/pick buttons also select the hero 
+- Fix that a click on the ban/pick buttons also select the hero 
 - After those two: 
 - Add a new post-draft state so that a leaving/reconnecting player cannot mess up the results of a draft or that players cannot change teams before the screen is cleared.
 - Add a clear button to the post draft state
 - Make the start, cancel and clear buttons replace each other
 
-
-
-- I think my whole thing stinks. I keep running into weird issues.
-  Maybe I should differentiate between serializing for the home download
-  vs emitting payloads for updates. These don't need to be the same functions
-  or the same serializations.
-
-
-Returning to this in 2026 after about one full year break, my first instinct is to do away with all hidden information. All clients should always receive the full information and all information hiding should be done on the client. There is too little to gain from proper secrets.
-
-
-FROM THE CLIENTS PERSPECTIVE
-objects that should be included in the initial download and their properties:
-state
- state
- first ban
- active team
- stat states
-client team
-teams
- slots
-  team
-  index
-  player name
-  is disconnected
-  hero name
-  hero icon
-  hero stat
-heroes
- stat
- index
- name
- icon
- is banned
- is picked
-players
- name
- team
- is disconnected
-
-* Update events that can be received by the client:
-update state
-set timer
-update slot
-update hero
-update player
-add player
-remove player
-message
-client team
-
-commands:
-message
-slot
-dibs
-ban
-pick
-start
-cancel
-toggle stat
-toggle first ban
-
-
-confusion of concepts:
-player -> (logic) player
- name, id, team, team_index, dibs_hero, picked_hero, is_disconnected
-player -> chat_player
- name, team_name
-
-hero -> (logic) hero
- name, stat, icon, is_drafted or index, is_available, is_picked, is_banned
-hero -> pool hero
- name, stat, index, icon, is banned, is picked
-
-slot
-  team, index, is_empty, player_name, is_disconnected, hero_name, hero_icon, is_dibs, hero_stat
-
-
-refactor the difference between socketio.emit and emit
 setting a client team should update all slots to hide or reveal dibs
-add emit update helpers
 
 implement status icons for disconnected players
 
 fix dibs leakage by removing all dibs from initial render
  and the server sending slot updates on team change (including initial team assignment)
 
-
 unclear how an ended draft is handled and how players are supposed to move around teams after a draft has ended
 
-
+consider setting player team to observer instead of none
