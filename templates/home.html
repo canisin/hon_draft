@@ -133,7 +133,7 @@
         <div class="players-header">Players</div>
         <div id="players-list">
             {% for player in players %}
-            <div class="players-list-item" id="${ player.id }">
+            <div class="players-list-item" id="{{ player.id }}">
                 <img class="players-list-icon" src="/static/images/{{ player.icon }}.png"/>
                 <div class="players-list-name" style="color: {{ player.color }}">{{ player.name }}</div>
             </div>
@@ -149,6 +149,11 @@
 
 <script type="text/javascript">
     "use strict";
+
+    console.log( "received {{ players|list|count }} players" );
+    {% for player in players %}
+    console.log( "{{ player.name }} - {{ player.id }}" );
+    {% endfor %}
 
     var socketio = io();
 
@@ -451,7 +456,7 @@
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
         heroName.innerHTML = slot ? slot.hero ? slot.hero.name : "None" : "";
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
-        heroIcon.src = `/static/images/${slot ? slot.hero ? slot.hero.icon : "hero-none" : `slot-${team}`}.png`;
+        heroIcon.src = `/static/images/${ slot ? slot.hero ? slot.hero.icon : "hero-none" : `slot-${ team }` }.png`;
         heroIcon.style.filter = slot && slot.is_dibs ? "grayscale( 1 )" : "";
     };
     socketio.on( "update-slot", onUpdateSlot );
@@ -463,16 +468,16 @@
         playerName.innerHTML = player.name;
         playerName.style.color = player.color;
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
-        playerIcon.src = player.icon;
+        playerIcon.src = `/static/images/${ player.icon }.png`;
     };
 
     function onAddPlayer( player )
     {
-        console.log( "adding player" );
+        console.log( `adding player ${ player.name }-${ player.id }` );
         document.getElementById( "players-list" ).innerHTML += `
             <div class="players-list-item" id="${ player.id }">
                 <img class="players-list-icon"/>
-                <div class="players-list-name" >${ player.name }</div>
+                <div class="players-list-name"/>
             </div>
         `;
         updatePlayer( player );
@@ -481,7 +486,7 @@
 
     function onRemovePlayer( id )
     {
-        console.log( "removing player" );
+        console.log( `removing player ${ player.id }` );
         let player = document.getElementById( `${ id }` );
         player.remove();
     };
@@ -489,7 +494,7 @@
 
     function onUpdatePlayer( player )
     {
-        console.log( "updating player" );
+        console.log( `updating player ${ player.name }-${ player.id }` );
         updatePlayer( player );
     };
     socketio.on( "update-player", onUpdatePlayer );
