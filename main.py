@@ -589,8 +589,7 @@ def set_timer( seconds, callback ):
     else:
         timer = Timer( seconds, callback )
         timer.start()
-
-    emit_set_timer( seconds )
+        emit_set_timer( seconds )
 
 def set_first_ban( player, team ):
     if state != "lobby":
@@ -616,16 +615,13 @@ def start_draft( player ):
     Heroes.reset()
     Players.reset()
     set_state( "pool_countdown", pool_countdown_duration, pool_countdown_callback )
+    draft_countdown( pool_countdown_duration )
 
-    time_remaining = pool_countdown_duration
-    def announce_countdown():
-        if state != "pool_countdown": return
-        nonlocal time_remaining
-        emit_message( f"Draft starting in { time_remaining } seconds.." )
-        time_remaining -= 1
-        if time_remaining == 0: return
-        Timer( 1, announce_countdown ).start()
-    announce_countdown()
+def draft_countdown( seconds ):
+    if state != "pool_countdown": return
+    if seconds == 0: return
+    emit_message( f"Draft starting in { seconds } seconds.." )
+    Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
     if state == "lobby":

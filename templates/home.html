@@ -143,7 +143,7 @@
 </div>
 
 <audio id="clock-tick-audio" src="/static/sounds/clock-tick.ogg"/>
-<audio id="banning-draft-audio" src="/static/sounds/banning-draft.ogg"/>
+<audio id="start-draft-audio" src="/static/sounds/banning-draft.ogg"/>
 <audio id="ban-hero-audio" src="/static/sounds/ban-hero.ogg"/>
 <audio id="pick-hero-audio" src="/static/sounds/pick-hero.ogg"/>
 
@@ -357,16 +357,22 @@
         let cancelDraftButton = document.getElementById( "cancel-draft-button" );
         cancelDraftButton.disabled = state.state == "lobby";
 
+        if ( state.state == "banning_countdown" )
+        {
+            let startDraftAudio = document.getElementById( "start-draft-audio" );
+            startDraftAudio.play();
+        }
+
         if ( state.state == "banning" && state.active_team == client_team )
         {
-            let banAudio = document.getElementById( "ban-hero-audio" );
-            banAudio.play();
+            let banHeroAudio = document.getElementById( "ban-hero-audio" );
+            banHeroAudio.play();
         }
 
         if ( state.state == "picking" && state.active_team == client_team )
         {
-            let pickAudio = document.getElementById( "pick-hero-audio" );
-            pickAudio.play();
+            let pickHeroAudio = document.getElementById( "pick-hero-audio" );
+            pickHeroAudio.play();
         }
 
         setFirstBan( state );
@@ -392,30 +398,28 @@
 
         let countdownLabel = document.getElementById( "countdown" );
         let tickAudio = document.getElementById( "clock-tick-audio" );
-        let modeAudio = document.getElementById( "banning-draft-audio" );
 
         let tick = () => {
             countdownLabel.innerHTML = seconds;
 
-            if ( current_state == "pool_countdown" )
+            if ( seconds > 0 )
             {
-                if ( seconds > 0 )
+                if ( current_state == "pool_countdown" )
+                {
                     tickAudio.play();
-                else
-                    modeAudio.play();
+                }
+
+                --seconds;
+            }
+            else
+            {
+                clearInterval( timer );
             }
         };
 
         clearInterval( timer );
         tick();
-        if( seconds == 0 ) return;
-
-        timer = setInterval( () => {
-            --seconds;
-            tick();
-            if( seconds == 0 )
-                clearInterval( timer );
-        }, 1000 );
+        timer = setInterval( tick, 1000 );
     };
     socketio.on( "set-timer", onSetTimer );
 
