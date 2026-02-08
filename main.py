@@ -69,7 +69,7 @@ class Player:
         emit_update_slot( self.team, self.index, self )
         emit_update_player( self )
         emit_update_client_team( team )
-        emit_message( f"{ self.get_formatted_name( no_team = True ) } has joined { team.get_formatted_name() }." )
+        emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
 
     def set_observer( self ):
         old_team = self.team
@@ -81,7 +81,7 @@ class Player:
         self.update_rooms()
         emit_update_player( self )
         emit_update_client_team( None )
-        emit_message( f"{ self.get_formatted_name( no_team = True ) } is now an observer." )
+        emit_message( f"{ self.get_formatted_name() } is now an observer." )
 
     def set_index( self, index ):
         emit_update_slot( self.team, self.index, None )
@@ -156,13 +156,12 @@ class Player:
             "name": self.name,
             "id": self.id,
             "is_disconnected": self.is_disconnected,
-            "icon": self.team.icon if self.team else Teams.observer.icon,
-            "color": self.team.color if self.team else Teams.observer.color,
+            "team": ( self.team if self.team else Teams.observer ).name,
         }
 
-    # TODO: Consider removing no_team
-    def get_formatted_name( self, no_team = False ):
-        return f"<span style=\"color: { "blue" if no_team or not self.team else self.team.color }\">{ self.name }</span>"
+    def get_formatted_name( self ):
+        color = ( self.team if self.team else Teams.observer ).color
+        return f"<span style=\"color: { color }\">{ self.name }</span>"
 
 class Players:
     players = []
@@ -206,7 +205,7 @@ class Players:
         emit_add_player( player )
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
         player.update_rooms()
-        emit_message( f"{ player.get_formatted_name( no_team = True ) } joined." )
+        emit_message( f"{ player.get_formatted_name() } joined." )
 
     def restore( player ):
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
@@ -220,24 +219,23 @@ class Players:
             emit_update_slot( player.team, player.index, None )
         emit_remove_player( player )
         if player.is_disconnected:
-            emit_message( f"{ player.get_formatted_name( no_team = True ) } has been removed." )
+            emit_message( f"{ player.get_formatted_name() } has been removed." )
         else:
-            emit_message( f"{ player.get_formatted_name( no_team = True ) } left." )
+            emit_message( f"{ player.get_formatted_name() } left." )
 
     def rename( id, name ):
         player = Players.get( id )
-        old_name = player.get_formatted_name( no_team = True )
+        old_name = player.get_formatted_name()
         player.set_name( name )
-        new_name = player.get_formatted_name( no_team = True )
+        new_name = player.get_formatted_name()
         emit_message( f"{ old_name } changed name to { new_name }." )
 
     def serialize():
         return [ player.serialize_player() for player in Players.players ]
 
 class Team:
-    def __init__( self, name, icon, color ):
+    def __init__( self, name, color ):
         self.name = name
-        self.icon = icon
         self.color = color
         self.players = []
 
@@ -275,10 +273,10 @@ class Team:
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
 
 class Teams:
-    legion = Team( "legion", "team-legion", "green" )
-    hellbourne = Team( "hellbourne", "team-hellbourne", "red" )
+    legion = Team( "legion", "green" )
+    hellbourne = Team( "hellbourne", "red" )
     teams = [ legion, hellbourne ]
-    observer = Team( "observers", "observer", "blue" )
+    observer = Team( "observers", "blue" )
 
     def get( team ):
         if team == "legion": return Teams.legion

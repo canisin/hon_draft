@@ -192,16 +192,10 @@ refactor the difference between socketio.emit and emit
 rework player.dibs into player.hero and player.is_dibs
 setting a client team should update all slots to hide or reveal dibs
 
-
 implement status icons for disconnected players
 
 fix dibs leakage by removing all dibs from initial render
  and the server sending slot updates on team change (including initial team assignment)
-
-
-team icon and team color (from player.serialize_player) should be defined in the interface
-this is already the case for the slots
-
 
 
 unclear how an ended draft is handled and how players are supposed to move around teams after a draft has ended

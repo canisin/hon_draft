@@ -102,8 +102,8 @@
         <div id="players-list">
             {% for player in players %}
             <div class="players-list-item" id="{{ player.id }}">
-                <img class="players-list-icon" src="/static/images/{{ player.icon }}.png"/>
-                <div class="players-list-name" style="color: {{ player.color }}">{{ player.name }}</div>
+                <img class="players-list-icon"/>
+                <div class="players-list-name"/>
             </div>
             {% endfor %}
         </div>
@@ -117,11 +117,6 @@
 
 <script type="text/javascript">
     "use strict";
-
-    console.log( "received {{ players|list|count }} players" );
-    {% for player in players %}
-    console.log( "{{ player.name }} - {{ player.id }}" );
-    {% endfor %}
 
     var socketio = io();
 
@@ -433,15 +428,49 @@
     };
     socketio.on( "update-slot", onUpdateSlot );
 
+    // TODO: This should be doable via css
+    // TODO: Colors should also be removed from python code
+    function getTeamColor( team )
+    {
+        switch ( team )
+        {
+            case "legion":
+                return "green";
+            case "hellbourne":
+                return "red";
+            case "observers":
+                return "blue";
+        }
+    }
+
+    function getTeamIcon( team )
+    {
+        switch ( team )
+        {
+            case "legion":
+                return "team-legion";
+            case "hellbourne":
+                return "team-hellbourne";
+            case "observers":
+                return "observer";
+        }
+    }
+
     function updatePlayer( player )
     {
+        console.log( `updating player id=${ player.id } name=${ player.name } team=${ player.team }` )
+
         let playerDiv = document.getElementById( player.id );
         let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
         playerName.innerHTML = player.name;
-        playerName.style.color = player.color;
+        playerName.style.color = getTeamColor( player.team );
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
-        playerIcon.src = `/static/images/${ player.icon }.png`;
+        playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
     };
+
+    {% for player in players %}
+    updatePlayer( {{ player|tojson }} );
+    {% endfor %}
 
     function onAddPlayer( player )
     {
