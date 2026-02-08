@@ -319,6 +319,10 @@
     justify-content: center;
 }
 
+.hero:hover .hero-button-container {
+    display: grid;
+}
+
 .ban-hero-button {
     font-size: 10px;
 }
