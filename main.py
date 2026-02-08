@@ -10,6 +10,14 @@ from dotenv import load_dotenv
 from os import getenv
 from os import popen
 
+def getenv_bool( key, default ):
+    value = getenv( key )
+    if not value: return default
+    value = value.lower()
+    if value in ( "true", "yes" ): return True
+    if value in ( "false", "no" ): return False
+    raise ValueError()
+
 load_dotenv()
 
 pool_countdown_duration = int( getenv( "POOL_COUNTDOWN_DURATION" ) or 5 )
@@ -17,7 +25,7 @@ banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) or 10 )
 banning_duration = int( getenv( "BANNING_DURATION" ) or 30 )
 picking_countdown_duration = int( getenv( "PICKING_COUNTDOWN_DURATION" ) or 10 )
 picking_duration = int( getenv( "PICKING_DURATION" ) or 30 )
-add_test_players = bool( getenv( "ADD_TEST_PLAYERS" ) ) or False
+add_test_players = getenv_bool( "ADD_TEST_PLAYERS", False )
 
 team_size = 3
 pool_size = 8
@@ -944,5 +952,5 @@ def emit_message( message, team = None, **kwargs ):
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None
-    debug = getenv( "DEBUG" ) or False
+    debug = getenv_bool( "DEBUG", False )
     socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug )
