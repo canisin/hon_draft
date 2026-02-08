@@ -180,17 +180,9 @@ slot
   team, index, is_empty, player_name, is_disconnected, hero_name, hero_icon, is_dibs, hero_stat
 
 
-organization of responsibilities:
-- who posts messages? utility function, teams/players, or individual player or team?
-- who emits updates?
-- who checks conditions?
-- implement utility function for all actions?
-
-some offenders are: stat.toggle, player.click_slot
-
 refactor the difference between socketio.emit and emit
-rework player.dibs into player.hero and player.is_dibs
 setting a client team should update all slots to hide or reveal dibs
+add emit update helpers
 
 implement status icons for disconnected players
 

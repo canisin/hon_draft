@@ -54,34 +54,28 @@ class Player:
         self.is_disconnected = False
 
     def set_name( self, name ):
+        old_name = self.get_formatted_name()
         self.name = name
         emit_update_player( self )
+        new_name = player.get_formatted_name()
+        emit_message( f"{ old_name } changed name to { new_name }." )
 
-    def set_team( self, team, index ):
+    def set_team( self, team, index = None ):
         old_team = self.team
         if old_team:
             old_team.remove_player( self )
             emit_update_slot( old_team, self.index, None )
         self.team = team
         self.index = index
-        team.add_player( self )
         self.update_rooms()
-        emit_update_slot( self.team, self.index, self )
         emit_update_player( self )
         emit_update_client_team( team )
-        emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
-
-    def set_observer( self ):
-        old_team = self.team
-        if old_team:
-            old_team.remove_player( self )
-            emit_update_slot( old_team, self.index, None )
-        self.team = None
-        self.index = None
-        self.update_rooms()
-        emit_update_player( self )
-        emit_update_client_team( None )
-        emit_message( f"{ self.get_formatted_name() } is now an observer." )
+        if team:
+            team.add_player( self )
+            emit_update_slot( self.team, self.index, self )
+            emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
+        else:
+            emit_message( f"{ self.get_formatted_name() } is now an observer." )
 
     def set_index( self, index ):
         emit_update_slot( self.team, self.index, None )
@@ -98,32 +92,27 @@ class Player:
             emit_update_slot( self.team, self.index, self )
         emit_update_player( self )
 
-    def click_slot( self, team, index ):
-        if state != "lobby":
-            return
-        slot_player = team.get_player( index )
-        if slot_player is None:
-            if self.team == team:
-                self.set_index( index )
-            else:
-                self.set_team( team, index )
-        elif slot_player == self:
-            self.set_observer()
-
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
         emit_update_slot( self.team, self.index, self )
 
-    def set_dibs( self, hero ):
+    def toggle_dibs( self, hero ):
         assert not self.hero
-        self.dibs = hero
+        is_dibs = self.dibs != hero
+        self.dibs = hero if is_dibs else None
         emit_update_slot( self.team, self.index, self )
+        emit_message(
+            f"{ player.get_formatted_name() } has called dibs on { hero.name }."
+            if is_dibs else
+            f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
+            team = player.team )
 
     def check_dibs( self ):
         if not self.dibs: return
         if not self.dibs.is_available():
-            self.set_dibs( None )
+            self.dibs = None
+            emit_update_slot( self.team, self.index, self )
 
     def reset( self ):
         self.hero = None
@@ -222,13 +211,6 @@ class Players:
             emit_message( f"{ player.get_formatted_name() } has been removed." )
         else:
             emit_message( f"{ player.get_formatted_name() } left." )
-
-    def rename( id, name ):
-        player = Players.get( id )
-        old_name = player.get_formatted_name()
-        player.set_name( name )
-        new_name = player.get_formatted_name()
-        emit_message( f"{ old_name } changed name to { new_name }." )
 
     def serialize():
         return [ player.serialize_player() for player in Players.players ]
@@ -331,15 +313,6 @@ class Stat:
         self.color = color
         self.is_enabled = True
         self.pool = []
-
-    def toggle( self, player ):
-        if state != "lobby":
-            return
-
-        self.is_enabled = not self.is_enabled
-        emit_update_state()
-        action = "enabled" if self.is_enabled else "disabled"
-        emit_message( f"{ player.get_formatted_name() } has { action } { self.get_formatted_name() } heroes." )
 
     def reset( self ):
         for hero in self.pool:
@@ -601,6 +574,27 @@ def set_first_ban( player, team ):
     emit_update_state()
     emit_message( f"{ player.get_formatted_name() } has set { team.get_formatted_name() } to ban first." )
 
+def toggle_stat( player, stat ):
+    if state != "lobby":
+        return
+
+    stat.is_enabled = not stat.is_enabled
+    emit_update_state()
+    action = "enabled" if stat.is_enabled else "disabled"
+    emit_message( f"{ player.get_formatted_name() } has { action } { stat.get_formatted_name() } heroes." )
+
+def click_slot( player, team, index ):
+    if state != "lobby": return
+
+    slot_player = team.get_player( index )
+    if slot_player is None:
+        if player.team == team:
+            player.set_index( index )
+        else:
+            player.set_team( team, index )
+    elif slot_player == player:
+        player.set_team( None )
+
 def start_draft( player ):
     if state != "lobby":
         return
@@ -650,13 +644,7 @@ def dibs_hero( player, hero ):
     if hero.is_picked:
         return
 
-    is_dibs = player.dibs != hero
-    player.set_dibs( hero if is_dibs else None )
-    emit_message(
-        f"{ player.get_formatted_name() } has called dibs on { hero.name }."
-        if is_dibs else
-        f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
-        team = player.team )
+    player.toggle_dibs( hero )
 
 def banning_countdown_callback():
     global active_team
@@ -767,9 +755,9 @@ def home():
 @app.route( "/name", methods = [ "POST" ] )
 def name():
     print( "name request" )
-    id = session[ "id" ]
     name = request.form[ "name" ]
-    Players.rename( id, name )
+    player = Players.get( session[ "id" ] )
+    player.set_name( name )
     session[ "name" ] = name
     return ""
 
@@ -798,7 +786,7 @@ def on_first_ban( team ):
 def on_toggle_stat( stat ):
     player = Players.get( session[ "id" ] )
     stat = Heroes.get( stat )
-    stat.toggle( player )
+    toggle_stat( player, stat )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
@@ -814,7 +802,7 @@ def on_cancel_draft():
 def on_click_slot( team, index ):
     player = Players.get( session[ "id" ] )
     team = Teams.get( team )
-    player.click_slot( team, index )
+    click_slot( player, team, index )
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
