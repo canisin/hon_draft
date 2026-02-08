@@ -4,46 +4,51 @@
     <div id="state">{{ state.state }}</div>
     <div id="countdown">0</div>
 </div>
-<div class="main">
-    <div class="outer-margin"></div>
-    <div class="team" id="legion">
-        <div class="team-header">
-            <img class="team-header-icon" src="/static/images/team-legion.png"/>
-            <div class="team-header-name">legion</div>
+
+{% macro team( name ) %}
+<div class="team" id="{{ name }}">
+    <div class="team-header">
+        <img class="team-header-icon" src="/static/images/team-{{ name }}.png"/>
+        <div class="team-header-name">{{ name }}</div>
+    </div>
+    <div class="first-ban-or-team-status">
+        <div class="first-ban">
+            <input type="checkbox" class="first-ban-checkbox" id="{{ name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ name }}' )"/>
+            <label class="first-ban-label" for="{{ name }}-first-ban-checkbox">First Ban</label>
         </div>
-        <div class="first-ban-or-team-status">
-            <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="legion-first-ban-checkbox" onClick="clickFirstBan( 'legion' )"/>
-                <label class="first-ban-label" for="leagion-first-ban-checkbox">First Ban</label>
-            </div>
-            <div class="team-status">
-                <div class="team-status-title">
-                    <div class="team-status-arrows">
-                        <img class="team-status-arrow"/>
-                        <img class="team-status-arrow"/>
-                        <img class="team-status-arrow"/>
-                    </div>
-                    <div class="team-status-label"></div>
+        <div class="team-status">
+            <div class="team-status-title">
+                <div class="team-status-arrows">
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
+                    <img class="team-status-arrow"/>
                 </div>
-                <div class="team-status-subtitle"></div>
+                <div class="team-status-label"></div>
             </div>
-        </div>
-        <div class="team-slots">
-            {% for slot in teams[ "legion" ] %}
-            {% set index = loop.index0 %}
-            <div class="slot" id="legion-{{ index }}" onClick="clickSlot( 'legion', {{ index }} )">
-                <div class="slot-player">
-                    <img class="slot-player-icon" src="/static/images/team-legion.png"/>
-                    <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
-                </div>
-                <div class="slot-hero">
-                    <img class="slot-hero-icon" src="/static/images/{{ "slot-legion" if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
-                </div>
-            </div>
-            {% endfor %}
+            <div class="team-status-subtitle"></div>
         </div>
     </div>
+    <div class="team-slots">
+        {% for slot in teams[ name ] %}
+        {% set index = loop.index0 %}
+        <div class="slot" id="{{ name }}-{{ index }}" onClick="clickSlot( '{{ name }}', {{ index }} )">
+            <div class="slot-player">
+                <img class="slot-player-icon" src="/static/images/team-{{ name }}.png"/>
+                <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
+            </div>
+            <div class="slot-hero">
+                <img class="slot-hero-icon" src="/static/images/{{ "slot-" + name if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
+                <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+<div class="main">
+    <div class="outer-margin"></div>
+    {{ team( "legion" ) }}
     <div class="inner-margin"></div>
     <div class="heroes">
         {% for stat, stat_name in [ ( "agi", "agility" ), ( "int", "intelligence" ), ( "str", "strength" ) ] %}
@@ -77,44 +82,7 @@
         {% endfor %}
     </div>
     <div class="inner-margin"></div>
-    <div class="team" id="hellbourne">
-        <div class="team-header">
-            <img class="team-header-icon" src="/static/images/team-hellbourne.png"/>
-            <div class="team-header-name">hellbourne</div>
-        </div>
-        <div class="first-ban-or-team-status">
-            <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="hellbourne-first-ban-checkbox" onClick="clickFirstBan( 'hellbourne' )"/>
-                <label class="first-ban-label" for="hellbourne-first-ban-checkbox">First Ban</label>
-            </div>
-            <div class="team-status">
-                <div class="team-status-title">
-                    <div class="team-status-arrows">
-                        <img class="team-status-arrow"/>
-                        <img class="team-status-arrow"/>
-                        <img class="team-status-arrow"/>
-                    </div>
-                    <div class="team-status-label"></div>
-                </div>
-                <div class="team-status-subtitle"></div>
-            </div>
-        </div>
-        <div class="team-slots">
-            {% for slot in teams[ "hellbourne" ] %}
-            {% set index = loop.index0 %}
-            <div class="slot" id="hellbourne-{{ index }}" onClick="clickSlot( 'hellbourne', {{ index }} )">
-                <div class="slot-player">
-                    <img class="slot-player-icon" src="/static/images/team-hellbourne.png"/>
-                    <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
-                </div>
-                <div class="slot-hero">
-                    <img class="slot-hero-icon" src="/static/images/{{ "slot-hellbourne" if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    {{ team( "hellbourne" ) }}
     <div class="outer-margin"></div>
 </div>
 <div class="draft-controls">
