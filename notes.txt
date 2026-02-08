@@ -188,10 +188,7 @@ organization of responsibilities:
 
 some offenders are: stat.toggle, player.click_slot
 
-
-
 refactor the difference between socketio.emit and emit
-sequences vs lists
 announce_countdown as a standalone function
 rework player.dibs into player.hero and player.is_dibs
 setting a client team should update all slots to hide or reveal dibs

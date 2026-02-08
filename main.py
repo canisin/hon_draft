@@ -232,7 +232,7 @@ class Players:
         emit_message( f"{ old_name } changed name to { new_name }." )
 
     def serialize():
-        return ( player.serialize_player() for player in Players.players )
+        return [ player.serialize_player() for player in Players.players ]
 
 class Team:
     def __init__( self, name, icon, color ):
@@ -254,7 +254,7 @@ class Team:
         self.players.remove( player )
 
     def picking_players( self ):
-        return ( player for player in self.players if not player.hero )
+        return [ player for player in self.players if not player.hero ]
 
     def missing_stats( self ):
         counts = { stat: 0 for stat in Heroes.stats if stat.is_enabled }
@@ -269,7 +269,7 @@ class Team:
         return Teams.get_other( self )
 
     def serialize( self ):
-        return ( player.serialize_slot() if ( player := self.get_player( index ) ) else None for index in range( team_size ) )
+        return [ player.serialize_slot() if ( player := self.get_player( index ) ) else None for index in range( team_size ) ]
 
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
@@ -372,7 +372,7 @@ class Stat:
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
 
     def serialize( self ):
-        return ( hero.serialize() for hero in self.pool ) if self.pool else ( None for _ in range( pool_size ) )
+        return [ hero.serialize() for hero in self.pool ] if self.pool else [ None for _ in range( pool_size ) ]
 
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
@@ -642,7 +642,7 @@ def pool_countdown_callback():
     set_state( "banning_countdown", banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
-    if state in [ "lobby", "pool_countdown" ]:
+    if state in ( "lobby", "pool_countdown" ):
         return
 
     if not player.team:
