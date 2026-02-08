@@ -6,16 +6,15 @@
 </div>
 <div class="main">
     <div class="outer-margin"></div>
-    {% set team = teams[ "legion" ] %}
-    <div class="team" id="{{ team.name }}">
+    <div class="team" id="legion">
         <div class="team-header">
-            <img class="team-header-icon" src={{ team.icon }}/>
-            <div class="team-header-name">{{ team.name }}</div>
+            <img class="team-header-icon" src="/static/images/team-legion.png"/>
+            <div class="team-header-name">legion</div>
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
-                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
+                <input type="checkbox" class="first-ban-checkbox" id="legion-first-ban-checkbox" onClick="clickFirstBan( 'legion' )"/>
+                <label class="first-ban-label" for="leagion-first-ban-checkbox">First Ban</label>
             </div>
             <div class="team-status">
                 <div class="team-status-title">
@@ -30,16 +29,16 @@
             </div>
         </div>
         <div class="team-slots">
-            {% for player in team.players %}
+            {% for slot in teams[ "legion" ] %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
+            <div class="slot" id="legion-{{ index }}" onClick="clickSlot( 'legion', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
-                    <div class="slot-player-name">{{ player.name }}</div>
+                    <img class="slot-player-icon" src="/static/images/team-legion.png"/>
+                    <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                    <img class="slot-hero-icon" src="/static/images/{{ "slot-legion" if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
+                    <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -55,16 +54,16 @@
                 <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox" onClick="clickToggleStat( '{{ stat }}' )"/>
             </div>
             <div class="stat-heroes">
-                {% for index in range( 8 ) %}
-                {% set hero = heroes[ stat ][ index ] %}
+                {% for hero in heroes[ stat ] %}
+                {% set index = loop.index0 %}
                 <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )" oncontextmenu="dibsHero( event, '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
-                        <img class="hero-icon" src="{{ hero.icon }}"/>
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero.is_banned else "hidden" }}"/>
+                        <img class="hero-icon" src="static/images/{{ hero.icon if hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if hero and hero.is_picked else "" }}"/>
+                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero and hero.is_banned else "hidden" }}"/>
                     </div>
                     <div class="hero-controls">
                         <div class="hero-name-container">
-                            <div class="hero-name">{{ hero.name }}</div>
+                            <div class="hero-name">{{ hero.name if hero else "" }}</div>
                         </div>
                         <div class="hero-button-container">
                             <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
@@ -78,16 +77,15 @@
         {% endfor %}
     </div>
     <div class="inner-margin"></div>
-    {% set team = teams[ "hellbourne" ] %}
-    <div class="team" id="{{ team.name }}">
+    <div class="team" id="hellbourne">
         <div class="team-header">
-            <img class="team-header-icon" src={{ team.icon }}/>
-            <div class="team-header-name">{{ team.name }}</div>
+            <img class="team-header-icon" src="/static/images/team-hellbourne.png"/>
+            <div class="team-header-name">hellbourne</div>
         </div>
         <div class="first-ban-or-team-status">
             <div class="first-ban">
-                <input type="checkbox" class="first-ban-checkbox" id="{{ team.name }}-first-ban-checkbox" onClick="clickFirstBan( '{{ team.name }}' )"/>
-                <label class="first-ban-label" for="{{ team.name }}-first-ban-checkbox">First Ban</label>
+                <input type="checkbox" class="first-ban-checkbox" id="hellbourne-first-ban-checkbox" onClick="clickFirstBan( 'hellbourne' )"/>
+                <label class="first-ban-label" for="hellbourne-first-ban-checkbox">First Ban</label>
             </div>
             <div class="team-status">
                 <div class="team-status-title">
@@ -102,16 +100,16 @@
             </div>
         </div>
         <div class="team-slots">
-            {% for player in team.players %}
+            {% for slot in teams[ "hellbourne" ] %}
             {% set index = loop.index0 %}
-            <div class="slot" id="{{ team.name }}-{{ index }}" onClick="clickSlot( '{{ team.name }}', {{ index }} )">
+            <div class="slot" id="hellbourne-{{ index }}" onClick="clickSlot( 'hellbourne', {{ index }} )">
                 <div class="slot-player">
-                    <img class="slot-player-icon" src="{{ player.team.icon }}"/>
-                    <div class="slot-player-name">{{ player.name }}</div>
+                    <img class="slot-player-icon" src="/static/images/team-hellbourne.png"/>
+                    <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
                 </div>
                 <div class="slot-hero">
-                    <img class="slot-hero-icon" src="{{ player.hero.icon }}" style="{{ "filter: grayscale( 1 )" if player.is_dibs else "" }}"/>
-                    <div class="slot-hero-name">{{ player.hero.name }}</div>
+                    <img class="slot-hero-icon" src="/static/images/{{ "slot-hellbourne" if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
+                    <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -133,7 +131,14 @@
     </div>
     <div class="players">
         <div class="players-header">Players</div>
-        <div id="players-list"></div>
+        <div id="players-list">
+            {% for player in players %}
+            <div class="players-list-item" id="${ player.id }">
+                <img class="players-list-icon" src="/static/images/{{ player.icon }}.png"/>
+                <div class="players-list-name" style="color: {{ player.color }}">{{ player.name }}</div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
@@ -293,7 +298,7 @@
     {
         for ( let stat in state.stats )
         {
-            let is_enabled = state.stats[ stat ].is_enabled;
+            let is_enabled = state.stats[ stat ];
 
             let checkbox = document.getElementById( `${ stat }-checkbox` );
             checkbox.checked = is_enabled;
@@ -427,28 +432,27 @@
         console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
         let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
-        heroName.innerHTML = hero.name;
+        heroName.innerHTML = hero ? hero.name : "";
         setFontSizeToFit( heroName );
         let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
-        heroIcon.src = hero.icon
+        heroIcon.src = `/static/images/${ hero ? hero.icon : "hero-none" }.png`;
+        heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
         let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
-        bannedIcon.style.visibility = hero.is_banned ? "visible" : "hidden";
+        bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     };
     socketio.on( "update-hero", onUpdateHero );
 
-    function onUpdateSlot( team, index, player )
+    function onUpdateSlot( team, index, slot )
     {
         console.log( "updating slot" );
         let slotDiv = document.getElementById( `${ team }-${ index }` );
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
-        playerName.innerHTML = player.name;
-        let playerIcon = slotDiv.getElementsByClassName( "slot-player-icon" )[ 0 ];
-        playerIcon.src = player.team.icon;
+        playerName.innerHTML = slot ? slot.player_name : "Empty";
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
-        heroName.innerHTML = player.hero.name;
+        heroName.innerHTML = slot ? slot.hero ? slot.hero.name : "None" : "";
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
-        heroIcon.src = player.hero.icon;
-        heroIcon.style.filter = player.is_dibs ? "grayscale( 1 )" : "";
+        heroIcon.src = `/static/images/${slot ? slot.hero ? slot.hero.icon : "hero-none" : `slot-${team}`}.png`;
+        heroIcon.style.filter = slot && slot.is_dibs ? "grayscale( 1 )" : "";
     };
     socketio.on( "update-slot", onUpdateSlot );
 
@@ -459,7 +463,7 @@
         playerName.innerHTML = player.name;
         playerName.style.color = player.color;
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
-        playerIcon.src = player.team.icon;
+        playerIcon.src = player.icon;
     };
 
     function onAddPlayer( player )
