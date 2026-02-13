@@ -57,6 +57,8 @@ class Player:
         old_name = self.get_formatted_name()
         self.name = name
         emit_update_player( self )
+        if self.team:
+            emit_update_slot( self.team, self.index, self )
         new_name = player.get_formatted_name()
         emit_message( f"{ old_name } changed name to { new_name }." )
 
