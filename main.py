@@ -836,14 +836,14 @@ def on_message( message ):
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
     if command == "name":
-        ( name, _, _ ) = parameters.partition( " " )
-        set_name( name )
+        set_name( parameters )
         return
     print( "unrecognized command" )
     emit_message( "unrecognized command", to = request.id )
 
 def set_name( name ):
-    print( "received name change command" )
+    if not name: return
+    name = name[:16]
     # tell the client to make a request to set the cookie
     emit( "set-name", name )
 
