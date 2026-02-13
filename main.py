@@ -829,7 +829,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.get( session[ "id" ] )
-    emit_message( f"{ player.name }: { message }", team = player.team if player.team else Teams.observer )
+    emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team if player.team else Teams.observer )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
