@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="header">
-    <div id="state">{{ state.state }}</div>
+    <div id="state"></div>
     <div id="countdown">0</div>
 </div>
 
@@ -97,14 +97,7 @@
     </div>
     <div class="players">
         <div class="players-header">Players</div>
-        <div id="players-list">
-            {% for player in players %}
-            <div class="players-list-item" id="{{ player.id }}">
-                <img class="players-list-icon"/>
-                <div class="players-list-name"/>
-            </div>
-            {% endfor %}
-        </div>
+        <div id="players-list"></div>
     </div>
 </div>
 
@@ -294,15 +287,8 @@
         }
     };
 
-    let current_state = "{{ state.state }}";
+    let current_state = null;
     let client_team = null;
-
-    setFirstBan( {{ state|tojson }} );
-    setTeamStatus( {{ state|tojson }}, "legion" );
-    setTeamStatus( {{ state|tojson }}, "hellbourne" );
-    setTeamStatusVisibility( {{ state|tojson }} );
-    setStatToggles( {{ state|tojson }} );
-    setHeroButtons( {{ state|tojson }} );
 
     function onUpdateState( state )
     {
@@ -412,13 +398,6 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
-    {% for stat in heroes %}
-        {% for hero in heroes[ stat ] %}
-        {% set index = loop.index0 %}
-            onUpdateHero( "{{ stat }}", {{ index }}, {{ hero|tojson }} )
-        {% endfor %}
-    {% endfor %}
-
     function onUpdateSlot( team, index, slot )
     {
         console.log( "updating slot" );
@@ -449,13 +428,6 @@
         }
     };
     socketio.on( "update-slot", onUpdateSlot );
-
-    {% for team in teams %}
-        {% for slot in teams[ team ] %}
-        {% set index = loop.index0 %}
-            onUpdateSlot( "{{ team }}", {{ index }}, {{ slot|tojson }} );
-        {% endfor %}
-    {% endfor %}
 
     // TODO: This should be doable via css
     // TODO: Colors should also be removed from python code
@@ -496,10 +468,6 @@
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
         playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
     };
-
-    {% for player in players %}
-        updatePlayer( {{ player|tojson }} );
-    {% endfor %}
 
     function onAddPlayer( player )
     {

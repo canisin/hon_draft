@@ -111,8 +111,8 @@ class Player:
     def update_rooms( self ):
         team = self.team
         if team is Teams.observer:
-            leave_room( Teams.legion.name )
-            leave_room( Teams.hellbourne.name )
+            join_room( Teams.legion.name )
+            join_room( Teams.hellbourne.name )
             join_room( Teams.observer.name )
         else:
             join_room( team.name )
@@ -126,12 +126,9 @@ class Player:
         emit_update_slot( team, index )
 
     def emit_update_client( self ):
-        self.update_rooms()
         emit_update_client_team( self )
-        if self.team is Teams.observer:
-            Teams.emit_update_slots()
-        else:
-            self.team.emit_update_slots()
+        Teams.emit_update_slots( to = self.session_id )
+        self.update_rooms()
 
     def serialize_slot( self ):
         return {
@@ -173,6 +170,13 @@ class Players:
         return next( ( player for player in Players.players if player.id == id ), None )
 
     def connect( id, name, session_id ):
+        emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = session_id )
+
+        emit_update_state( to = session_id )
+        Teams.emit_update_slots( to = session_id )
+        Heroes.emit_update_heroes( to = session_id )
+        Players.emit_add_players( to = session_id )
+
         player = Players.get( id )
         if player:
             player.session_id = session_id
@@ -180,7 +184,8 @@ class Players:
         else:
             player = Player( name, id, session_id )
             Players.add( player )
-        return player
+
+        player.emit_update_client()
 
     def disconnect( id ):
         player = Players.get( id )
@@ -195,13 +200,9 @@ class Players:
         player.team = Teams.observer
         Teams.observer.add_player( player )
         emit_add_player( player )
-        emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
-        player.emit_update_client()
         emit_message( f"{ player.get_formatted_name() } joined." )
 
     def restore( player ):
-        emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
-        player.emit_update_client()
         player.set_disconnected( False )
 
     def remove( player ):
@@ -212,6 +213,10 @@ class Players:
             emit_message( f"{ player.get_formatted_name() } has been removed." )
         else:
             emit_message( f"{ player.get_formatted_name() } left." )
+
+    def emit_add_players( **kwargs ):
+        for player in Players.players:
+            emit_add_player( player, **kwargs )
 
     def serialize():
         return [ player.serialize_player() for player in Players.players ]
@@ -263,9 +268,9 @@ class Team:
     def get_other( self ):
         return Teams.get_other( self )
 
-    def emit_update_slots( self ):
-        for player in self.players:
-            player.emit_update_slot()
+    def emit_update_slots( self, **kwargs ):
+        for index in range( team_size ):
+            emit_update_slot( self, index, **kwargs )
 
     def serialize( self ):
         return [ player.serialize_slot() if player else None for player in self.players ]
@@ -305,9 +310,9 @@ class Teams:
     def can_draft():
         return not any( team.is_empty() for team in Teams.teams )
 
-    def emit_update_slots():
+    def emit_update_slots( **kwargs ):
         for team in Teams.teams:
-            team.emit_update_slots()
+            team.emit_update_slots( **kwargs )
 
     def serialize():
         return { team.name: team.serialize() for team in Teams.teams }
@@ -361,15 +366,13 @@ class Stat:
         for hero in self.pool:
             hero.reset()
 
-        for index in range( pool_size ):
-            self.pool[ index ] = None
-            emit_update_hero( self, index )
+        self.pool = [ None for _ in range( pool_size ) ]
+        self.emit_update_heroes()
 
     def generate_pool( self ):
         if not self.is_enabled: return
         self.pool = random.sample( all_heroes[ self.name ], pool_size )
-        for hero in self.pool:
-            hero.emit_update_hero()
+        self.emit_update_heroes()
 
     def get( self, index ):
         return self.pool[ index ]
@@ -383,6 +386,10 @@ class Stat:
 
     def get_random( self ):
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
+
+    def emit_update_heroes( self, **kwargs ):
+        for index in range( pool_size ):
+            emit_update_hero( self, index )
 
     def serialize( self ):
         return [ hero.serialize() if hero else None for hero in self.pool ]
@@ -419,6 +426,10 @@ class Heroes:
     def get_random_pick( team ):
         stat = random.choice( team.missing_stats() )
         return stat.get_random()
+
+    def emit_update_heroes( **kwargs ):
+        for stat in Heroes.stats:
+            stat.emit_update_heroes( **kwargs )
 
     def serialize():
         return { stat.name: stat.serialize() for stat in Heroes.stats }
@@ -795,10 +806,6 @@ def home():
     return render_template( "home.html",
         team_size = team_size,
         pool_size = pool_size,
-        state = serialize_state(),
-        teams = Teams.serialize(),
-        heroes = Heroes.serialize(),
-        players = Players.serialize(),
     )
 
 @app.route( "/name", methods = [ "POST" ] )
@@ -816,7 +823,7 @@ def on_connect( auth ):
     print( "socket connecting" )
     id = session[ "id" ]
     name = session[ "name" ]
-    player = Players.connect( id, name, request.sid )
+    Players.connect( id, name, request.sid )
     print( "socket connected" )
 
 @socketio.on( "disconnect" )
@@ -895,40 +902,36 @@ def set_name( name ):
     emit( "set-name", name )
 
 ## OUTGOING SOCKET EVENTS ##
-def emit_update_state():
-    socketio.emit( "update-state", serialize_state() )
+def emit_update_state( **kwargs ):
+    socketio.emit( "update-state", serialize_state(), **kwargs )
 
-def emit_update_client_team( player ):
-    socketio.emit( "update-client-team", player.team.name, to=player.session_id )
+def emit_update_client_team( player, **kwargs ):
+    kwargs[ "to" ] = player.session_id
+    socketio.emit( "update-client-team", player.team.name, **kwargs )
 
-def emit_set_timer( seconds ):
-    socketio.emit( "set-timer", seconds )
+def emit_set_timer( seconds, **kwargs ):
+    socketio.emit( "set-timer", seconds, **kwargs )
 
-def emit_update_hero( stat, index ):
+def emit_update_hero( stat, index, **kwargs ):
     hero = stat.get( index )
-    socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
+    socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ), **kwargs )
 
-def emit_update_slot( team, index ):
+def emit_update_slot( team, index, **kwargs ):
     player = team.get( index )
-    socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
+    socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ), **kwargs )
 
-def emit_update_player( player ):
-    socketio.emit( "update-player", player.serialize_player() )
+def emit_update_player( player, **kwargs ):
+    socketio.emit( "update-player", player.serialize_player(), **kwargs )
 
-def emit_add_player( player ):
-    socketio.emit( "add-player", player.serialize_player() )
+def emit_add_player( player, **kwargs ):
+    socketio.emit( "add-player", player.serialize_player(), **kwargs )
 
-def emit_remove_player( player ):
-    socketio.emit( "remove-player", player.id )
+def emit_remove_player( player, **kwargs ):
+    socketio.emit( "remove-player", player.id, **kwargs )
 
 def emit_message( message, team = None, **kwargs ):
-    if team == Teams.observer:
-        socketio.emit( "message", message, to = Teams.observer.name, **kwargs )
-    elif team:
-        socketio.emit( "message", message, to = team.name, **kwargs )
-        socketio.emit( "message", message, to = Teams.observer.name, **kwargs )
-    else:
-        socketio.emit( "message", message, **kwargs )
+    if team: kwargs[ "to" ] = team.name
+    socketio.emit( "message", message, **kwargs )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
