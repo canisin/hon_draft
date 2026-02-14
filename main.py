@@ -65,7 +65,7 @@ class Player:
         self.team = team
         self.update_rooms()
         emit_update_player( self )
-        emit_update_client_team( team )
+        emit_update_client_team( self )
         team.add_player( self, index )
         if team is Teams.observer:
             emit_message( f"{ self.get_formatted_name() } is now an observer." )
@@ -776,7 +776,7 @@ def on_connect( auth ):
     id = session[ "id" ]
     name = session[ "name" ]
     player = Players.connect( id, name )
-    emit_update_client_team( player.team )
+    emit_update_client_team( player )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
@@ -857,8 +857,8 @@ def set_name( name ):
 def emit_update_state():
     socketio.emit( "update-state", serialize_state() )
 
-def emit_update_client_team( team ):
-    emit( "update-client-team", team.name )
+def emit_update_client_team( player ):
+    emit( "update-client-team", player.team.name, to=player.id )
 
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
