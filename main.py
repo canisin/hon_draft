@@ -64,7 +64,7 @@ class Player:
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
         self.team = team
-        self.emit_update_client()
+        self.update_client()
         emit_update_player( self )
         team.add_player( self, index )
         if team is Teams.observer:
@@ -125,7 +125,7 @@ class Player:
         index = team.index( self )
         emit_update_slot( team, index )
 
-    def emit_update_client( self ):
+    def update_client( self ):
         emit_update_client_team( self )
         Teams.emit_update_slots( to = self.session_id )
         self.update_rooms()
@@ -185,7 +185,7 @@ class Players:
             player = Player( name, id, session_id )
             Players.add( player )
 
-        player.emit_update_client()
+        player.update_client()
 
     def disconnect( id ):
         player = Players.get( id )
