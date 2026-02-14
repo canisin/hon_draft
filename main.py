@@ -56,7 +56,7 @@ class Player:
         old_name = self.get_formatted_name()
         self.name = name
         emit_update_player( self )
-        emit_update_slot( player = self )
+        self.emit_update_slot()
         new_name = self.get_formatted_name()
         emit_message( f"{ old_name } changed name to { new_name }." )
 
@@ -79,18 +79,18 @@ class Player:
         else:
             emit_message( f"{ self.get_formatted_name() } has reconnected." )
         emit_update_player( self )
-        emit_update_slot( player = self )
+        self.emit_update_slot()
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        emit_update_slot( player = self )
+        self.emit_update_slot()
 
     def toggle_dibs( self, hero ):
         assert not self.hero
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
-        emit_update_slot( player = self )
+        self.emit_update_slot()
         emit_message(
             f"{ player.get_formatted_name() } has called dibs on { hero.name }."
             if is_dibs else
@@ -101,12 +101,12 @@ class Player:
         if not self.dibs: return
         if not self.dibs.is_available():
             self.dibs = None
-            emit_update_slot( player = self )
+            self.emit_update_slot()
 
     def reset( self ):
         self.hero = None
         self.dibs = None
-        emit_update_slot( player = self )
+        self.emit_update_slot()
 
     def update_rooms( self ):
         team = self.team
@@ -118,6 +118,11 @@ class Player:
             join_room( team.name )
             leave_room( team.get_other().name )
             leave_room( Teams.observer.name )
+
+    def emit_update_slot( self ):
+        team = self.team
+        index = team.index( self )
+        emit_update_slot( team, index )
 
     def serialize_slot( self ):
         return {
@@ -288,12 +293,12 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        emit_update_hero( hero = self )
+        self.emit_update_hero()
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        emit_update_hero( hero = self )
+        self.emit_update_hero()
 
     def reset( self ):
         self.is_banned = False
@@ -301,6 +306,11 @@ class Hero:
 
     def is_available( self ):
         return not self.is_banned and not self.is_picked
+
+    def emit_update_hero( self ):
+        stat = self.stat
+        index = stat.index( self )
+        emit_update_hero( stat, index )
 
     def serialize( self ):
         return {
@@ -330,9 +340,9 @@ class Stat:
         if not self.is_enabled: return
         self.pool = random.sample( all_heroes[ self.name ], pool_size )
         for hero in self.pool:
-            emit_update_hero( hero = hero )
+            hero.emit_update_hero()
 
-    def get_hero( self, index ):
+    def get( self, index ):
         return self.pool[ index ]
 
     def index( self, hero ):
@@ -865,19 +875,13 @@ def emit_update_client_team( player ):
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
-def emit_update_hero( stat = None, index = None, hero = None ):
-    assert ( stat and index is not None ) or hero
-    stat = stat or hero.stat
-    index = index or stat.index( hero )
-    hero = hero or stat.get( index )
+def emit_update_hero( stat, index ):
+    hero = stat.get( index )
     socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
 
-def emit_update_slot( team = None, index = None, player = None ):
-    assert ( team and index is not None ) or player
-    team = team or player.team
+def emit_update_slot( team, index ):
     if team is Teams.observer: return
-    index = index or team.index( player )
-    player = player or team.get( index )
+    player = team.get( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
 
 def emit_update_player( player ):
