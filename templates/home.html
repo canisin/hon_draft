@@ -34,11 +34,11 @@
         <div class="slot" id="{{ name }}-{{ index }}" onClick="clickSlot( '{{ name }}', {{ index }} )">
             <div class="slot-player">
                 <img class="slot-player-icon" src="/static/images/team-{{ name }}.png"/>
-                <div class="slot-player-name">{{ slot.player_name if slot else "Empty" }}</div>
+                <div class="slot-player-name">Empty</div>
             </div>
             <div class="slot-hero">
-                <img class="slot-hero-icon" src="/static/images/{{ "slot-" + name if not slot else slot.hero.icon if slot.hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if slot and slot.is_dibs else "" }}"/>
-                <div class="slot-hero-name">{{ "" if not slot else slot.hero.name if slot.hero else "None" }}</div>
+                <img class="slot-hero-icon" src="/static/images/slot-{{ name }}.png"/>
+                <div class="slot-hero-name"/>
             </div>
         </div>
         {% endfor %}
@@ -428,6 +428,13 @@
     };
     socketio.on( "update-slot", onUpdateSlot );
 
+    {% for team in teams %}
+        {% for slot in team.slots %}
+        {% set index = loop.index0 %}
+            onUpdateSlot( {{ team }}, {{ index }}, {{ slot|tojson }} );
+        {% endfor %}
+    {% endfor %}
+
     // TODO: This should be doable via css
     // TODO: Colors should also be removed from python code
     function getTeamColor( team )
@@ -469,7 +476,7 @@
     };
 
     {% for player in players %}
-    updatePlayer( {{ player|tojson }} );
+        updatePlayer( {{ player|tojson }} );
     {% endfor %}
 
     function onAddPlayer( player )
