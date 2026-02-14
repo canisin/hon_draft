@@ -63,12 +63,12 @@
                 {% set index = loop.index0 %}
                 <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )" oncontextmenu="dibsHero( event, '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
-                        <img class="hero-icon" src="static/images/{{ hero.icon if hero else "hero-none" }}.png" style="{{ "filter: grayscale( 1 )" if hero and hero.is_picked else "" }}"/>
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: {{ "visible" if hero and hero.is_banned else "hidden" }}"/>
+                        <img class="hero-icon" src="static/images/hero-none.png"/>
+                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden"/>
                     </div>
                     <div class="hero-controls">
                         <div class="hero-name-container">
-                            <div class="hero-name">{{ hero.name if hero else "" }}</div>
+                            <div class="hero-name"/>
                         </div>
                         <div class="hero-button-container">
                             <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
@@ -413,6 +413,13 @@
         bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     };
     socketio.on( "update-hero", onUpdateHero );
+
+    {% for stat in heroes %}
+        {% for hero in stat %}
+        {% set index = loop.index0 %}
+            onUpdateHero( {{ stat }}, {{ index }}, {{ hero|tojson }} )
+        {% endfor %}
+    {% endfor %}
 
     function onUpdateSlot( team, index, slot )
     {
