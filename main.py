@@ -44,9 +44,10 @@ app.secret_key = "honzor"
 socketio = SocketIO( app )
 
 class Player:
-    def __init__( self, name, id ):
+    def __init__( self, name, id, session_id ):
         self.name = name
         self.id = id
+        self.session_id = session_id
         self.hero = None
         self.dibs = None
         self.team = None
@@ -163,12 +164,13 @@ class Players:
     def get( id ):
         return next( ( player for player in Players.players if player.id == id ), None )
 
-    def connect( id, name ):
+    def connect( id, name, session_id ):
         player = Players.get( id )
         if player:
+            player.session_id = session_id
             Players.restore( player )
         else:
-            player = Player( name, id )
+            player = Player( name, id, session_id )
             Players.add( player )
         return player
 
@@ -800,7 +802,7 @@ def on_connect( auth ):
     print( "socket connecting" )
     id = session[ "id" ]
     name = session[ "name" ]
-    player = Players.connect( id, name )
+    player = Players.connect( id, name, request.sid )
     print( "socket connected" )
 
 @socketio.on( "disconnect" )
@@ -870,7 +872,7 @@ def on_command( message ):
         set_name( parameters )
         return
     print( "unrecognized command" )
-    emit_message( "unrecognized command", to = request.id )
+    emit_message( "unrecognized command", to = request.sid )
 
 def set_name( name ):
     if not name: return
@@ -883,7 +885,7 @@ def emit_update_state():
     socketio.emit( "update-state", serialize_state() )
 
 def emit_update_client_team( player ):
-    emit( "update-client-team", player.team.name, to=player.id )
+    socketio.emit( "update-client-team", player.team.name, to=player.session_id )
 
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
