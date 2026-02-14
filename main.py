@@ -267,7 +267,8 @@ class Observers:
         self.color = color
         self.players = []
 
-    def add_player( self, player ):
+    def add_player( self, player, index = None ):
+        assert index is None
         assert player not in self.players
         self.players.append( player )
 
