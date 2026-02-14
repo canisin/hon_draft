@@ -56,8 +56,8 @@ class Player:
         old_name = self.get_formatted_name()
         self.name = name
         emit_update_player( self )
-        emit_update_slot( player )
-        new_name = player.get_formatted_name()
+        emit_update_slot( player = self )
+        new_name = self.get_formatted_name()
         emit_message( f"{ old_name } changed name to { new_name }." )
 
     def set_team( self, team, index = None ):
@@ -79,18 +79,18 @@ class Player:
         else:
             emit_message( f"{ self.get_formatted_name() } has reconnected." )
         emit_update_player( self )
-        emit_update_slot( player )
+        emit_update_slot( player = self )
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        emit_update_slot( player )
+        emit_update_slot( player = self )
 
     def toggle_dibs( self, hero ):
         assert not self.hero
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
-        emit_update_slot( player )
+        emit_update_slot( player = self )
         emit_message(
             f"{ player.get_formatted_name() } has called dibs on { hero.name }."
             if is_dibs else
@@ -101,12 +101,12 @@ class Player:
         if not self.dibs: return
         if not self.dibs.is_available():
             self.dibs = None
-            emit_update_slot( player )
+            emit_update_slot( player = self )
 
     def reset( self ):
         self.hero = None
         self.dibs = None
-        emit_update_slot( player )
+        emit_update_slot( player = self )
 
     def update_rooms( self ):
         team = self.team
@@ -177,15 +177,18 @@ class Players:
 
     def add( player ):
         Players.players.append( player )
+        player.team = Teams.observer
+        Teams.observer.add_player( player )
         emit_add_player( player )
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
-        player.set_team( Teams.observer )
         player.update_rooms()
+        emit_update_client_team( player )
         emit_message( f"{ player.get_formatted_name() } joined." )
 
     def restore( player ):
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
         player.update_rooms()
+        emit_update_client_team( player )
         player.set_disconnected( False )
 
     def remove( player ):
@@ -215,9 +218,9 @@ class Team:
     def is_empty( self ):
         return all( player is None for player in players )
 
-    def add_player( self, player, index ):
+    def add_player( self, player, index = None ):
         assert player not in self.players
-        index = index or next( index for index, player in enumerate( players ) if player is None )
+        index = index or next( index for index, player in enumerate( self.players ) if player is None )
         assert index is not None
         assert self.players[ index ] is None
         self.players[ index ] = player
@@ -226,13 +229,10 @@ class Team:
     def remove_player( self, player ):
         assert player in self.players
         index = self.players.index( player )
-        self.remove_player( index )
-
-    def remove_player( self, index ):
         self.players[ index ] = None
         emit_update_slot( self, index )
 
-    def set_player_index( self, player, index )
+    def set_player_index( self, player, index ):
         assert player in self.players
         self.remove_player( player )
         self.add_player( player, index )
@@ -288,12 +288,12 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        emit_update_hero( self )
+        emit_update_hero( hero = self )
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        emit_update_hero( self )
+        emit_update_hero( hero = self )
 
     def reset( self ):
         self.is_banned = False
@@ -330,7 +330,7 @@ class Stat:
         if not self.is_enabled: return
         self.pool = random.sample( all_heroes[ self.name ], pool_size )
         for hero in self.pool:
-            emit_update_hero( hero )
+            emit_update_hero( hero = hero )
 
     def get_hero( self, index ):
         return self.pool[ index ]
@@ -774,11 +774,11 @@ def name():
 ## INCOMING SOCKET EVENTS ##
 @socketio.on( "connect" )
 def on_connect( auth ):
-    print( "socket connected" )
+    print( "socket connecting" )
     id = session[ "id" ]
     name = session[ "name" ]
     player = Players.connect( id, name )
-    emit_update_client_team( player )
+    print( "socket connected" )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
@@ -865,21 +865,19 @@ def emit_update_client_team( player ):
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
-def emit_update_hero( hero ):
-    stat = hero.stat
-    emit_update_her( stat, stat.index( hero ) )
-
-def emit_update_hero( stat, index ):
-    hero = stat.get( index )
+def emit_update_hero( stat = None, index = None, hero = None ):
+    assert ( stat and index is not None ) or hero
+    stat = stat or hero.stat
+    index = index or stat.index( hero )
+    hero = hero or stat.get( index )
     socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
 
-def emit_update_slot( player )
-    team = player.team
-    emit_update_slot( team, team.index( player ) )
-
-def emit_update_slot( team, index )
+def emit_update_slot( team = None, index = None, player = None ):
+    assert ( team and index is not None ) or player
+    team = team or player.team
     if team is Teams.observer: return
-    player = team.get( index )
+    index = index or team.index( player )
+    player = player or team.get( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
 
 def emit_update_player( player ):

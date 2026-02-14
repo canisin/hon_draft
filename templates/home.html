@@ -37,7 +37,7 @@
             </div>
             <div class="slot-hero">
                 <img class="slot-hero-icon" src="/static/images/slot-{{ name }}.png"/>
-                <div class="slot-hero-name"/>
+                <div class="slot-hero-name"></div>
             </div>
         </div>
         {% endfor %}
@@ -66,7 +66,7 @@
                     </div>
                     <div class="hero-controls">
                         <div class="hero-name-container">
-                            <div class="hero-name"/>
+                            <div class="hero-name"></div>
                         </div>
                         <div class="hero-button-container">
                             <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
@@ -413,9 +413,9 @@
     socketio.on( "update-hero", onUpdateHero );
 
     {% for stat in heroes %}
-        {% for hero in stat %}
+        {% for hero in heroes[ stat ] %}
         {% set index = loop.index0 %}
-            onUpdateHero( {{ stat }}, {{ index }}, {{ hero|tojson }} )
+            onUpdateHero( "{{ stat }}", {{ index }}, {{ hero|tojson }} )
         {% endfor %}
     {% endfor %}
 
@@ -434,9 +434,9 @@
     socketio.on( "update-slot", onUpdateSlot );
 
     {% for team in teams %}
-        {% for slot in team.slots %}
+        {% for slot in teams[ team ] %}
         {% set index = loop.index0 %}
-            onUpdateSlot( {{ team }}, {{ index }}, {{ slot|tojson }} );
+            onUpdateSlot( "{{ team }}", {{ index }}, {{ slot|tojson }} );
         {% endfor %}
     {% endfor %}
 
