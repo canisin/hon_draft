@@ -122,6 +122,7 @@ class Player:
 
     def emit_update_slot( self ):
         team = self.team
+        if team is Teams.observer: return
         index = team.index( self )
         emit_update_slot( team, index )
 
@@ -895,7 +896,6 @@ def emit_update_hero( stat, index ):
     socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
 
 def emit_update_slot( team, index ):
-    if team is Teams.observer: return
     player = team.get( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
 
