@@ -87,3 +87,5 @@ fix dibs leakage by removing all dibs from initial render
 unclear how an ended draft is handled and how players are supposed to move around teams after a draft has ended
 
 consider setting player team to observer instead of none
+
+consider if you prefer not value or value is None

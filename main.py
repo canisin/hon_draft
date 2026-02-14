@@ -50,39 +50,27 @@ class Player:
         self.hero = None
         self.dibs = None
         self.team = None
-        self.index = None
         self.is_disconnected = False
 
     def set_name( self, name ):
         old_name = self.get_formatted_name()
         self.name = name
         emit_update_player( self )
-        if self.team:
-            emit_update_slot( self.team, self.index, self )
+        emit_update_slot( player )
         new_name = player.get_formatted_name()
         emit_message( f"{ old_name } changed name to { new_name }." )
 
     def set_team( self, team, index = None ):
-        old_team = self.team
-        if old_team:
-            old_team.remove_player( self )
-            emit_update_slot( old_team, self.index, None )
+        self.team.remove_player( self )
         self.team = team
-        self.index = index
         self.update_rooms()
         emit_update_player( self )
         emit_update_client_team( team )
-        if team:
-            team.add_player( self )
-            emit_update_slot( self.team, self.index, self )
-            emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
-        else:
+        team.add_player( self, index )
+        if team is Teams.observer:
             emit_message( f"{ self.get_formatted_name() } is now an observer." )
-
-    def set_index( self, index ):
-        emit_update_slot( self.team, self.index, None )
-        self.index = index
-        emit_update_slot( self.team, self.index, self )
+        else:
+            emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
 
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
@@ -90,20 +78,19 @@ class Player:
             emit_message( f"{ self.get_formatted_name() } has disconnected." )
         else:
             emit_message( f"{ self.get_formatted_name() } has reconnected." )
-        if self.team:
-            emit_update_slot( self.team, self.index, self )
         emit_update_player( self )
+        emit_update_slot( player )
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        emit_update_slot( self.team, self.index, self )
+        emit_update_slot( player )
 
     def toggle_dibs( self, hero ):
         assert not self.hero
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
-        emit_update_slot( self.team, self.index, self )
+        emit_update_slot( player )
         emit_message(
             f"{ player.get_formatted_name() } has called dibs on { hero.name }."
             if is_dibs else
@@ -114,27 +101,25 @@ class Player:
         if not self.dibs: return
         if not self.dibs.is_available():
             self.dibs = None
-            emit_update_slot( self.team, self.index, self )
+            emit_update_slot( player )
 
     def reset( self ):
         self.hero = None
         self.dibs = None
-        if self.team:
-            emit_update_slot( self.team, self.index, self )
+        emit_update_slot( player )
 
     def update_rooms( self ):
         team = self.team
-        if team:
-            join_room( team.name )
-            leave_room( team.get_other().name )
-            leave_room( Teams.observer.name )
-        else:
+        if team is Teams.observer:
             leave_room( Teams.legion.name )
             leave_room( Teams.hellbourne.name )
             join_room( Teams.observer.name )
+        else:
+            join_room( team.name )
+            leave_room( team.get_other().name )
+            leave_room( Teams.observer.name )
 
     def serialize_slot( self ):
-        if not self.team: return
         return {
             "player_name": self.name,
             "is_disconnected": self.is_disconnected,
@@ -147,12 +132,11 @@ class Player:
             "name": self.name,
             "id": self.id,
             "is_disconnected": self.is_disconnected,
-            "team": ( self.team if self.team else Teams.observer ).name,
+            "team": self.team.name,
         }
 
     def get_formatted_name( self ):
-        color = ( self.team if self.team else Teams.observer ).color
-        return f"<span style=\"color: { color }\">{ self.name }</span>"
+        return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
 
 class Players:
     players = []
@@ -195,6 +179,7 @@ class Players:
         Players.players.append( player )
         emit_add_player( player )
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
+        player.set_team( Teams.observer )
         player.update_rooms()
         emit_message( f"{ player.get_formatted_name() } joined." )
 
@@ -205,9 +190,7 @@ class Players:
 
     def remove( player ):
         Players.players.remove( player )
-        if player.team:
-            player.team.remove_player( player )
-            emit_update_slot( player.team, player.index, None )
+        player.team.remove_player( player )
         emit_remove_player( player )
         if player.is_disconnected:
             emit_message( f"{ player.get_formatted_name() } has been removed." )
@@ -221,27 +204,46 @@ class Team:
     def __init__( self, name, color ):
         self.name = name
         self.color = color
-        self.players = []
+        self.players = [ None for index in range( team_size ) ]
 
     def get_player( self, index ):
-        return next( ( player for player in self.players if player.index == index ), None )
+        return self.players[ index ]
+
+    def get_player_index( self, player ):
+        return self.players.index( player )
 
     def is_empty( self ):
-        return not self.players
+        return all( player is None for player in players )
 
-    def add_player( self, player ):
-        self.players.append( player )
+    def add_player( self, player, index ):
+        assert player not in self.players
+        index = index or next( index for index, player in enumerate( players ) if player is None )
+        assert index is not None
+        assert self.players[ index ] is None
+        self.players[ index ] = player
+        emit_update_slot( self, index )
 
     def remove_player( self, player ):
-        self.players.remove( player )
+        assert player in self.players
+        index = self.players.index( player )
+        self.remove_player( index )
+
+    def remove_player( self, index ):
+        self.players[ index ] = None
+        emit_update_slot( self, index )
+
+    def set_player_index( self, player, index )
+        assert player in self.players
+        self.remove_player( player )
+        self.add_player( player, index )
 
     def picking_players( self ):
-        return [ player for player in self.players if not player.hero ]
+        return [ player for player in self.players if player and not player.hero ]
 
     def missing_stats( self ):
         counts = { stat: 0 for stat in Heroes.stats if stat.is_enabled }
         for player in self.players:
-            if not player.hero: continue
+            if not player or not player.hero: continue
             counts[ player.hero.stat ] += 1
         min_count = min( counts.values() )
         for count in counts.values(): count -= min_count
@@ -251,7 +253,7 @@ class Team:
         return Teams.get_other( self )
 
     def serialize( self ):
-        return [ player.serialize_slot() if ( player := self.get_player( index ) ) else None for index in range( team_size ) ]
+        return [ player.serialize_slot() if player else None for player in self.players ]
 
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
@@ -586,16 +588,21 @@ def toggle_stat( player, stat ):
     emit_message( f"{ player.get_formatted_name() } has { action } { stat.get_formatted_name() } heroes." )
 
 def click_slot( player, team, index ):
+    assert team is not Teams.observer
     if state != "lobby": return
 
     slot_player = team.get_player( index )
-    if slot_player is None:
-        if player.team == team:
-            player.set_index( index )
-        else:
-            player.set_team( team, index )
-    elif slot_player == player:
-        player.set_team( None )
+    if slot_player:
+        return
+
+    if slot_player == player:
+        player.set_team( Teams.observer )
+        return
+
+    if player.team == team:
+        team.set_player_index( player, index )
+    else:
+        player.set_team( team, index )        
 
 def start_draft( player ):
     if state != "lobby":
@@ -860,7 +867,13 @@ def emit_set_timer( seconds ):
 def emit_update_hero( stat, index, hero ):
     socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
 
-def emit_update_slot( team, index, player ):
+def emit_update_slot( player )
+    team = player.team
+    emit_update_slot( team, team.get_player_index( player ) )
+
+def emit_update_slot( team, index )
+    if team is Teams.observer: return
+    player = team.get_player( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
 
 def emit_update_player( player ):
