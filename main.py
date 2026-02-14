@@ -92,10 +92,10 @@ class Player:
         self.dibs = hero if is_dibs else None
         self.emit_update_slot()
         emit_message(
-            f"{ player.get_formatted_name() } has called dibs on { hero.name }."
+            f"{ self.get_formatted_name() } has called dibs on { hero.name }."
             if is_dibs else
-            f"{ player.get_formatted_name() } has retracted their dibs for { hero.name }.",
-            team = player.team )
+            f"{ self.get_formatted_name() } has retracted their dibs for { hero.name }.",
+            team = self.team )
 
     def check_dibs( self ):
         if not self.dibs: return
@@ -234,7 +234,7 @@ class Team:
         return self.players.index( player )
 
     def is_empty( self ):
-        return all( player is None for player in players )
+        return all( player is None for player in self.players )
 
     def add_player( self, player, index ):
         assert player not in self.players
@@ -363,11 +363,10 @@ class Stat:
         self.pool = [ None for _ in range( pool_size ) ]
 
     def reset( self ):
-        for hero in self.pool:
-            hero.reset()
-
-        self.pool = [ None for _ in range( pool_size ) ]
-        self.emit_update_heroes()
+        for index, hero in enumerate( self.pool ):
+            if hero: hero.reset()
+            self.pool[ index ] = None
+            emit_update_hero( self, index )
 
     def generate_pool( self ):
         if not self.is_enabled: return
@@ -691,7 +690,7 @@ def dibs_hero( player, hero ):
     if state in ( "lobby", "pool_countdown" ):
         return
 
-    if not player.team:
+    if player.team is Teams.observer:
         return
 
     if player.hero:

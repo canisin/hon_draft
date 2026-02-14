@@ -398,6 +398,26 @@
     };
     socketio.on( "update-hero", onUpdateHero );
 
+    function shouldShowHero( slot, team )
+    {
+        if ( !slot.hero )
+        {
+            return false;
+        }
+
+        if ( !slot.is_dibs )
+        {
+            return true;
+        }
+
+        if ( client_team == "observers" )
+        {
+            return true;
+        }
+
+        return team == client_team;
+    };
+
     function onUpdateSlot( team, index, slot )
     {
         console.log( "updating slot" );
@@ -414,17 +434,17 @@
             heroIcon.src = `/static/images/slot-${ team }.png`;
             heroIcon.style.filter = "";
         }
-        else if ( !slot.hero || ( slot.is_dibs && team != client_team ) )
-        {
-            heroName.innerHTML = "None";
-            heroIcon.src = `/static/images/hero-none.png`;
-            heroIcon.style.filter = "";
-        }
-        else
+        else if ( shouldShowHero( slot, team ) )
         {
             heroName.innerHTML = slot.hero.name;
             heroIcon.src = `/static/images/${ slot.hero.icon }.png`;
             heroIcon.style.filter = slot.is_dibs ? "grayscale( 1 )" : "";
+        }
+        else
+        {
+            heroName.innerHTML = "None";
+            heroIcon.src = `/static/images/hero-none.png`;
+            heroIcon.style.filter = "";
         }
     };
     socketio.on( "update-slot", onUpdateSlot );
