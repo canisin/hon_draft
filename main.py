@@ -754,6 +754,8 @@ def home():
     if "id" not in session:
         session[ "id" ] = Players.generate_id()
     return render_template( "home.html",
+        team_size = team_size,
+        pool_size = pool_size,
         state = serialize_state(),
         teams = Teams.serialize(),
         heroes = Heroes.serialize(),

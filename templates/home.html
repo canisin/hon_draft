@@ -29,8 +29,7 @@
         </div>
     </div>
     <div class="team-slots">
-        {% for slot in teams[ name ] %}
-        {% set index = loop.index0 %}
+        {% for index in range( team_size ) %}
         <div class="slot" id="{{ name }}-{{ index }}" onClick="clickSlot( '{{ name }}', {{ index }} )">
             <div class="slot-player">
                 <img class="slot-player-icon" src="/static/images/team-{{ name }}.png"/>
@@ -59,8 +58,7 @@
                 <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox" onClick="clickToggleStat( '{{ stat }}' )"/>
             </div>
             <div class="stat-heroes">
-                {% for hero in heroes[ stat ] %}
-                {% set index = loop.index0 %}
+                {% for index in range( pool_size ) %}
                 <div class="hero" id="{{ stat }}-{{ index }}" onClick="selectHero( '{{ stat }}', {{ index }} )" oncontextmenu="dibsHero( event, '{{ stat }}', {{ index }} )">
                     <div class="hero-icon-container">
                         <img class="hero-icon" src="static/images/hero-none.png"/>
