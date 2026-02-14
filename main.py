@@ -613,11 +613,11 @@ def click_slot( player, team, index ):
     if state != "lobby": return
 
     slot_player = team.get( index )
-    if slot_player:
-        return
-
     if slot_player == player:
         player.set_team( Teams.observer )
+        return
+
+    if slot_player:
         return
 
     if player.team == team:
