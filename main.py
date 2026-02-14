@@ -64,9 +64,8 @@ class Player:
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
         self.team = team
-        self.update_rooms()
+        self.emit_update_client()
         emit_update_player( self )
-        emit_update_client_team( self )
         team.add_player( self, index )
         if team is Teams.observer:
             emit_message( f"{ self.get_formatted_name() } is now an observer." )
@@ -125,6 +124,14 @@ class Player:
         if team is Teams.observer: return
         index = team.index( self )
         emit_update_slot( team, index )
+
+    def emit_update_client( self ):
+        self.update_rooms()
+        emit_update_client_team( self )
+        if self.team is Teams.observer:
+            Teams.emit_update_slots()
+        else:
+            self.team.emit_update_slots()
 
     def serialize_slot( self ):
         return {
@@ -189,14 +196,12 @@ class Players:
         Teams.observer.add_player( player )
         emit_add_player( player )
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
-        player.update_rooms()
-        emit_update_client_team( player )
+        player.emit_update_client()
         emit_message( f"{ player.get_formatted_name() } joined." )
 
     def restore( player ):
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = request.sid )
-        player.update_rooms()
-        emit_update_client_team( player )
+        player.emit_update_client()
         player.set_disconnected( False )
 
     def remove( player ):
@@ -258,6 +263,10 @@ class Team:
     def get_other( self ):
         return Teams.get_other( self )
 
+    def emit_update_slots( self ):
+        for player in self.players:
+            player.emit_update_slot()
+
     def serialize( self ):
         return [ player.serialize_slot() if player else None for player in self.players ]
 
@@ -295,6 +304,10 @@ class Teams:
 
     def can_draft():
         return not any( team.is_empty() for team in Teams.teams )
+
+    def emit_update_slots():
+        for team in Teams.teams:
+            team.emit_update_slots()
 
     def serialize():
         return { team.name: team.serialize() for team in Teams.teams }

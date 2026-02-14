@@ -425,11 +425,28 @@
         let slotDiv = document.getElementById( `${ team }-${ index }` );
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
         playerName.innerHTML = slot ? slot.player_name : "Empty";
+
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
-        heroName.innerHTML = slot ? slot.hero ? slot.hero.name : "None" : "";
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
-        heroIcon.src = `/static/images/${ slot ? slot.hero ? slot.hero.icon : "hero-none" : `slot-${ team }` }.png`;
-        heroIcon.style.filter = slot && slot.is_dibs ? "grayscale( 1 )" : "";
+
+        if ( !slot )
+        {
+            heroName.innerHTML = "";
+            heroIcon.src = `/static/images/slot-${ team }.png`;
+            heroIcon.style.filter = "";
+        }
+        else if ( !slot.hero || ( slot.is_dibs && team != client_team ) )
+        {
+            heroName.innerHTML = "None";
+            heroIcon.src = `/static/images/hero-none.png`;
+            heroIcon.style.filter = "";
+        }
+        else
+        {
+            heroName.innerHTML = slot.hero.name;
+            heroIcon.src = `/static/images/${ slot.hero.icon }.png`;
+            heroIcon.style.filter = slot.is_dibs ? "grayscale( 1 )" : "";
+        }
     };
     socketio.on( "update-slot", onUpdateSlot );
 
