@@ -88,7 +88,3 @@ unclear how an ended draft is handled and how players are supposed to move aroun
 
 consider if you prefer not value or value is None
 
-observer team is limited to team_size :(
-
-
-

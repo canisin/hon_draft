@@ -223,10 +223,8 @@ class Team:
     def is_empty( self ):
         return all( player is None for player in players )
 
-    def add_player( self, player, index = None ):
+    def add_player( self, player, index ):
         assert player not in self.players
-        index = index or next( index for index, player in enumerate( self.players ) if player is None )
-        assert index is not None
         assert self.players[ index ] is None
         self.players[ index ] = player
         emit_update_slot( self, index )
@@ -263,11 +261,25 @@ class Team:
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
 
+class Observers:
+    def __init__( self, name, color ):
+        self.name = name
+        self.color = color
+        self.players = []
+
+    def add_player( self, player ):
+        assert player not in self.players
+        self.players.append( player )
+
+    def remove_player( self, player ):
+        assert player in self.players
+        self.players.remove( player )
+
 class Teams:
     legion = Team( "legion", "green" )
     hellbourne = Team( "hellbourne", "red" )
     teams = [ legion, hellbourne ]
-    observer = Team( "observers", "blue" )
+    observer = Observers( "observers", "blue" )
 
     def get( team ):
         if team == "legion": return Teams.legion
@@ -849,7 +861,7 @@ def on_message( message ):
         on_command( message[1:] )
         return
     player = Players.get( session[ "id" ] )
-    emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team if player.team else Teams.observer )
+    emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team )
 
 def on_command( message ):
     ( command, _, parameters ) = message.partition( " " )
