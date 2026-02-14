@@ -204,12 +204,12 @@ class Team:
     def __init__( self, name, color ):
         self.name = name
         self.color = color
-        self.players = [ None for index in range( team_size ) ]
+        self.players = [ None for _ in range( team_size ) ]
 
-    def get_player( self, index ):
+    def get( self, index ):
         return self.players[ index ]
 
-    def get_player_index( self, player ):
+    def index( self, player ):
         return self.players.index( player )
 
     def is_empty( self ):
@@ -288,12 +288,12 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        emit_update_hero( self.stat, self.stat.index( self ), self )
+        emit_update_hero( self )
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        emit_update_hero( self.stat, self.stat.index( self ), self )
+        emit_update_hero( self )
 
     def reset( self ):
         self.is_banned = False
@@ -316,24 +316,23 @@ class Stat:
         self.full_name = full_name
         self.color = color
         self.is_enabled = True
-        self.pool = []
+        self.pool = [ None for _ in range( pool_size ) ]
 
     def reset( self ):
         for hero in self.pool:
             hero.reset()
 
-        self.pool = []
-
         for index in range( pool_size ):
-            emit_update_hero( self, index, None )
+            self.pool[ index ] = None
+            emit_update_hero( self, index )
 
     def generate_pool( self ):
         if not self.is_enabled: return
         self.pool = random.sample( all_heroes[ self.name ], pool_size )
-        for index, hero in enumerate( self.pool ):
-            emit_update_hero( self, index, hero )
+        for hero in self.pool:
+            emit_update_hero( hero )
 
-    def get( self, index ):
+    def get_hero( self, index ):
         return self.pool[ index ]
 
     def index( self, hero ):
@@ -347,7 +346,7 @@ class Stat:
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
 
     def serialize( self ):
-        return [ hero.serialize() for hero in self.pool ] if self.pool else [ None for _ in range( pool_size ) ]
+        return [ hero.serialize() if hero else None for hero in self.pool ]
 
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
@@ -591,7 +590,7 @@ def click_slot( player, team, index ):
     assert team is not Teams.observer
     if state != "lobby": return
 
-    slot_player = team.get_player( index )
+    slot_player = team.get( index )
     if slot_player:
         return
 
@@ -859,21 +858,26 @@ def emit_update_state():
     socketio.emit( "update-state", serialize_state() )
 
 def emit_update_client_team( team ):
-    emit( "update-client-team", team.name if team else None )
+    emit( "update-client-team", team.name )
 
 def emit_set_timer( seconds ):
     socketio.emit( "set-timer", seconds )
 
-def emit_update_hero( stat, index, hero ):
+def emit_update_hero( hero ):
+    stat = hero.stat
+    emit_update_her( stat, stat.index( hero ) )
+
+def emit_update_hero( stat, index ):
+    hero = stat.get( index )
     socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ) )
 
 def emit_update_slot( player )
     team = player.team
-    emit_update_slot( team, team.get_player_index( player ) )
+    emit_update_slot( team, team.index( player ) )
 
 def emit_update_slot( team, index )
     if team is Teams.observer: return
-    player = team.get_player( index )
+    player = team.get( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ) )
 
 def emit_update_player( player ):
