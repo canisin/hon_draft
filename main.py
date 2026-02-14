@@ -866,8 +866,8 @@ def on_message( message ):
     player = Players.get( session[ "id" ] )
     emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team )
 
-def on_command( message ):
-    ( command, _, parameters ) = message.partition( " " )
+def on_command( command ):
+    ( command, _, parameters ) = command.partition( " " )
     if command == "name":
         set_name( parameters )
         return
