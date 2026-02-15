@@ -294,6 +294,7 @@
     };
 
     let current_state = null;
+    let client_id = null;
     let client_team = null;
 
     function onUpdateState( state )
@@ -339,6 +340,13 @@
         setHeroButtons( state );
     };
     socketio.on( "update-state", onUpdateState );
+
+    function onUpdateClientId( id )
+    {
+        console.log( "updating client id" );
+        client_id = id;
+    };
+    socketio.on( "update-client-id", onUpdateClientId );
 
     function onUpdateClientTeam( team )
     {
@@ -429,10 +437,13 @@
 
     function onUpdateSlot( team, index, slot )
     {
+        console.log( `${ document.cookie }` )
+
         console.log( "updating slot" );
         let slotDiv = document.getElementById( `${ team }-${ index }` );
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
         playerName.innerHTML = slot ? slot.player_name : "Empty";
+        playerName.style.fontWeight = slot && slot.player_id == client_id ? "bold" : "";
 
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
@@ -494,6 +505,7 @@
         let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
         playerName.innerHTML = player.name;
         playerName.style.color = getTeamColor( player.team );
+        playerName.style.fontWeight = player.id == client_id ? "bold" : "";
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
         playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
     };
@@ -513,7 +525,7 @@
 
     function onRemovePlayer( id )
     {
-        console.log( `removing player ${ player.id }` );
+        console.log( `removing player ${ id }` );
         let player = document.getElementById( `${ id }` );
         player.remove();
     };

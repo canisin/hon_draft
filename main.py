@@ -44,13 +44,13 @@ app.secret_key = "honzor"
 socketio = SocketIO( app )
 
 class Player:
-    def __init__( self, name, id, session_id ):
+    def __init__( self, name, id ):
         self.name = name
         self.id = id
-        self.session_id = session_id
+        self.session_id = None
         self.hero = None
         self.dibs = None
-        self.team = None
+        self.team = Teams.observer
         self.is_disconnected = False
 
     def set_name( self, name ):
@@ -64,7 +64,7 @@ class Player:
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
         self.team = team
-        self.update_client()
+        self.update_client_team()
         emit_update_player( self )
         team.add_player( self, index )
         if team is Teams.observer:
@@ -125,7 +125,7 @@ class Player:
         index = team.index( self )
         emit_update_slot( team, index )
 
-    def update_client( self ):
+    def update_client_team( self ):
         emit_update_client_team( self )
         Teams.emit_update_slots( to = self.session_id )
         self.update_rooms()
@@ -133,6 +133,7 @@ class Player:
     def serialize_slot( self ):
         return {
             "player_name": self.name,
+            "player_id": self.id,
             "is_disconnected": self.is_disconnected,
             "hero": self.hero.serialize() if self.hero else self.dibs.serialize() if self.dibs else None,
             "is_dibs": True if self.dibs else False,
@@ -170,22 +171,24 @@ class Players:
         return next( ( player for player in Players.players if player.id == id ), None )
 
     def connect( id, name, session_id ):
+        player = Players.get( id ) or Player( name, id )
+        player.session_id = session_id
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = session_id )
+
+        emit_update_client_id( player )
+        emit_update_client_team( player )
 
         emit_update_state( to = session_id )
         Teams.emit_update_slots( to = session_id )
         Heroes.emit_update_heroes( to = session_id )
         Players.emit_add_players( to = session_id )
 
-        player = Players.get( id )
-        if player:
-            player.session_id = session_id
+        if player.is_disconnected:
             Players.restore( player )
         else:
-            player = Player( name, id, session_id )
             Players.add( player )
 
-        player.update_client()
+        player.update_rooms()
 
     def disconnect( id ):
         player = Players.get( id )
@@ -197,7 +200,6 @@ class Players:
 
     def add( player ):
         Players.players.append( player )
-        player.team = Teams.observer
         Teams.observer.add_player( player )
         emit_add_player( player )
         emit_message( f"{ player.get_formatted_name() } joined." )
@@ -837,9 +839,10 @@ def on_connect( auth ):
 
 @socketio.on( "disconnect" )
 def on_disconnect():
-    print( "socket disconnected" )
+    print( "socket disconnecting" )
     id = session[ "id" ]
     Players.disconnect( id )
+    print( "socket disconnected" )
 
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
@@ -918,6 +921,10 @@ def set_name( name ):
 ## OUTGOING SOCKET EVENTS ##
 def emit_update_state( **kwargs ):
     socketio.emit( "update-state", serialize_state(), **kwargs )
+
+def emit_update_client_id( player, **kwargs ):
+    kwargs[ "to" ] = player.session_id
+    socketio.emit( "update-client-id", player.id, **kwargs )
 
 def emit_update_client_team( player, **kwargs ):
     kwargs[ "to" ] = player.session_id
