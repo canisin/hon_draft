@@ -86,6 +86,7 @@
 <div class="draft-controls">
 	<button id="start-draft-button" onClick="startDraft()">Start Draft</button>
 	<button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
+	<button id="end-draft-button" onClick="endDraft()">End Draft</button>
 </div>
 <div class="chat-area">
     <div class="messages">
@@ -187,6 +188,11 @@
     function cancelDraft()
     {
         socketio.emit( "cancel-draft" );
+    };
+
+    function endDraft()
+    {
+        socketio.emit( "end-draft" );
     };
 
     let messageForm = document.getElementById( "message-form" );
@@ -302,7 +308,10 @@
         startDraftButton.disabled = state.state != "lobby";
 
         let cancelDraftButton = document.getElementById( "cancel-draft-button" );
-        cancelDraftButton.disabled = state.state == "lobby";
+        cancelDraftButton.disabled = [ "lobby", "results" ].includes( state.state );
+
+        let endDraftButton = document.getElementById( "end-draft-button" );
+        endDraftButton.disabled = state.state != "results";
 
         if ( state.state == "banning_countdown" )
         {

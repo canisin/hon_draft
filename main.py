@@ -637,7 +637,8 @@ def toggle_stat( player, stat ):
 
 def click_slot( player, team, index ):
     assert team is not Teams.observer
-    if state != "lobby": return
+    if state != "lobby":
+        return
 
     slot_player = team.get( index )
     if slot_player == player:
@@ -661,8 +662,6 @@ def start_draft( player ):
 
     emit_message( f"{ player.get_formatted_name() } has started the draft!" )
 
-    Heroes.reset()
-    Players.reset()
     set_state( "pool_countdown", pool_countdown_duration, pool_countdown_callback )
     draft_countdown( pool_countdown_duration )
 
@@ -673,21 +672,32 @@ def draft_countdown( seconds ):
     Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
-    if state == "lobby":
+    if state == "lobby" or state == "results":
         return
+    reset_draft()
+    emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
+
+def end_draft( player ):
+    if state != "results":
+        return
+    reset_draft()
+    emit_message( f"{ player.get_formatted_name() } has ended the draft!" )
+
+def reset_draft():
     global active_team
     active_team = None
     global remaining_picks
     remaining_picks = 0
+    Heroes.reset()
+    Players.reset()
     set_state( "lobby", 0, None )
-    emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
 
 def pool_countdown_callback():
     Heroes.generate_pool()
     set_state( "banning_countdown", banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
-    if state in ( "lobby", "pool_countdown" ):
+    if state in ( "lobby", "pool_countdown", "results" ):
         return
 
     if player.team is Teams.observer:
@@ -750,7 +760,7 @@ def start_picking( team, pick_count ):
 
     if remaining_picks == 0:
         active_team = None
-        set_state( "lobby", 0, None )
+        set_state( "results", 0, None )
     else:
         set_state( "picking", picking_duration, picking_timer_callback )
 
@@ -852,6 +862,11 @@ def on_start_draft():
 def on_cancel_draft():
     player = Players.get( session[ "id" ] )
     cancel_draft( player )
+
+@socketio.on( "end-draft" )
+def on_end_draft():
+    player = Players.get( session[ "id" ] )
+    end_draft( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):
