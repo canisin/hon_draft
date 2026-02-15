@@ -36,8 +36,6 @@ Move slot hero names to tooltip similar to draft heroes
 Do a pass on style, composition and background 
     Try using actual margins instead of the margin divs that you created
 Test even longer player and hero names
-Improve chat
-    Sanitize input in chat or at least for the name command
 Add hover and click animations
 Add animation to the active team indicaitor
 Add sounds
@@ -49,10 +47,6 @@ Also, reduce volume on all sounds
 
 Don't display controls if hero name is empty
 Add a scoll bar to the player list
-Add an icon for disconnected players
-
-Add a /reset command
-
 
 - click sounds
 - add a button to name yourself
@@ -66,25 +60,11 @@ it would be nice if clicking on hero controls would not select (or deselect?) he
 ban button is still visible on an already banned hero..
 .. i suppose the pick button will be there on already banned or picked heroes, too :(
 
-- hide dibs on the client
-- include client_team when downloading home (if possible)
-- this might remove the need for the player return from Players.connect
-
 - Fix ban button on banned heroes and potential similar issues with pick button 
 - Fix that a click on the ban/pick buttons also select the hero 
-- After those two: 
-- Add a new post-draft state so that a leaving/reconnecting player cannot mess up the results of a draft or that players cannot change teams before the screen is cleared.
-- Add a clear button to the post draft state
 - Make the start, cancel and clear buttons replace each other
 
-setting a client team should update all slots to hide or reveal dibs
-
 implement status icons for disconnected players
-
-fix dibs leakage by removing all dibs from initial render
- and the server sending slot updates on team change (including initial team assignment)
-
-unclear how an ended draft is handled and how players are supposed to move around teams after a draft has ended
 
 consider if you prefer not value or value is None
 
