@@ -71,6 +71,4 @@ consider if you prefer not value or value is None
 add an icon to indicate "you" (bold text is too subtle, especially on the slot)
 
 pause/resume
-reborn heroes
-
 
