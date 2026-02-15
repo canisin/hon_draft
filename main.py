@@ -175,6 +175,7 @@ class Players:
         player = Players.get( id ) or Player( name, id )
         player.session_id = session_id
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = session_id )
+        emit_message( "Type <b>/name new_name</b> in chat to change your name.", to = session_id )
 
         emit_update_client_id( player )
         emit_update_client_team( player )
@@ -765,6 +766,7 @@ def start_draft( player ):
         return
 
     if not Teams.can_draft():
+        emit_message( f"<span style=\"color: red\">Cannot start with empty teams</span>", to = player.session_id )
         return
 
     emit_message( f"{ player.get_formatted_name() } has started the draft!" )

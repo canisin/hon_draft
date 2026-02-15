@@ -1,6 +1,5 @@
 * {
     box-sizing: border-box;
-    // border: 1px solid black;
 }
 
 .content {
@@ -16,6 +15,9 @@
 
 #state {
     font-size: 22px;
+    color: orange;
+    text-transform: uppercase;
+    font-weight: bolder;
 }
 
 #countdown {
@@ -39,6 +41,7 @@
     width: 150px;
     display: flex;
     flex-direction: column;
+    transform: scale( 1.2 );
 }
 
 #legion {
@@ -66,12 +69,12 @@
 
 .team-header-icon {
     display: inline;
-    height: 22px;
+    height: 64px;
 }
 
 .team-header-name {
     display: inline;
-    font-size: 22px;
+    font-size: 28px;
     text-transform: capitalize;
 }
 
@@ -190,6 +193,18 @@
     border: 5px solid red;
 }
 
+#legion .slot:not(.empty-slot) {
+    background: linear-gradient( to right, lightseagreen, white );
+}
+
+#hellbourne .slot:not(.empty-slot) {
+    background: linear-gradient( to left, lightsalmon, white );
+}
+
+.client-slot {
+    box-shadow: 0 0 10px yellow;
+}
+
 .slot-player {
     display: flex;
     align-items: center;
@@ -216,6 +231,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.client-slot .slot-player-name {
+    font-weight: bold;
 }
 
 #legion .slot-player-name {
@@ -445,4 +464,8 @@
 
 .players-list-name {
     display: inline;
+}
+
+.client-player .players-list-name {
+    font-weight: bold;
 }

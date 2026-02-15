@@ -112,6 +112,15 @@
 
     var socketio = io();
 
+    let tickAudio = document.getElementById( "clock-tick-audio" );
+    tickAudio.volume = 0.2;
+    let startDraftAudio = document.getElementById( "start-draft-audio" );
+    startDraftAudio.volume = 0.2;
+    let banHeroAudio = document.getElementById( "ban-hero-audio" );
+    banHeroAudio.volume = 0.2;
+    let pickHeroAudio = document.getElementById( "pick-hero-audio" );
+    pickHeroAudio.volume = 0.2;
+
     function clickSlot( team, index )
     {
         console.log( "clicking slot" );
@@ -316,19 +325,16 @@
 
         if ( state.state == "banning_countdown" )
         {
-            let startDraftAudio = document.getElementById( "start-draft-audio" );
             startDraftAudio.play();
         }
 
         if ( state.state == "banning" && state.active_team == client_team )
         {
-            let banHeroAudio = document.getElementById( "ban-hero-audio" );
             banHeroAudio.play();
         }
 
         if ( state.state == "picking" && state.active_team == client_team )
         {
-            let pickHeroAudio = document.getElementById( "pick-hero-audio" );
             pickHeroAudio.play();
         }
 
@@ -361,7 +367,6 @@
         console.log( "setting timer" );
 
         let countdownLabel = document.getElementById( "countdown" );
-        let tickAudio = document.getElementById( "clock-tick-audio" );
 
         let tick = () => {
             countdownLabel.innerHTML = seconds;
@@ -437,13 +442,29 @@
 
     function onUpdateSlot( team, index, slot )
     {
-        console.log( `${ document.cookie }` )
-
         console.log( "updating slot" );
         let slotDiv = document.getElementById( `${ team }-${ index }` );
+        if ( !slot )
+        {
+            slotDiv.classList.add( "empty-slot" );
+        }
+        else
+        {
+            slotDiv.classList.remove( "empty-slot" );
+        }
+
+        let isClient = slot && slot.player_id == client_id;
+        if ( isClient )
+        {
+            slotDiv.classList.add( "client-slot" );
+        }
+        else
+        {
+            slotDiv.classList.remove( "client-slot" );
+        }
+
         let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
         playerName.innerHTML = slot ? slot.player_name : "Empty";
-        playerName.style.fontWeight = slot && slot.player_id == client_id ? "bold" : "";
 
         let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
         let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
@@ -502,10 +523,19 @@
         console.log( `updating player id=${ player.id } name=${ player.name } team=${ player.team }` )
 
         let playerDiv = document.getElementById( player.id );
+        let isClient = player.id == client_id;
+        if ( isClient )
+        {
+            playerDiv.classList.add( "client-player" );
+        }
+        else
+        {
+            playerDiv.classList.remove( "client-player" );
+        }
+
         let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
         playerName.innerHTML = player.name;
         playerName.style.color = getTeamColor( player.team );
-        playerName.style.fontWeight = player.id == client_id ? "bold" : "";
         let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
         playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
     };
