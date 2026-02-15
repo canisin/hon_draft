@@ -653,7 +653,7 @@ def click_slot( player, team, index ):
     if player.team == team:
         team.set_player_index( player, index )
     else:
-        player.set_team( team, index )        
+        player.set_team( team, index )
 
 def start_draft( player ):
     if state != "lobby":
@@ -783,7 +783,7 @@ def pick_hero( player, hero, is_fate = False ):
 
     player.set_hero( hero )
     hero.set_picked()
-    emit_message( 
+    emit_message(
         f"{ player.get_formatted_name() } has picked { hero.name }."
         if not is_fate else
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
