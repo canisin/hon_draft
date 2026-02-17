@@ -72,3 +72,16 @@ add an icon to indicate "you" (bold text is too subtle, especially on the slot)
 
 pause/resume
 
+results has a cooldown
+try setting a background to the whole page, maybe something darker
+add various sounds
+ - last 5 seconds of every countdown
+ - various actions using events generated from the server
+   o such as client moved to slot/became observer
+   o other player moved to slot/became observer
+   o hero picked/dibbed/banned
+   o dib denied
+   o picked hero (with client side queue for overlapping picks)
+   o start/cancel/end draft
+   o message received, message sent
+do away with hero selection
