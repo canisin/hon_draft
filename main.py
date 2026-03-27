@@ -592,6 +592,7 @@ hero_sets = {
             Hero( "Blood Hunter", "agi", "heroes/reborn/blood_hunter" ),
             Hero( "Chronos", "agi", "heroes/reborn/chronos" ),
             Hero( "Corrupted Disciple", "agi", "heroes/reborn/corrupted_disciple" ),
+            Hero( "Dampeer", "agi", "heroes/reborn/dampeer" ),
             Hero( "Engineer", "agi", "heroes/reborn/engineer" ),
             Hero( "Flint Beastwood", "agi", "heroes/reborn/flint_beastwood" ),
             Hero( "Forsaken Archer", "agi", "heroes/reborn/forsaken_archer" ),
