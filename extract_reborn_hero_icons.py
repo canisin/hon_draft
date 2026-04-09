@@ -1,10 +1,13 @@
 import subprocess
 
+new_heroes = ( "riptide", "kinesis", "cthulhuphant", "ravenor" )
+
 command = "c:/Program Files/7-Zip/7z.exe x"
 archive = "game_resources/reborn/resources0.jz"
 output = "-ogame_resources/reborn"
-filter = "heroes/*/base/icon.dds"
-subprocess.run( f"{command} {archive} {output} {filter}" )
+for hero in new_heroes:
+    filter = f"heroes/{hero}/base/icon.dds"
+    subprocess.run( f"{command} {archive} {output} {filter}" )
 
 from pathlib import Path
 
