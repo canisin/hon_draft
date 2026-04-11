@@ -122,6 +122,30 @@
     let pickHeroAudio = document.getElementById( "pick-hero-audio" );
     pickHeroAudio.volume = 0.2;
 
+    let lastPlayedAudio = Date.now();
+    let audioDelay = 3000;
+    function playAudio( audio, noDelay = true )
+    {
+        let timeSinceAudio = Date.now() - lastPlayedAudio;
+        let remainingDelay = audioDelay - timeSinceAudio;
+        if ( noDelay || remainingDelay <= 0 )
+        {
+            audio.play();
+            lastPlayedAudio = Date.now();
+        }
+        else
+        {
+            setTimeout( () => {
+                audio.play();
+            }, remainingDelay );
+            lastPlayedAudio += audioDelay;
+        }
+    };
+    function playAudioWithDelay( audio )
+    {
+        playAudio( audio, false );
+    }
+
     function clickSlot( team, index )
     {
         console.log( "clicking slot" );
@@ -326,17 +350,17 @@
 
         if ( state.state == "banning_countdown" )
         {
-            startDraftAudio.play();
+            playAudio( startDraftAudio );
         }
 
         if ( state.state == "banning" && state.active_team == client_team )
         {
-            banHeroAudio.play();
+            playAudioWithDelay( banHeroAudio );
         }
 
         if ( state.state == "picking" && state.active_team == client_team )
         {
-            pickHeroAudio.play();
+            playAudioWithDelay( pickHeroAudio );
         }
 
         setFirstBan( state );
@@ -498,7 +522,7 @@
     {
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
         let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
-        heroSound.play();
+        playAudioWithDelay( heroSound );
     };
     socketio.on( "hero-picked", onHeroPicked );
 
