@@ -895,6 +895,7 @@ def pick_hero( player, hero, is_fate = False ):
 
     player.set_hero( hero )
     hero.set_picked()
+    emit_hero_picked( hero.stat, hero.stat.index( hero ) )
     emit_message(
         f"{ player.get_formatted_name() } has picked { hero.name }."
         if not is_fate else
@@ -1052,6 +1053,9 @@ def emit_update_hero( stat, index, **kwargs ):
 def emit_update_slot( team, index, **kwargs ):
     player = team.get( index )
     socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ), **kwargs )
+
+def emit_hero_picked( stat, index, **kwargs ):
+    socketio.emit( "hero-picked", ( stat.name, index ), **kwargs )
 
 def emit_update_player( player, **kwargs ):
     socketio.emit( "update-player", player.serialize_player(), **kwargs )

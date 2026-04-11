@@ -73,6 +73,7 @@
                             <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
                         </div>
                     </div>
+                    <audio class="hero-sound"/>
                 </div>
                 {% endfor %}
             </div>
@@ -417,6 +418,9 @@
         heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
         let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
         bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
+        let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
+        heroSound.src = hero ? `/static/sounds/${ hero.icon }.ogg` : "";
+        heroSound.volume = 0.2;
     };
     socketio.on( "update-hero", onUpdateHero );
 
@@ -489,6 +493,14 @@
         }
     };
     socketio.on( "update-slot", onUpdateSlot );
+
+    function onHeroPicked( stat, index )
+    {
+        let heroDiv = document.getElementById( `${ stat }-${ index }` );
+        let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
+        heroSound.play();
+    };
+    socketio.on( "hero-picked", onHeroPicked );
 
     // TODO: This should be doable via css
     // TODO: Colors should also be removed from python code
