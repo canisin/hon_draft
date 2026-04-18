@@ -51,6 +51,7 @@ class Player:
         self.session_id = None
         self.hero = None
         self.dibs = None
+        self.veto = []
         self.team = Teams.observer
         self.is_disconnected = False
 
@@ -72,6 +73,9 @@ class Player:
             emit_message( f"{ self.get_formatted_name() } is now an observer." )
         else:
             emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
+
+    def is_observer( self ):
+        return self.team is Teams.observer
 
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
@@ -98,16 +102,35 @@ class Player:
             f"{ self.get_formatted_name() } has retracted their dibs for { hero.name }.",
             team = self.team )
 
-    def check_dibs( self ):
-        if not self.dibs: return
-        if not self.dibs.is_available():
+    def toggle_veto( self, hero ):
+        is_veto = hero not in self.veto
+        if is_veto:
+            self.veto.append( hero )
+        else:
+            self.veto.remove( hero )
+        hero.emit_update_hero()
+        emit_message(
+            f"{ self.get_formatted_name() } wants { hero.name } to be banned."
+            if is_veto else
+            f"{ self.get_formatted_name() } no longer wants { hero.name } to be banned.",
+            team = self.team )
+
+    def check_dibs( self, hero ):
+        if self.dibs is hero:
             self.dibs = None
             self.emit_update_slot()
+        
+    def check_veto( self, hero ):
+        if hero in self.veto:
+            self.veto.remove( hero )
+            hero.emit_update_hero()
 
     def reset( self ):
         self.hero = None
         self.dibs = None
         self.emit_update_slot()
+        self.veto = []
+        # TODO: for each removed hero emit_update_hero()
 
     def update_rooms( self ):
         team = self.team
@@ -161,9 +184,10 @@ class Players:
         for player in Players.players:
             player.reset()
 
-    def check_dibs():
+    def check_dibs_veto( hero ):
         for player in Players.players:
-            player.check_dibs()
+            player.check_dibs( hero )
+            player.check_veto( hero )
 
     def generate_id():
         return uuid4().hex
@@ -260,6 +284,27 @@ class Team:
     def picking_players( self ):
         return [ player for player in self.players if player and not player.hero ]
 
+    def get_random_ban( self ):
+        veto_counts = {}
+        for player in self.players:
+            if player is None: continue
+            for hero in player.veto:
+                veto_counts.setdefault( hero, 0 )
+                veto_counts[ hero ] += 1
+        for hero, count in veto_counts.items():
+            print( f"{ hero.name }: { count }" )
+        if veto_counts:
+            max_count = max( veto_counts.values() )
+            print( max_count )
+            max_count_heroes = [ hero for hero, count in veto_counts.items() if count == max_count ]
+            print( max_count_heroes )
+            hero = random.choice( max_count_heroes )
+            return hero, True
+        else:
+            stat = random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] )
+            hero = stat.get_random()
+            return hero, False
+
     def missing_stats( self ):
         counts = { stat: 0 for stat in Heroes.stats if stat.is_enabled }
         for player in self.players:
@@ -268,6 +313,10 @@ class Team:
         min_count = min( counts.values() )
         for count in counts.values(): count -= min_count
         return [ stat for stat, count in counts.items() if count == 0 ]
+
+    def get_random_pick( self ):
+        stat = random.choice( self.missing_stats() )
+        return stat.get_random()
 
     def get_other( self ):
         return Teams.get_other( self )
@@ -345,6 +394,9 @@ class Hero:
     def is_available( self ):
         return not self.is_banned and not self.is_picked
 
+    def calc_veto_count( self, team ):
+        return sum( 1 for player in team if self in player.veto )
+
     def emit_update_hero( self ):
         stat = self.stat
         index = stat.index( self )
@@ -356,6 +408,8 @@ class Hero:
             "icon": self.icon,
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
+            "legion_vetos": [ player.name for player in Teams.legion.players if player and self in player.veto ],
+            "hellbourne_vetos": [ player.name for player in Teams.hellbourne.players if player and self in player.veto ],
         }
 
 class Stat:
@@ -421,14 +475,6 @@ class Heroes:
 
     def calc_ban_count():
         return sum( stat.calc_ban_count() for stat in Heroes.stats )
-
-    def get_random_ban():
-        stat = random.choice( [ stat for stat in Heroes.stats if stat.is_enabled ] )
-        return stat.get_random()
-
-    def get_random_pick( team ):
-        stat = random.choice( team.missing_stats() )
-        return stat.get_random()
 
     def emit_update_heroes( **kwargs ):
         for stat in Heroes.stats:
@@ -814,7 +860,7 @@ def dibs_hero( player, hero ):
     if state in ( "lobby", "pool_countdown", "results" ):
         return
 
-    if player.team is Teams.observer:
+    if player.is_observer():
         return
 
     if player.hero:
@@ -832,7 +878,21 @@ def banning_countdown_callback():
     active_team = first_ban
     set_state( "banning", banning_duration, banning_timer_callback )
 
-def ban_hero( player, hero ):
+def veto_hero( player, hero ):
+    if state not in ( "banning_countdown", "banning" ):
+        return
+
+    if player.is_observer():
+        return
+
+    if hero.is_banned:
+        return
+    if hero.is_picked:
+        return
+
+    player.toggle_veto( hero )
+
+def ban_hero( player, hero, is_veto = False ):
     if state != "banning":
         return
 
@@ -844,10 +904,14 @@ def ban_hero( player, hero ):
         return
 
     hero.set_banned()
-    message_actor = player.get_formatted_name() if player else fate_formatted
-    emit_message( f"{ message_actor } has banned { hero.name }." )
+    if player:
+        emit_message( f"{ player.get_formatted_name() } has banned { hero.name }." )
+    elif is_veto:
+        emit_message( f"{ hero.name } was banned based on veto votes." )
+    else:
+        emit_message( f"{ fate_formatted } has banned { hero.name }." )
 
-    Players.check_dibs()
+    Players.check_dibs_veto( hero )
 
     timer.cancel()
 
@@ -859,8 +923,8 @@ def ban_hero( player, hero ):
         set_state( "banning", banning_duration, banning_timer_callback )
 
 def banning_timer_callback():
-    hero = Heroes.get_random_ban()
-    ban_hero( None, hero )
+    hero, is_veto = active_team.get_random_ban()
+    ban_hero( None, hero, is_veto )
 
 def start_picking( team, pick_count ):
     global active_team
@@ -902,7 +966,7 @@ def pick_hero( player, hero, is_fate = False ):
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
     )
 
-    Players.check_dibs()
+    Players.check_dibs_veto( hero )
 
     global remaining_picks
     remaining_picks -= 1
@@ -915,9 +979,10 @@ def pick_hero( player, hero, is_fate = False ):
 
 def picking_timer_callback():
     for _ in range( remaining_picks ):
-        player = next( ( player for player in active_team.picking_players() if player.dibs ),
-           next( player for player in active_team.picking_players() ) )
-        hero = player.dibs if player.dibs else Heroes.get_random_pick( active_team )
+        picking_players = active_team.picking_players()
+        assert( picking_players )
+        player = next( ( player for player in picking_players if player.dibs ), picking_players[ 0 ] )
+        hero = player.dibs if player.dibs else active_team.get_random_pick()
         pick_hero( player, hero, is_fate = not player.dibs )
 
 ## ROUTES ##
@@ -995,6 +1060,12 @@ def on_dibs_hero( stat, index ):
     player = Players.get( session[ "id" ] )
     hero = Heroes.get( stat, index )
     dibs_hero( player, hero )
+
+@socketio.on( "veto-hero" )
+def on_veto_hero( stat, index ):
+    player = Players.get( session[ "id" ] )
+    hero = Heroes.get( stat, index )
+    veto_hero( player, hero )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
