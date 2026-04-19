@@ -8,26 +8,26 @@
 {% macro team( name ) %}
 <div class="team" id="{{ name }}">
     <div class="team-header">
-        <img class="team-header-icon" src="/static/images/team-{{ name }}.png"/>
-        <div class="team-header-name">{{ name }}</div>
-    </div>
-    <div class="first-ban-or-team-status">
+        <div class="team-header-icon-name">
+            <img class="team-header-icon" src="/static/images/team-{{ name }}.png"/>
+            <div class="team-header-name">{{ name }}</div>
+        </div>
         <div class="first-ban">
             <input type="checkbox" class="first-ban-checkbox" id="{{ name }}-first-ban-checkbox" 
                 onClick="clickFirstBan( '{{ name }}' )"/>
             <label class="first-ban-label" for="{{ name }}-first-ban-checkbox">First Ban</label>
         </div>
-        <div class="team-status">
-            <div class="team-status-title">
-                <div class="team-status-arrows">
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                    <img class="team-status-arrow"/>
-                </div>
-                <div class="team-status-label"></div>
+    </div>
+    <div class="team-status">
+        <div class="team-status-title">
+            <div class="team-status-arrows">
+                <img class="team-status-arrow"/>
+                <img class="team-status-arrow"/>
+                <img class="team-status-arrow"/>
             </div>
-            <div class="team-status-subtitle"></div>
+            <div class="team-status-label"></div>
         </div>
+        <div class="team-status-subtitle"></div>
     </div>
     <div class="team-slots">
         {% for index in range( team_size ) %}
@@ -244,16 +244,6 @@
         input.value = "";
     };
 
-    function setTeamStatusVisibility( state )
-    {
-        let isLobby = state.state == "lobby" || state.state == "pool_countdown";
-
-        Array.from( document.getElementsByClassName( "first-ban" ) ).forEach( firstBan =>
-            firstBan.style.visibility = isLobby ? "visible" : "hidden" );
-        Array.from( document.getElementsByClassName( "team-status" ) ).forEach( teamStatus =>
-            teamStatus.style.visibility = !isLobby ? "visible" : "hidden" );
-    };
-
     function setFirstBan( state )
     {
         let legionFirstBan = document.getElementById( "legion-first-ban-checkbox" );
@@ -374,7 +364,6 @@
         setFirstBan( state );
         setTeamStatus( state, "legion" );
         setTeamStatus( state, "hellbourne" );
-        setTeamStatusVisibility( state );
         setStatToggles( state );
         setHeroButtons( state );
     };
