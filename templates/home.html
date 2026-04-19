@@ -432,8 +432,8 @@
         let longestWord = words.sort( ( a, b ) => b.length - a.length )[ 0 ];
         let scale = Math.min( 1, 6 / longestWord.length );
         if ( scale == 1 ) return;
-        let currentSize = parseFloat( window.getComputedStyle( element ).fontSize );
-        element.style.fontSize = ( currentSize * scale ) + "px";
+        const fontSize = 18;
+        element.style.fontSize = ( fontSize * scale ) + "px";
     };
 
     Array.from( document.getElementsByClassName( "hero-name" ) ).forEach( setFontSizeToFit );

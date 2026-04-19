@@ -382,7 +382,7 @@
 }
 
 .hero-name {
-    font-size: 18px;
+    /* font size set in js */
     text-align: center;
     font-weight: bold;
 }
