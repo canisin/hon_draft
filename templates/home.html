@@ -174,12 +174,14 @@
     {
         event.preventDefault();
 
-        switch ( event.button )
+        switch ( true )
         {
-            case 1: // middle click
+            case event.button == 1: // middle click
+            case event.button == 2 && event.altKey: // alt + right click
+            case event.button == 2 && event.ctrlKey: // ctrl + right click
                 vetoHero( stat, index );
                 break;
-            case 2: // right click
+            case event.button == 2: // right click
                 dibsHero( stat, index )
                 break;
         }
