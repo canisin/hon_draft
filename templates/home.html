@@ -31,7 +31,8 @@
     </div>
     <div class="team-slots">
         {% for index in range( team_size ) %}
-        <div class="slot" id="{{ name }}-{{ index }}" onClick="clickSlot( '{{ name }}', {{ index }} )">
+        <div class="slot" id="{{ name }}-{{ index }}" 
+                onClick="clickSlot( '{{ name }}', {{ index }} )">
             <div class="slot-player">
                 <img class="slot-player-icon" src="/static/images/team-{{ name }}.png"/>
                 <div class="slot-player-name">Empty</div>
@@ -62,7 +63,6 @@
             <div class="stat-heroes">
                 {% for index in range( pool_size ) %}
                 <div class="hero" id="{{ stat }}-{{ index }}"
-                        onClick="selectHero( '{{ stat }}', {{ index }} )" 
                         onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )" 
                         oncontextmenu="event.preventDefault()">
                     <div class="hero-icon-container">
@@ -156,31 +156,6 @@
     {
         console.log( "clicking slot" );
         socketio.emit( "click-slot", team, index );
-    };
-
-    function applyHeroSelection( isSelected, heroDiv )
-    {
-        heroDiv.style.borderColor = isSelected ? "yellow" : "";
-        let controls = heroDiv.getElementsByClassName( "hero-controls" )[ 0 ];
-        controls.style.display = isSelected ? "grid" : "";
-        let heroButtons = heroDiv.getElementsByClassName( "hero-button-container" )[ 0 ];
-        heroButtons.style.display = isSelected ? "flex" : "";
-    };
-
-    let selectedHero = ( "", -1 );
-    function selectHero( stat, index )
-    {
-        console.log( "selecting hero" );
-        Array.from( document.getElementsByClassName( "hero" ) ).forEach(
-            heroDiv => applyHeroSelection( false, heroDiv ) );
-        if ( selectedHero == ( stat, index ) )
-        {
-            selectedHero = ( "", -1 );
-            return;
-        }
-        let heroDiv = document.getElementById( `${ stat }-${ index }` );
-        applyHeroSelection( true, heroDiv );
-        selectedHero = ( stat, index );
     };
 
     function dibsHero( stat, index )
