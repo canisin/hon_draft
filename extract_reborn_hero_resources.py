@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 import soundfile as sf
 
-heroes = ( "*" )
+heroes = [ "*" ]
 
 command = "c:/Program Files/7-Zip/7z.exe x"
 archive = "game_resources/reborn/resources0.jz"
@@ -20,7 +20,7 @@ for hero in heroes:
     subprocess.run( f"{command} {archive} {output} {filter}" )
 
 new_icon_count = 0
-conveted_sound_count = 0
+converted_sound_count = 0
 new_sound_count = 0
 for hero in Path( "game_resources/reborn/heroes" ).iterdir():
     target_icon = Path( f"static/images/heroes/reborn/{ hero.name }.png" )
