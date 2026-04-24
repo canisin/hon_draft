@@ -125,12 +125,17 @@ class Player:
             self.veto.remove( hero )
             hero.emit_update_hero()
 
+    def clear_veto( self ):
+        veto = self.veto
+        self.veto = []
+        for hero in veto:
+            hero.emit_update_hero()
+
     def reset( self ):
         self.hero = None
         self.dibs = None
         self.emit_update_slot()
         self.veto = []
-        # TODO: for each removed hero emit_update_hero()
 
     def update_rooms( self ):
         team = self.team
@@ -188,6 +193,10 @@ class Players:
         for player in Players.players:
             player.check_dibs( hero )
             player.check_veto( hero )
+
+    def clear_veto():
+        for player in Players.players:
+            player.clear_veto()
 
     def generate_id():
         return uuid4().hex
@@ -917,6 +926,7 @@ def ban_hero( player, hero, is_veto = False ):
     timer.cancel()
 
     if Heroes.calc_ban_count() == ban_count:
+        Players.clear_veto()
         active_team = None
         set_state( "picking_countdown", picking_countdown_duration, picking_countdown_callback )
     else:
