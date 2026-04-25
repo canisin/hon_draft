@@ -207,7 +207,11 @@ class Players:
         return next( ( player for player in Players.players if player.id == id ), None )
 
     def connect( id, name, session_id ):
-        player = Players.get( id ) or Player( name, id )
+        player = Players.get( id )
+        is_new_player = False
+        if not player:
+            player = Player( name, id )
+            is_new_player = True
         player.session_id = session_id
         emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", to = session_id )
         emit_message( "Type <b>/name new_name</b> in chat to change your name.", to = session_id )
@@ -220,10 +224,10 @@ class Players:
         Heroes.emit_update_heroes( to = session_id )
         Players.emit_add_players( to = session_id )
 
-        if player.is_disconnected:
-            Players.restore( player )
-        else:
+        if is_new_player:
             Players.add( player )
+        elif player.is_disconnected:
+            Players.restore( player )
 
         player.update_rooms()
 
