@@ -465,14 +465,14 @@
         heroName.innerHTML = hero ? hero.name : "";
         setFontSizeToFit( heroName );
         let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
-        heroIcon.src = `/static/images/${ hero ? hero.icon : "hero-none" }.png`;
+        heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
         heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
         let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
         bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
         let vetoCount = heroDiv.getElementsByClassName( "hero-veto-count" )[ 0 ];
         vetoCount.innerHTML = calcVetoCountString( hero );
         let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
-        heroSound.src = hero ? `/static/sounds/${ hero.icon }.ogg` : "";
+        heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
         heroSound.volume = 0.2;
     };
     socketio.on( "update-hero", onUpdateHero );
@@ -535,7 +535,7 @@
         else if ( shouldShowHero( slot, team ) )
         {
             heroName.innerHTML = slot.hero.name;
-            heroIcon.src = `/static/images/${ slot.hero.icon }.png`;
+            heroIcon.src = `/static/images/${ slot.hero.path }.png`;
             heroIcon.style.filter = slot.is_dibs ? "grayscale( 1 )" : "";
         }
         else

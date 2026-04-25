@@ -381,10 +381,10 @@ class Teams:
         return { team.name: team.serialize() for team in Teams.teams }
 
 class Hero:
-    def __init__( self, name, stat, icon ):
+    def __init__( self, name, key, stat ):
         self.name = name
+        self.key = key
         self.stat = stat
-        self.icon = icon
         self.is_banned = False
         self.is_picked = False
 
@@ -415,7 +415,7 @@ class Hero:
     def serialize( self ):
         return {
             "name": self.name,
-            "icon": self.icon,
+            "path": f"{ getattr( hero_sets , hero_set )[ "path" ] }/{ self.key }",
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
             "legion_vetos": [ player.name for player in Teams.legion.players if player and self in player.veto ],
@@ -440,7 +440,7 @@ class Stat:
         if not self.is_enabled: return
         heroes = getattr( hero_sets , hero_set )[ self.name ]
         heroes = random.sample( heroes, pool_size )
-        self.pool = [ Hero( name, self, icon ) for name, icon in heroes ]
+        self.pool = [ Hero( name, key, self ) for name, key in heroes ]
         self.emit_update_heroes()
 
     def get( self, index ):
