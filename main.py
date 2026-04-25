@@ -23,6 +23,7 @@ def getenv_bool( key, default ):
 load_dotenv()
 
 hero_set = getenv( "HERO_SET" ) or "reborn"
+hero_set = getattr( hero_sets, hero_set )
 pool_countdown_duration = int( getenv( "POOL_COUNTDOWN_DURATION" ) or 5 )
 banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) or 10 )
 banning_duration = int( getenv( "BANNING_DURATION" ) or 30 )
@@ -415,7 +416,7 @@ class Hero:
     def serialize( self ):
         return {
             "name": self.name,
-            "path": f"{ getattr( hero_sets , hero_set )[ "path" ] }/{ self.key }",
+            "path": f"{ hero_set[ "path" ] }/{ self.key }",
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
             "legion_vetos": [ player.name for player in Teams.legion.players if player and self in player.veto ],
@@ -438,7 +439,7 @@ class Stat:
 
     def generate_pool( self ):
         if not self.is_enabled: return
-        heroes = getattr( hero_sets , hero_set )[ self.name ]
+        heroes = hero_set[ self.name ]
         heroes = random.sample( heroes, pool_size )
         self.pool = [ Hero( name, key, self ) for name, key in heroes ]
         self.emit_update_heroes()
