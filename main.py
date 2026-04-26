@@ -136,8 +136,8 @@ class Player:
     def reset( self ):
         self.hero = None
         self.dibs = None
-        self.emit_update_slot()
         self.veto = []
+        self.emit_update_slot()
 
     def update_rooms( self ):
         team = self.team
@@ -190,6 +190,9 @@ class Players:
                 Players.remove( player )
         for player in Players.players:
             player.reset()
+
+    def clear():
+        Players.players = []
 
     def check_dibs_veto( hero ):
         for player in Players.players:
@@ -279,6 +282,9 @@ class Team:
     def is_empty( self ):
         return all( player is None for player in self.players )
 
+    def clear( self ):
+        self.players = [ None for _ in range( team_size ) ]
+
     def add_player( self, player, index ):
         assert player not in self.players
         assert self.players[ index ] is None
@@ -352,6 +358,9 @@ class Observers:
         self.color = color
         self.players = []
 
+    def clear( self ):
+        self.players = []
+
     def add_player( self, player, index = None ):
         assert index is None
         assert player not in self.players
@@ -366,6 +375,11 @@ class Teams:
     hellbourne = Team( "hellbourne", "red" )
     teams = [ legion, hellbourne ]
     observer = Observers( "observers", "blue" )
+
+    def clear():
+        Teams.legion.clear()
+        Teams.hellbourne.clear()
+        Teams.observer.clear()
 
     def get( team ):
         if team == "legion": return Teams.legion
@@ -402,10 +416,6 @@ class Hero:
         self.is_picked = True
         self.emit_update_hero()
 
-    def reset( self ):
-        self.is_banned = False
-        self.is_picked = False
-
     def is_available( self ):
         return not self.is_banned and not self.is_picked
 
@@ -436,9 +446,8 @@ class Stat:
         self.pool = [ None for _ in range( pool_size ) ]
 
     def reset( self ):
-        for index, hero in enumerate( self.pool ):
-            if hero: hero.reset()
-            self.pool[ index ] = None
+        self.pool = [ None for _ in range( pool_size ) ]
+        for index, _ in enumerate( self.pool ):
             emit_update_hero( self, index )
 
     def generate_pool( self ):
@@ -603,13 +612,17 @@ def end_draft( player ):
     reset_draft()
     emit_message( f"{ player.get_formatted_name() } has ended the draft!" )
 
-def reset_draft():
+def reset_draft( clear_players = False ):
     global active_team
     active_team = None
     global remaining_picks
     remaining_picks = 0
     Heroes.reset()
-    Players.reset()
+    if clear_players:
+        Players.clear()
+        Teams.clear()
+    else:
+        Players.reset()
     set_state( "lobby", 0, None )
 
 def pool_countdown_callback():
@@ -851,17 +864,25 @@ def on_message( message ):
 
 def on_command( command ):
     ( command, _, parameters ) = command.partition( " " )
-    if command == "name":
-        set_name( parameters )
-        return
-    print( "unrecognized command" )
-    emit_message( "unrecognized command", to = request.sid )
+    match command:
+        case "name":
+            set_name( parameters )
+        case "reset":
+            reset_server()
+        case _:
+            print( "unrecognized command" )
+            emit_message( "unrecognized command", to = request.sid )
 
 def set_name( name ):
     if not name: return
     name = name[:16]
     # tell the client to make a request to set the cookie
     emit( "set-name", name )
+
+def reset_server():
+    print( "resetting server" )
+    reset_draft( clear_players = True )
+    emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 
 ## OUTGOING SOCKET EVENTS ##
 def emit_update_state( **kwargs ):
