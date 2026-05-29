@@ -335,7 +335,10 @@
         current_state = state.state;
 
         let stateLabel = document.getElementById( "state" );
-        stateLabel.innerHTML = state.state;
+        stateLabel.innerHTML = state.state_label;
+
+        let countdownLabel = document.getElementById( "countdown" );
+        countdownLabel.style.visibility = ( state.state == "lobby" || state.state == "results" ) ? "hidden" : "visible";
 
         let startDraftButton = document.getElementById( "start-draft-button" );
         startDraftButton.disabled = state.state != "lobby";

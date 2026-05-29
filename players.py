@@ -183,7 +183,7 @@ def connect( id, name, session_id ):
 def disconnect( id ):
     player = get( id )
     if not player: return
-    if logic.state == "lobby":
+    if logic.state == logic.State.lobby:
         remove( player )
     else:
         player.set_disconnected( True )

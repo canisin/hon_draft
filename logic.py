@@ -1,6 +1,8 @@
 from threading import Timer
 from dotenv import load_dotenv
 from os import getenv
+import enum
+from enum import Enum
 
 import hero_sets
 import players
@@ -36,19 +38,48 @@ later_pick_count = 2
 fate_formatted = "<span style=\"color:orange\">Fate</span>"
 
 ## STATE ##
-state = "lobby"
+state = None
 timer = None
 first_ban = None
 active_team = None
 remaining_picks = 0
 
+class State( Enum ):
+    lobby = enum.auto()
+    pool_countdown = enum.auto()
+    banning_countdown = enum.auto()
+    banning = enum.auto()
+    picking_countdown = enum.auto()
+    picking = enum.auto()
+    results = enum.auto()
+
+def get_state_label( state ):
+    match state:
+        case State.lobby:
+            return "Lobby"
+        case State.pool_countdown:
+            return "Draft Coundown"
+        case State.banning_countdown:
+            return "Banning Countdown"
+        case State.banning:
+            return f"{ active_team.name } is Banning"
+        case State.picking_countdown:
+            return "Picking Countdown"
+        case State.picking:
+            return f"{ active_team.name } is Picking"
+        case State.results:
+            return "Results"
+
 def initialize_state():
+    global state
+    state = State.lobby
     global first_ban
     first_ban = teams.legion
 
 def serialize_state():
     return {
-        "state": state,
+        "state": state.name,
+        "state_label": get_state_label( state ),
         "first_ban": first_ban.name,
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
@@ -73,7 +104,7 @@ def set_timer( seconds, callback ):
         messages.emit_set_timer( seconds )
 
 def set_first_ban( player, team ):
-    if state != "lobby":
+    if state != State.lobby:
         return
 
     global first_ban
@@ -85,7 +116,7 @@ def set_first_ban( player, team ):
     messages.emit_message( f"{ player.get_formatted_name() } has set { team.get_formatted_name() } to ban first." )
 
 def toggle_stat( player, stat ):
-    if state != "lobby":
+    if state != State.lobby:
         return
 
     stat.is_enabled = not stat.is_enabled
@@ -95,7 +126,7 @@ def toggle_stat( player, stat ):
 
 def click_slot( player, team, index ):
     assert team is not teams.observer
-    if state != "lobby":
+    if state != State.lobby:
         return
 
     slot_player = team.get( index )
@@ -112,7 +143,7 @@ def click_slot( player, team, index ):
         player.set_team( team, index )
 
 def start_draft( player ):
-    if state != "lobby":
+    if state != State.lobby:
         return
 
     if not teams.can_draft():
@@ -121,23 +152,23 @@ def start_draft( player ):
 
     messages.emit_message( f"{ player.get_formatted_name() } has started the draft!" )
 
-    set_state( "pool_countdown", pool_countdown_duration, pool_countdown_callback )
+    set_state( State.pool_countdown, pool_countdown_duration, pool_countdown_callback )
     draft_countdown( pool_countdown_duration )
 
 def draft_countdown( seconds ):
-    if state != "pool_countdown": return
+    if state != State.pool_countdown: return
     if seconds == 0: return
     messages.emit_message( f"Draft starting in { seconds } seconds.." )
     Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
-    if state == "lobby" or state == "results":
+    if state == State.lobby or state == State.results:
         return
     reset_draft()
     messages.emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
 
 def end_draft( player ):
-    if state != "results":
+    if state != Staet.results:
         return
     reset_draft()
     messages.emit_message( f"{ player.get_formatted_name() } has ended the draft!" )
@@ -153,11 +184,11 @@ def reset_draft( clear_players = False ):
         teams.clear()
     else:
         players.reset()
-    set_state( "lobby", 0, None )
+    set_state( State.lobby, 0, None )
 
 def pool_countdown_callback():
     heroes.generate_pool()
-    set_state( "banning_countdown", banning_countdown_duration, banning_countdown_callback )
+    set_state( State.banning_countdown, banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
     if state in ( "lobby", "pool_countdown", "results" ):
@@ -179,7 +210,7 @@ def dibs_hero( player, hero ):
 def banning_countdown_callback():
     global active_team
     active_team = first_ban
-    set_state( "banning", banning_duration, banning_timer_callback )
+    set_state( State.banning, banning_duration, banning_timer_callback )
 
 def veto_hero( player, hero ):
     if state not in ( "banning_countdown", "banning" ):
@@ -196,7 +227,7 @@ def veto_hero( player, hero ):
     player.toggle_veto( hero )
 
 def ban_hero( player, hero, is_veto = False ):
-    if state != "banning":
+    if state != State.banning:
         return
 
     global active_team
@@ -221,10 +252,10 @@ def ban_hero( player, hero, is_veto = False ):
     if heroes.calc_ban_count() == ban_count:
         players.clear_veto()
         active_team = None
-        set_state( "picking_countdown", picking_countdown_duration, picking_countdown_callback )
+        set_state( State.picking_countdown, picking_countdown_duration, picking_countdown_callback )
     else:
         active_team = active_team.get_other()
-        set_state( "banning", banning_duration, banning_timer_callback )
+        set_state( State.banning, banning_duration, banning_timer_callback )
 
 def banning_timer_callback():
     hero, is_veto = active_team.get_random_ban()
@@ -242,15 +273,15 @@ def start_picking( team, pick_count ):
 
     if remaining_picks == 0:
         active_team = None
-        set_state( "results", 0, None )
+        set_state( State.results, 0, None )
     else:
-        set_state( "picking", picking_duration, picking_timer_callback )
+        set_state( State.picking, picking_duration, picking_timer_callback )
 
 def picking_countdown_callback():
     start_picking( first_ban, initial_pick_count )
 
 def pick_hero( player, hero, is_fate = False ):
-    if state != "picking":
+    if state != State.picking:
         return
 
     if player.team != active_team:
