@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit
 
 from os import getenv
 
@@ -138,18 +138,9 @@ def reset_server():
     logic.reset_draft( clear_players = True )
     messages.emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 
-def update_rooms( team ):
-    if team is teams.Teams.observer:
-        join_room( teams.Teams.legion.name )
-        join_room( teams.Teams.hellbourne.name )
-        join_room( teams.Teams.observer.name )
-    else:
-        join_room( team.name )
-        leave_room( team.get_other().name )
-        leave_room( teams.Teams.observer.name )
-
 if __name__ == "__main__":
     logic.initialize_state()
+    messages.initialize( socketio )
 
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None

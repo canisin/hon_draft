@@ -2,7 +2,6 @@ import teams
 import heroes
 import logic
 import messages
-import main
 
 from uuid import uuid4
 
@@ -108,7 +107,7 @@ class Player:
     def update_client_team( self ):
         messages.emit_update_client_team( self )
         teams.Teams.emit_update_slots( to = self.session_id )
-        main.update_rooms( self.team )
+        messages.update_rooms( self.team )
 
     def serialize_slot( self ):
         return {
@@ -180,7 +179,7 @@ class Players:
         elif player.is_disconnected:
             Players.restore( player )
 
-        main.update_rooms( player.team )
+        messages.update_rooms( player.team )
 
     def disconnect( id ):
         player = Players.get( id )
