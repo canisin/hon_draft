@@ -171,7 +171,7 @@ def connect( id, name, session_id ):
     messages.emit_update_state( to = session_id )
     teams.emit_update_slots( to = session_id )
     heroes.emit_update_heroes( to = session_id )
-    emit_add_players( to = session_id )
+    messages.emit_update_players( to = session_id )
 
     if is_new_player:
         add( player )
@@ -191,7 +191,7 @@ def disconnect( id ):
 def add( player ):
     players.append( player )
     teams.observer.add_player( player )
-    messages.emit_add_player( player )
+    messages.emit_update_players()
     messages.emit_message( f"{ player.get_formatted_name() } joined." )
 
 def restore( player ):
@@ -200,15 +200,11 @@ def restore( player ):
 def remove( player ):
     players.remove( player )
     player.team.remove_player( player )
-    messages.emit_remove_player( player )
+    messages.emit_update_players()
     if player.is_disconnected:
         messages.emit_message( f"{ player.get_formatted_name() } has been removed." )
     else:
         messages.emit_message( f"{ player.get_formatted_name() } left." )
-
-def emit_add_players( **kwargs ):
-    for player in players:
-        messages.emit_add_player( player, **kwargs )
 
 def serialize():
     return [ player.serialize_player() for player in players ]

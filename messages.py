@@ -1,5 +1,6 @@
 import logic
 import teams
+import players
 
 from flask_socketio import join_room, leave_room
 from os import popen
@@ -36,11 +37,8 @@ def emit_hero_picked( stat, index, **kwargs ):
 def emit_update_player( player, **kwargs ):
     socketio.emit( "update-player", player.serialize_player(), **kwargs )
 
-def emit_add_player( player, **kwargs ):
-    socketio.emit( "add-player", player.serialize_player(), **kwargs )
-
-def emit_remove_player( player, **kwargs ):
-    socketio.emit( "remove-player", player.id, **kwargs )
+def emit_update_players( **kwargs ):
+    socketio.emit( "update-players", players.serialize(), **kwargs )
 
 def emit_message( message, team = None, **kwargs ):
     if team: kwargs[ "to" ] = team.name
