@@ -43,9 +43,8 @@ class Hero:
         }
 
 class Stat:
-    def __init__( self, name, full_name, color ):
+    def __init__( self, name, color ):
         self.name = name
-        self.full_name = full_name
         self.color = color
         self.is_enabled = True
         self.pool = [ None for _ in range( logic.pool_size ) ]
@@ -84,9 +83,9 @@ class Stat:
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
 
-agi = Stat( "agi", "agility", "green" )
-int = Stat( "int", "intelligence", "blue" )
-str = Stat( "str", "strength", "red" )
+agi = Stat( "agi", "green" )
+int = Stat( "int", "blue" )
+str = Stat( "str", "red" )
 stats = [ agi, int, str ]
 stats_dict = { stat.name: stat for stat in stats }
 
