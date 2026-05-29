@@ -171,7 +171,7 @@ class Players:
 
         messages.emit_update_state( to = session_id )
         teams.Teams.emit_update_slots( to = session_id )
-        heroes.Heroes.emit_update_heroes( to = session_id )
+        heroes.emit_update_heroes( to = session_id )
         Players.emit_add_players( to = session_id )
 
         if is_new_player:

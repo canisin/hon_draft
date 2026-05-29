@@ -59,12 +59,12 @@ class Team:
             hero = random.choice( max_count_heroes )
             return hero, True
         else:
-            stat = random.choice( [ stat for stat in heroes.Heroes.stats if stat.is_enabled ] )
+            stat = random.choice( [ stat for stat in heroes.stats if stat.is_enabled ] )
             hero = stat.get_random()
             return hero, False
 
     def missing_stats( self ):
-        counts = { stat: 0 for stat in heroes.Heroes.stats if stat.is_enabled }
+        counts = { stat: 0 for stat in heroes.stats if stat.is_enabled }
         for player in self.players:
             if not player or not player.hero: continue
             counts[ player.hero.stat ] += 1

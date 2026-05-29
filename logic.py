@@ -54,7 +54,7 @@ def serialize_state():
     return {
         "state": state,
         "first_ban": first_ban.name,
-        "stats": { stat.name: stat.is_enabled for stat in heroes.Heroes.stats },
+        "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
         "remaining_picks": remaining_picks,
     }
@@ -151,7 +151,7 @@ def reset_draft( clear_players = False ):
     active_team = None
     global remaining_picks
     remaining_picks = 0
-    heroes.Heroes.reset()
+    heroes.reset()
     if clear_players:
         players.Players.clear()
         teams.Teams.clear()
@@ -160,7 +160,7 @@ def reset_draft( clear_players = False ):
     set_state( "lobby", 0, None )
 
 def pool_countdown_callback():
-    heroes.Heroes.generate_pool()
+    heroes.generate_pool()
     set_state( "banning_countdown", banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
@@ -222,7 +222,7 @@ def ban_hero( player, hero, is_veto = False ):
 
     timer.cancel()
 
-    if heroes.Heroes.calc_ban_count() == ban_count:
+    if heroes.calc_ban_count() == ban_count:
         players.Players.clear_veto()
         active_team = None
         set_state( "picking_countdown", picking_countdown_duration, picking_countdown_callback )

@@ -59,7 +59,7 @@ def on_first_ban( team ):
 @socketio.on( "toggle-stat" )
 def on_toggle_stat( stat ):
     player = players.Players.get( session[ "id" ] )
-    stat = heroes.Heroes.get( stat )
+    stat = heroes.get( stat )
     logic.toggle_stat( player, stat )
 
 @socketio.on( "start-draft" )
@@ -86,25 +86,25 @@ def on_click_slot( team, index ):
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
     player = players.Players.get( session[ "id" ] )
-    hero = heroes.Heroes.get( stat, index )
+    hero = heroes.get( stat, index )
     logic.dibs_hero( player, hero )
 
 @socketio.on( "veto-hero" )
 def on_veto_hero( stat, index ):
     player = players.Players.get( session[ "id" ] )
-    hero = heroes.Heroes.get( stat, index )
+    hero = heroes.get( stat, index )
     logic.veto_hero( player, hero )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
     player = players.Players.get( session[ "id" ] )
-    hero = heroes.Heroes.get( stat, index )
+    hero = heroes.get( stat, index )
     logic.ban_hero( player, hero )
 
 @socketio.on( "pick-hero" )
 def on_pick_hero( stat, index ):
     player = players.Players.get( session[ "id" ] )
-    hero = heroes.Heroes.get( stat, index )
+    hero = heroes.get( stat, index )
     logic.pick_hero( player, hero )
 
 @socketio.on( "message" )

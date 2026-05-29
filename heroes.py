@@ -85,31 +85,30 @@ class Stat:
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
 
-class Heroes:
-    agi = Stat( "agi", "agility", "green" )
-    int = Stat( "int", "intelligence", "blue" )
-    str = Stat( "str", "strength", "red" )
-    stats = [ agi, int, str ]
-    stats_dict = { stat.name: stat for stat in stats }
+agi = Stat( "agi", "agility", "green" )
+int = Stat( "int", "intelligence", "blue" )
+str = Stat( "str", "strength", "red" )
+stats = [ agi, int, str ]
+stats_dict = { stat.name: stat for stat in stats }
 
-    def reset():
-        for stat in Heroes.stats:
-            stat.reset()
+def reset():
+    for stat in stats:
+        stat.reset()
 
-    def generate_pool():
-        for stat in Heroes.stats:
-            stat.generate_pool()
+def generate_pool():
+    for stat in stats:
+        stat.generate_pool()
 
-    def get( stat, index = None ):
-        if index is None: return Heroes.stats_dict[ stat ]
-        return Heroes.get( stat ).get( index )
+def get( stat, index = None ):
+    if index is None: return stats_dict[ stat ]
+    return get( stat ).get( index )
 
-    def calc_ban_count():
-        return sum( stat.calc_ban_count() for stat in Heroes.stats )
+def calc_ban_count():
+    return sum( stat.calc_ban_count() for stat in stats )
 
-    def emit_update_heroes( **kwargs ):
-        for stat in Heroes.stats:
-            stat.emit_update_heroes( **kwargs )
+def emit_update_heroes( **kwargs ):
+    for stat in stats:
+        stat.emit_update_heroes( **kwargs )
 
-    def serialize():
-        return { stat.name: stat.serialize() for stat in Heroes.stats }
+def serialize():
+    return { stat.name: stat.serialize() for stat in stats }
