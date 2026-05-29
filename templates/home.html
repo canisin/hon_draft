@@ -466,20 +466,94 @@
         }
     }
 
+    function calcTooltipString( hero )
+    {
+        let tooltip = "";
+
+        if ( !hero )
+        {
+            return tooltip;
+        }
+
+        if ( ( hero.legion_vetos.length > 0 && ( client_team == "legion" || client_team == "observers" ) )
+            || ( hero.hellbourne_vetos.length > 0 && ( client_team == "hellbourne" || client_team == "observers" ) ) )
+        {
+            tooltip += "<span>Veto Votes</span>";
+
+            if ( client_team == "legion" || client_team == "observers" )
+            {
+                for ( let index in hero.legion_vetos )
+                {
+                    let player = hero.legion_vetos[ index ];
+                    tooltip += `<span>${ player }</span>`;
+                }
+            }
+
+            if ( client_team == "hellbourne" || client_team == "observers" )
+            {
+                for ( let index in hero.legion_vetos )
+                {
+                    let player = hero.legion_vetos[ index ];
+                    tooltip += `<span>${ player }</span>`;
+                }
+            }
+        }
+
+
+        if ( ( hero.legion_dibs.length > 0 && ( client_team == "legion" || client_team == "observers" ) )
+            || ( hero.hellbourne_dibs.length > 0 && ( client_team == "hellbourne" || client_team == "observers" ) ) )
+        {
+            tooltip += "<span>Dibs</span>";
+
+            if ( client_team == "legion" || client_team == "observers" )
+            {
+                for ( let index in hero.legion_dibs )
+                {
+                    let player = hero.legion_dibs[ index ];
+                    tooltip += `<span>${ player }</span>`;
+                }
+            }
+
+            if ( client_team == "hellbourne" || client_team == "observers" )
+            {
+                for ( let index in hero.hellbourne_dibs )
+                {
+                    let player = hero.hellbourne_dibs[ index ];
+                    tooltip += `<span>${ player }</span>`;
+                }
+            }
+        }
+
+        if ( hero.picked_by )
+        {
+            tooltip += `<span>Picked by: ${ hero.picked_by }</span>`
+        }
+
+        return tooltip;
+    }
+
     function onUpdateHero( stat, index, hero )
     {
         console.log( "updating hero" );
         let heroDiv = document.getElementById( `${ stat }-${ index }` );
+
         let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
         heroName.innerHTML = hero ? hero.name : "";
         setFontSizeToFit( heroName );
+
         let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
         heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-        heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
+        heroIcon.style.filter = hero && hero.picked_by ? "grayscale( 1 )" : "";
+
         let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
         bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
+
         let vetoCount = heroDiv.getElementsByClassName( "hero-veto-count" )[ 0 ];
         vetoCount.innerHTML = calcVetoCountString( hero );
+
+        let heroTooltip = heroDiv.getElementsByClassName( "hero-tooltip" )[ 0 ];
+        heroTooltip.innerHTML = calcTooltipString( hero );
+
         let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
         heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
         heroSound.volume = 0.2;

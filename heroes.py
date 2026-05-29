@@ -10,19 +10,19 @@ class Hero:
         self.key = key
         self.stat = stat
         self.is_banned = False
-        self.is_picked = False
+        self.picked_by = None
 
     def set_banned( self ):
         self.is_banned = True
         self.emit_update_hero()
 
-    def set_picked( self ):
+    def set_picked( self, player ):
         assert not self.is_banned
-        self.is_picked = True
+        self.picked_by = player
         self.emit_update_hero()
 
     def is_available( self ):
-        return not self.is_banned and not self.is_picked
+        return not self.is_banned and not self.picked_by
 
     def calc_veto_count( self, team ):
         return sum( 1 for player in team if self in player.veto )
@@ -37,9 +37,11 @@ class Hero:
             "name": self.name,
             "path": f"{ logic.hero_set[ "path" ] }/{ self.key }",
             "is_banned": self.is_banned,
-            "is_picked": self.is_picked,
+            "picked_by": self.picked_by.name if self.picked_by else None,
             "legion_vetos": [ player.name for player in teams.legion.players if player and self in player.veto ],
             "hellbourne_vetos": [ player.name for player in teams.hellbourne.players if player and self in player.veto ],
+            "legion_dibs": [ player.name for player in teams.legion.players if player and self is player.dibs ],
+            "hellbourne_dibs": [ player.name for player in teams.hellbourne.players if player and self is player.dibs ],
         }
 
 class Stat:

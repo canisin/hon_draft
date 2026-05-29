@@ -202,7 +202,7 @@ def dibs_hero( player, hero ):
 
     if hero.is_banned:
         return
-    if hero.is_picked:
+    if hero.picked_by:
         return
 
     player.toggle_dibs( hero )
@@ -221,7 +221,7 @@ def veto_hero( player, hero ):
 
     if hero.is_banned:
         return
-    if hero.is_picked:
+    if hero.picked_by:
         return
 
     player.toggle_veto( hero )
@@ -293,7 +293,7 @@ def pick_hero( player, hero, is_fate = False ):
         return
 
     player.set_hero( hero )
-    hero.set_picked()
+    hero.set_picked( player )
     messages.emit_hero_picked( hero.stat, hero.stat.index( hero ) )
     messages.emit_message(
         f"{ player.get_formatted_name() } has picked { hero.name }."
