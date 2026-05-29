@@ -98,11 +98,11 @@ class Player:
         self.veto = []
         self.emit_update_slot()
 
-    def emit_update_slot( self ):
+    def emit_update_slot( self, **kwargs ):
         team = self.team
         if team is teams.observer: return
         index = team.index( self )
-        messages.emit_update_slot( team, index )
+        messages.emit_update_slot( team, index, **kwargs )
 
     def update_client_team( self ):
         messages.emit_update_client_team( self )

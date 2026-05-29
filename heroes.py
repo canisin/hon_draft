@@ -27,10 +27,10 @@ class Hero:
     def calc_veto_count( self, team ):
         return sum( 1 for player in team if self in player.veto )
 
-    def emit_update_hero( self ):
+    def emit_update_hero( self, **kwargs ):
         stat = self.stat
         index = stat.index( self )
-        messages.emit_update_hero( stat, index )
+        messages.emit_update_hero( stat, index, **kwargs )
 
     def serialize( self ):
         return {
@@ -52,8 +52,7 @@ class Stat:
 
     def reset( self ):
         self.pool = [ None for _ in range( logic.pool_size ) ]
-        for index, _ in enumerate( self.pool ):
-            messages.emit_update_hero( self, index )
+        self.emit_update_heroes()
 
     def generate_pool( self ):
         if not self.is_enabled: return
@@ -77,7 +76,7 @@ class Stat:
 
     def emit_update_heroes( self, **kwargs ):
         for index in range( logic.pool_size ):
-            messages.emit_update_hero( self, index )
+            messages.emit_update_hero( self, index, **kwargs )
 
     def serialize( self ):
         return [ hero.serialize() if hero else None for hero in self.pool ]
