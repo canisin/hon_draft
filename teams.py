@@ -77,7 +77,8 @@ class Team:
         return stat.get_random()
 
     def get_other( self ):
-        return get_other( self )
+        if self == legion: return hellbourne
+        if self == hellbourne: return legion
 
     def emit_update_slots( self, **kwargs ):
         for index in range( logic.team_size ):
@@ -120,10 +121,6 @@ def clear():
 def get( team ):
     if team == "legion": return legion
     if team == "hellbourne": return hellbourne
-
-def get_other( team ):
-    if team == legion: return hellbourne
-    if team == hellbourne: return legion
 
 def can_draft():
     return not any( team.is_empty() for team in teams )
