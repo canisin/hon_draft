@@ -153,10 +153,10 @@ def reset_draft( clear_players = False ):
     remaining_picks = 0
     heroes.reset()
     if clear_players:
-        players.Players.clear()
+        players.clear()
         teams.clear()
     else:
-        players.Players.reset()
+        players.reset()
     set_state( "lobby", 0, None )
 
 def pool_countdown_callback():
@@ -218,12 +218,12 @@ def ban_hero( player, hero, is_veto = False ):
     else:
         messages.emit_message( f"{ fate_formatted } has banned { hero.name }." )
 
-    players.Players.check_dibs_veto( hero )
+    players.check_dibs_veto( hero )
 
     timer.cancel()
 
     if heroes.calc_ban_count() == ban_count:
-        players.Players.clear_veto()
+        players.clear_veto()
         active_team = None
         set_state( "picking_countdown", picking_countdown_duration, picking_countdown_callback )
     else:
@@ -274,7 +274,7 @@ def pick_hero( player, hero, is_fate = False ):
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
     )
 
-    players.Players.check_dibs_veto( hero )
+    players.check_dibs_veto( hero )
 
     global remaining_picks
     remaining_picks -= 1

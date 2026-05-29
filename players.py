@@ -129,87 +129,86 @@ class Player:
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
 
-class Players:
+players = []
+
+def reset():
+    for player in players:
+        if player.is_disconnected:
+            remove( player )
+    for player in players:
+        player.reset()
+
+def clear():
     players = []
 
-    def reset():
-        for player in Players.players:
-            if player.is_disconnected:
-                Players.remove( player )
-        for player in Players.players:
-            player.reset()
+def check_dibs_veto( hero ):
+    for player in players:
+        player.check_dibs( hero )
+        player.check_veto( hero )
 
-    def clear():
-        Players.players = []
+def clear_veto():
+    for player in players:
+        player.clear_veto()
 
-    def check_dibs_veto( hero ):
-        for player in Players.players:
-            player.check_dibs( hero )
-            player.check_veto( hero )
+def generate_id():
+    return uuid4().hex
 
-    def clear_veto():
-        for player in Players.players:
-            player.clear_veto()
+def get( id ):
+    return next( ( player for player in players if player.id == id ), None )
 
-    def generate_id():
-        return uuid4().hex
+def connect( id, name, session_id ):
+    player = get( id )
+    is_new_player = False
+    if not player:
+        player = Player( name, id )
+        is_new_player = True
+    player.session_id = session_id
+    messages.emit_welcome( to = session_id )
 
-    def get( id ):
-        return next( ( player for player in Players.players if player.id == id ), None )
+    messages.emit_update_client_id( player )
+    messages.emit_update_client_team( player )
 
-    def connect( id, name, session_id ):
-        player = Players.get( id )
-        is_new_player = False
-        if not player:
-            player = Player( name, id )
-            is_new_player = True
-        player.session_id = session_id
-        messages.emit_welcome( to = session_id )
+    messages.emit_update_state( to = session_id )
+    teams.emit_update_slots( to = session_id )
+    heroes.emit_update_heroes( to = session_id )
+    emit_add_players( to = session_id )
 
-        messages.emit_update_client_id( player )
-        messages.emit_update_client_team( player )
+    if is_new_player:
+        add( player )
+    elif player.is_disconnected:
+        restore( player )
 
-        messages.emit_update_state( to = session_id )
-        teams.emit_update_slots( to = session_id )
-        heroes.emit_update_heroes( to = session_id )
-        Players.emit_add_players( to = session_id )
+    messages.update_rooms( player.team )
 
-        if is_new_player:
-            Players.add( player )
-        elif player.is_disconnected:
-            Players.restore( player )
+def disconnect( id ):
+    player = get( id )
+    if not player: return
+    if logic.state == "lobby":
+        remove( player )
+    else:
+        player.set_disconnected( True )
 
-        messages.update_rooms( player.team )
+def add( player ):
+    players.append( player )
+    teams.observer.add_player( player )
+    messages.emit_add_player( player )
+    messages.emit_message( f"{ player.get_formatted_name() } joined." )
 
-    def disconnect( id ):
-        player = Players.get( id )
-        if not player: return
-        if logic.state == "lobby":
-            Players.remove( player )
-        else:
-            player.set_disconnected( True )
+def restore( player ):
+    player.set_disconnected( False )
 
-    def add( player ):
-        Players.players.append( player )
-        teams.observer.add_player( player )
-        messages.emit_add_player( player )
-        messages.emit_message( f"{ player.get_formatted_name() } joined." )
+def remove( player ):
+    players.remove( player )
+    player.team.remove_player( player )
+    messages.emit_remove_player( player )
+    if player.is_disconnected:
+        messages.emit_message( f"{ player.get_formatted_name() } has been removed." )
+    else:
+        messages.emit_message( f"{ player.get_formatted_name() } left." )
 
-    def restore( player ):
-        player.set_disconnected( False )
+def emit_add_players( **kwargs ):
+    for player in players:
+        messages.emit_add_player( player, **kwargs )
 
-    def remove( player ):
-        Players.players.remove( player )
-        player.team.remove_player( player )
-        messages.emit_remove_player( player )
-        if player.is_disconnected:
-            messages.emit_message( f"{ player.get_formatted_name() } has been removed." )
-        else:
-            messages.emit_message( f"{ player.get_formatted_name() } left." )
-
-    def emit_add_players( **kwargs ):
-        for player in Players.players:
-            messages.emit_add_player( player, **kwargs )
-
-    def serialize():
-        return [ player.serialize_player() for player in Players.players ]
+def serialize():
+    return [ player.serialize_player() for player in players ]
