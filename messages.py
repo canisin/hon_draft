@@ -2,6 +2,7 @@ import logic
 import teams
 
 from flask_socketio import join_room, leave_room
+from os import popen
 
 socketio = None
 def initialize( socketio ):
@@ -45,8 +46,10 @@ def emit_message( message, team = None, **kwargs ):
     if team: kwargs[ "to" ] = team.name
     socketio.emit( "message", message, **kwargs )
 
+revision = open( "revision.txt" ).read().strip()
+sha = popen( "git rev-parse --short HEAD" ).read().strip()
 def emit_welcome( **kwargs ):
-    emit_message( f"Welcome to HoNDraft! [.{logic.revision}-{logic.sha}]", **kwargs )
+    emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", **kwargs )
     emit_message( "Type <b>/name new_name</b> in chat to change your name.", **kwargs )
 
 def update_rooms( team ):

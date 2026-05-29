@@ -1,7 +1,6 @@
 from threading import Timer
 from dotenv import load_dotenv
 from os import getenv
-from os import popen
 
 import hero_sets
 import players
@@ -35,9 +34,6 @@ initial_pick_count = 1
 later_pick_count = 2
 
 fate_formatted = "<span style=\"color:orange\">Fate</span>"
-
-revision = open( "revision.txt" ).read().strip()
-sha = popen( "git rev-parse --short HEAD" ).read().strip()
 
 ## STATE ##
 state = "lobby"
