@@ -48,7 +48,7 @@ remaining_picks = 0
 
 def initialize_state():
     global first_ban
-    first_ban = teams.Teams.legion
+    first_ban = teams.legion
 
 def serialize_state():
     return {
@@ -98,13 +98,13 @@ def toggle_stat( player, stat ):
     messages.emit_message( f"{ player.get_formatted_name() } has { action } { stat.get_formatted_name() } heroes." )
 
 def click_slot( player, team, index ):
-    assert team is not teams.Teams.observer
+    assert team is not teams.observer
     if state != "lobby":
         return
 
     slot_player = team.get( index )
     if slot_player == player:
-        player.set_team( teams.Teams.observer )
+        player.set_team( teams.observer )
         return
 
     if slot_player:
@@ -119,7 +119,7 @@ def start_draft( player ):
     if state != "lobby":
         return
 
-    if not teams.Teams.can_draft():
+    if not teams.can_draft():
         messages.emit_message( f"<span style=\"color: red\">Cannot start with empty teams</span>", to = player.session_id )
         return
 
@@ -154,7 +154,7 @@ def reset_draft( clear_players = False ):
     heroes.reset()
     if clear_players:
         players.Players.clear()
-        teams.Teams.clear()
+        teams.clear()
     else:
         players.Players.reset()
     set_state( "lobby", 0, None )

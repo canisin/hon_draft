@@ -38,8 +38,8 @@ class Hero:
             "path": f"{ logic.hero_set[ "path" ] }/{ self.key }",
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
-            "legion_vetos": [ player.name for player in teams.Teams.legion.players if player and self in player.veto ],
-            "hellbourne_vetos": [ player.name for player in teams.Teams.hellbourne.players if player and self in player.veto ],
+            "legion_vetos": [ player.name for player in teams.legion.players if player and self in player.veto ],
+            "hellbourne_vetos": [ player.name for player in teams.hellbourne.players if player and self in player.veto ],
         }
 
 class Stat:

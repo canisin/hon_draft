@@ -13,7 +13,7 @@ class Player:
         self.hero = None
         self.dibs = None
         self.veto = []
-        self.team = teams.Teams.observer
+        self.team = teams.observer
         self.is_disconnected = False
 
     def set_name( self, name ):
@@ -30,13 +30,13 @@ class Player:
         self.update_client_team()
         messages.emit_update_player( self )
         team.add_player( self, index )
-        if team is teams.Teams.observer:
+        if team is teams.observer:
             messages.emit_message( f"{ self.get_formatted_name() } is now an observer." )
         else:
             messages.emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
 
     def is_observer( self ):
-        return self.team is teams.Teams.observer
+        return self.team is teams.observer
 
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
@@ -100,13 +100,13 @@ class Player:
 
     def emit_update_slot( self ):
         team = self.team
-        if team is teams.Teams.observer: return
+        if team is teams.observer: return
         index = team.index( self )
         messages.emit_update_slot( team, index )
 
     def update_client_team( self ):
         messages.emit_update_client_team( self )
-        teams.Teams.emit_update_slots( to = self.session_id )
+        teams.emit_update_slots( to = self.session_id )
         messages.update_rooms( self.team )
 
     def serialize_slot( self ):
@@ -170,7 +170,7 @@ class Players:
         messages.emit_update_client_team( player )
 
         messages.emit_update_state( to = session_id )
-        teams.Teams.emit_update_slots( to = session_id )
+        teams.emit_update_slots( to = session_id )
         heroes.emit_update_heroes( to = session_id )
         Players.emit_add_players( to = session_id )
 
@@ -191,7 +191,7 @@ class Players:
 
     def add( player ):
         Players.players.append( player )
-        teams.Teams.observer.add_player( player )
+        teams.observer.add_player( player )
         messages.emit_add_player( player )
         messages.emit_message( f"{ player.get_formatted_name() } joined." )
 

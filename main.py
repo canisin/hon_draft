@@ -53,7 +53,7 @@ def on_disconnect():
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
     player = players.Players.get( session[ "id" ] )
-    team = teams.Teams.get( team )
+    team = teams.get( team )
     logic.set_first_ban( player, team )
 
 @socketio.on( "toggle-stat" )
@@ -80,7 +80,7 @@ def on_end_draft():
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):
     player = players.Players.get( session[ "id" ] )
-    team = teams.Teams.get( team )
+    team = teams.get( team )
     logic.click_slot( player, team, index )
 
 @socketio.on( "dibs-hero" )

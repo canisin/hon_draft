@@ -77,7 +77,7 @@ class Team:
         return stat.get_random()
 
     def get_other( self ):
-        return Teams.get_other( self )
+        return get_other( self )
 
     def emit_update_slots( self, **kwargs ):
         for index in range( logic.team_size ):
@@ -107,31 +107,30 @@ class Observers:
         assert player in self.players
         self.players.remove( player )
 
-class Teams:
-    legion = Team( "legion", "green" )
-    hellbourne = Team( "hellbourne", "red" )
-    teams = [ legion, hellbourne ]
-    observer = Observers( "observers", "blue" )
+legion = Team( "legion", "green" )
+hellbourne = Team( "hellbourne", "red" )
+teams = [ legion, hellbourne ]
+observer = Observers( "observers", "blue" )
 
-    def clear():
-        Teams.legion.clear()
-        Teams.hellbourne.clear()
-        Teams.observer.clear()
+def clear():
+    legion.clear()
+    hellbourne.clear()
+    observer.clear()
 
-    def get( team ):
-        if team == "legion": return Teams.legion
-        if team == "hellbourne": return Teams.hellbourne
+def get( team ):
+    if team == "legion": return legion
+    if team == "hellbourne": return hellbourne
 
-    def get_other( team ):
-        if team == Teams.legion: return Teams.hellbourne
-        if team == Teams.hellbourne: return Teams.legion
+def get_other( team ):
+    if team == legion: return hellbourne
+    if team == hellbourne: return legion
 
-    def can_draft():
-        return not any( team.is_empty() for team in Teams.teams )
+def can_draft():
+    return not any( team.is_empty() for team in teams )
 
-    def emit_update_slots( **kwargs ):
-        for team in Teams.teams:
-            team.emit_update_slots( **kwargs )
+def emit_update_slots( **kwargs ):
+    for team in teams:
+        team.emit_update_slots( **kwargs )
 
-    def serialize():
-        return { team.name: team.serialize() for team in Teams.teams }
+def serialize():
+    return { team.name: team.serialize() for team in teams }
