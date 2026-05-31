@@ -171,6 +171,7 @@ reborn = {
         ( "Riptide", "riptide" ),
         ( "Sand Wraith", "sand_wraith" ),
         ( "Scout", "scout" ),
+        ( "Shadowblade", "shadowblade" ),
         ( "Silhouette", "silhouette" ),
         ( "Sir Benzington", "sir_benzington" ),
         ( "Slither", "slither" ),
