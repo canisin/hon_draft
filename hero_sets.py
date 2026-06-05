@@ -153,6 +153,7 @@ reborn = {
         ( "Andromeda", "andromeda" ),
         ( "Arachna", "arachna" ),
         ( "Blood Hunter", "blood_hunter" ),
+        ( "Bushwack", "bushwack" ),
         ( "Chronos", "chronos" ),
         ( "Corrupted Disciple", "corrupted_disciple" ),
         ( "Dampeer", "dampeer" ),
