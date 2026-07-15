@@ -27,6 +27,12 @@ how to start with python venv
 - .venv\Scripts\activate
 - pip install -r requirements.txt
 
+serving on render with gunicorn
+- update build command to install gunicorn and gevent:
+  > pip install -r requirements.txt; pip install gunicorn gevent
+- update start command to use gunicorn with gevent
+  > gunicorn -k gevent -w 1 main:app
+
 TODO
 - break the python code into smaller files
 - make a pass on global and non-local variables
