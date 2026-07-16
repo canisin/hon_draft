@@ -139,6 +139,7 @@ def reset():
         player.reset()
 
 def clear():
+    global players
     players = []
 
 def check_dibs_veto( hero ):
