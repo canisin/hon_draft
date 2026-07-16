@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 import dotenv
 from os import getenv
 
@@ -9,6 +9,7 @@ import teams
 import heroes
 import messages
 import draft
+import commands
 
 dotenv.load_dotenv()
 
@@ -116,32 +117,9 @@ def on_pick_hero( stat, index ):
 
 @socketio.on( "message" )
 def on_message( message ):
-    if message[:1] == "/":
-        on_command( message[1:] )
-        return
     player = players.get( session[ "id" ] )
+    if commands.try_dispatch( player, message ): return
     messages.emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team )
-
-def on_command( command ):
-    ( command, _, parameters ) = command.partition( " " )
-    match command:
-        case "name":
-            set_name( parameters )
-        case "reset":
-            reset_server()
-        case _:
-            messages.emit_message( "unrecognized command", to = request.sid )
-
-def set_name( name ):
-    if not name: return
-    name = name[:16]
-    # tell the client to make a request to set the cookie
-    emit( "set-name", name )
-
-def reset_server():
-    utils.log( "resetting server" )
-    draft.reset_draft( clear_players = True )
-    messages.emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
