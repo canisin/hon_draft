@@ -5,37 +5,27 @@ import messages
 import draft
 import utils
 
-class Command:
-    def __init__( self, command, help ):
-        self.command = command
-        self.help = help
-
-    def connect( self, func ):
-        self.func = func
-
-    def execute( self, player, parameters ):
-        self.func( player, parameters )
-
 commands = []
 
-def command_decorator( command, help ):
-    command = Command( command, help )
-    commands.append( command )
-    return command.connect
+def command( command, help ):
+    def decorator( function ):
+        commands.append( ( command, help, function ) )
+        return function
+    return decorator
 
-@command_decorator( "help", "prints help" )
+@command( "help", "prints help" )
 def print_help( player, parameters ):
-    for command in commands:
-        messages.emit_message( f"<span style=\"font-family: monspace, monospace; color: blue\">/{ command.command }</span>: { command.help }", to = request.sid )
+    for command, help, function in commands:
+        messages.emit_message( f"<span style=\"font-family: monspace, monospace; color: blue\">/{ command }</span>: { help }", to = request.sid )
 
-@command_decorator( "name", "sets player name" )
+@command( "name", "sets player name" )
 def set_name( player, name ):
     if not name: return
     name = name[:16]
     # tell the client to make a request to set the cookie
     emit( "set-name", name )
 
-@command_decorator( "reset", "resets the server" )
+@command( "reset", "resets the server" )
 def reset_server( player, parameters ):
     utils.log( "resetting server" )
     draft.reset_draft( clear_players = True )
@@ -48,8 +38,8 @@ def try_dispatch( player, message ):
     return True
 
 def dispatch( player, command, parameters ):
-    command = next( c for c in commands if c.command == command )
-    if not command:
+    function = next( function for _command, help, function in commands if _command == command )
+    if not function:
             messages.emit_message( "<span style=\"color: red\">Unrecognized command</span>", to = request.sid )
             return
-    command.execute( player, parameters )
+    function( player, parameters )
