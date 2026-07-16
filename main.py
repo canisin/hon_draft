@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit
 
 from os import getenv
 
+import utils
 import players
 import teams
 import heroes
@@ -30,9 +31,10 @@ def home():
 
 @app.route( "/name", methods = [ "POST" ] )
 def name():
-    print( "name request" )
+    id = session[ "id" ]
     name = request.form[ "name" ]
-    player = players.get( session[ "id" ] )
+    utils.log( f"name request: id: { id }, name: '{ name }'" )
+    player = players.get( id )
     player.set_name( name )
     session[ "name" ] = name
     return ""
@@ -40,18 +42,18 @@ def name():
 ## INCOMING SOCKET EVENTS ##
 @socketio.on( "connect" )
 def on_connect( auth ):
-    print( "socket connecting" )
     id = session[ "id" ]
     name = session[ "name" ]
-    players.connect( id, name, request.sid )
-    print( "socket connected" )
+    session_id = request.sid
+    utils.log( f"socket connect: id: { id }, name: '{ name }', session_id: { session_id }" )
+    players.connect( id, name, session_id )
 
 @socketio.on( "disconnect" )
 def on_disconnect():
-    print( "socket disconnecting" )
     id = session[ "id" ]
-    players.disconnect( id, request.sid )
-    print( "socket disconnected" )
+    session_id = request.sid
+    utils.log( f"socket disconnect: id: { id }, session_id: { session_id }" )
+    players.disconnect( id, session_id )
 
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
@@ -112,7 +114,6 @@ def on_pick_hero( stat, index ):
 
 @socketio.on( "message" )
 def on_message( message ):
-    print( "received message" )
     if message[:1] == "/":
         on_command( message[1:] )
         return
@@ -127,7 +128,6 @@ def on_command( command ):
         case "reset":
             reset_server()
         case _:
-            print( "unrecognized command" )
             messages.emit_message( "unrecognized command", to = request.sid )
 
 def set_name( name ):
@@ -137,7 +137,7 @@ def set_name( name ):
     emit( "set-name", name )
 
 def reset_server():
-    print( "resetting server" )
+    utils.log( "resetting server" )
     logic.reset_draft( clear_players = True )
     messages.emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 

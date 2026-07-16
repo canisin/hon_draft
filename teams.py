@@ -49,13 +49,9 @@ class Team:
             for hero in player.veto:
                 veto_counts.setdefault( hero, 0 )
                 veto_counts[ hero ] += 1
-        for hero, count in veto_counts.items():
-            print( f"{ hero.name }: { count }" )
         if veto_counts:
             max_count = max( veto_counts.values() )
-            print( max_count )
             max_count_heroes = [ hero for hero, count in veto_counts.items() if count == max_count ]
-            print( max_count_heroes )
             hero = random.choice( max_count_heroes )
             return hero, True
         else:
