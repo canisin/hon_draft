@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit
-
+import dotenv
 from os import getenv
 
 import utils
@@ -9,6 +9,8 @@ import teams
 import heroes
 import messages
 import logic
+
+dotenv.load_dotenv()
 
 app = Flask( __name__ )
 app.secret_key = "honzor"
@@ -144,5 +146,5 @@ def reset_server():
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None
-    debug = logic.getenv_bool( "DEBUG", False )
+    debug = utils.getenv_bool( "DEBUG", False )
     socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug )

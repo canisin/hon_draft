@@ -1,5 +1,4 @@
 from threading import Timer
-from dotenv import load_dotenv
 from os import getenv
 import enum
 from enum import Enum
@@ -9,16 +8,6 @@ import players
 import teams
 import heroes
 import messages
-
-def getenv_bool( key, default ):
-    value = getenv( key )
-    if not value: return default
-    value = value.lower()
-    if value in ( "true", "yes" ): return True
-    if value in ( "false", "no" ): return False
-    raise ValueError()
-
-load_dotenv()
 
 hero_set = getenv( "HERO_SET" ) or "reborn"
 hero_set = getattr( hero_sets, hero_set )
