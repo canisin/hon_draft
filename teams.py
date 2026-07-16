@@ -107,12 +107,12 @@ class Observers:
 legion = Team( "legion", "green" )
 hellbourne = Team( "hellbourne", "red" )
 teams = [ legion, hellbourne ]
-observer = Observers( "observers", "blue" )
+observers = Observers( "observers", "blue" )
 
 def clear():
     legion.clear()
     hellbourne.clear()
-    observer.clear()
+    observers.clear()
 
 def get( team ):
     if team == "legion": return legion

@@ -13,7 +13,7 @@ class Player:
         self.hero = None
         self.dibs = None
         self.veto = []
-        self.team = teams.observer
+        self.team = teams.observers
         self.is_disconnected = False
 
     def set_name( self, name ):
@@ -30,13 +30,13 @@ class Player:
         self.update_client_team()
         messages.emit_update_player( self )
         team.add_player( self, index )
-        if team is teams.observer:
+        if team is teams.observers:
             messages.emit_message( f"{ self.get_formatted_name() } is now an observer." )
         else:
             messages.emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
 
     def is_observer( self ):
-        return self.team is teams.observer
+        return self.team is teams.observers
 
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
@@ -100,7 +100,7 @@ class Player:
 
     def emit_update_slot( self, **kwargs ):
         team = self.team
-        if team is teams.observer: return
+        if team is teams.observers: return
         index = team.index( self )
         messages.emit_update_slot( team, index, **kwargs )
 
@@ -193,7 +193,7 @@ def disconnect( id, session_id ):
 
 def add( player ):
     players.append( player )
-    teams.observer.add_player( player )
+    teams.observers.add_player( player )
     messages.emit_update_players()
     messages.emit_message( f"{ player.get_formatted_name() } joined." )
 

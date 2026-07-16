@@ -114,13 +114,13 @@ def toggle_stat( player, stat ):
     messages.emit_message( f"{ player.get_formatted_name() } has { action } { stat.get_formatted_name() } heroes." )
 
 def click_slot( player, team, index ):
-    assert team is not teams.observer
+    assert team is not teams.observers
     if state != State.lobby:
         return
 
     slot_player = team.get( index )
     if slot_player == player:
-        player.set_team( teams.observer )
+        player.set_team( teams.observers )
         return
 
     if slot_player:

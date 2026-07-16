@@ -51,11 +51,11 @@ def emit_welcome( **kwargs ):
     emit_message( "Type <b>/name new_name</b> in chat to change your name.", **kwargs )
 
 def update_rooms( team ):
-    if team is teams.observer:
+    if team is teams.observers:
         join_room( teams.legion.name )
         join_room( teams.hellbourne.name )
-        join_room( teams.observer.name )
+        join_room( teams.observers.name )
     else:
         join_room( team.name )
         leave_room( team.get_other().name )
-        leave_room( teams.observer.name )
+        leave_room( teams.observers.name )
