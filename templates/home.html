@@ -335,7 +335,10 @@
         current_state = state.state;
 
         let stateLabel = document.getElementById( "state" );
-        stateLabel.innerHTML = state.state;
+        stateLabel.innerHTML = state.state_label;
+
+        let countdownLabel = document.getElementById( "countdown" );
+        countdownLabel.style.visibility = ( state.state == "lobby" || state.state == "results" ) ? "hidden" : "visible";
 
         let startDraftButton = document.getElementById( "start-draft-button" );
         startDraftButton.disabled = state.state != "lobby";
@@ -605,26 +608,25 @@
         playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
     };
 
-    function onAddPlayer( player )
+    function onUpdatePlayers( players )
     {
-        console.log( `adding player ${ player.name }-${ player.id }` );
-        document.getElementById( "players-list" ).innerHTML += `
-            <div class="players-list-item" id="${ player.id }">
-                <img class="players-list-icon"/>
-                <div class="players-list-name"/>
-            </div>
-        `;
-        updatePlayer( player );
-    };
-    socketio.on( "add-player", onAddPlayer );
+        let playerList = document.getElementById( "players-list" );
+        playerList.innerHTML = "";
+        for ( let index in players )
+        {
+            let player = players[ index ];
 
-    function onRemovePlayer( id )
-    {
-        console.log( `removing player ${ id }` );
-        let player = document.getElementById( `${ id }` );
-        player.remove();
+            playerList.innerHTML += `
+                <div class="players-list-item" id="${ player.id }">
+                    <img class="players-list-icon"/>
+                    <div class="players-list-name"/>
+                </div>
+            `;
+
+            updatePlayer( player );
+        }
     };
-    socketio.on( "remove-player", onRemovePlayer );
+    socketio.on( "update-players", onUpdatePlayers );
 
     function onUpdatePlayer( player )
     {

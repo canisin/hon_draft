@@ -1,5 +1,6 @@
-.venv
+/.venv
 .env
 /game_resources
 revision.txt
 /__pycache__
+/.vs
