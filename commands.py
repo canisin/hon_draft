@@ -18,7 +18,7 @@ def dispatch( player, command, parameters ):
         case "reset":
             reset_server( player )
         case _:
-            messages.emit_message( "unrecognized command", to = request.sid )
+            messages.emit_message( "<span style=\"color: red\">Unrecognized command</span>", to = request.sid )
 
 def set_name( name ):
     if not name: return
