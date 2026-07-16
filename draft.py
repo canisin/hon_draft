@@ -42,22 +42,22 @@ class State( Enum ):
     picking = enum.auto()
     results = enum.auto()
 
-def get_state_label( state ):
-    match state:
-        case State.lobby:
-            return "Lobby"
-        case State.pool_countdown:
-            return "Draft Coundown"
-        case State.banning_countdown:
-            return "Banning Countdown"
-        case State.banning:
-            return f"{ active_team.name } is Banning"
-        case State.picking_countdown:
-            return "Picking Countdown"
-        case State.picking:
-            return f"{ active_team.name } is Picking"
-        case State.results:
-            return "Results"
+    def get_label( state ):
+        match state:
+            case State.lobby:
+                return "Lobby"
+            case State.pool_countdown:
+                return "Draft Coundown"
+            case State.banning_countdown:
+                return "Banning Countdown"
+            case State.banning:
+                return f"{ active_team.name } is Banning"
+            case State.picking_countdown:
+                return "Picking Countdown"
+            case State.picking:
+                return f"{ active_team.name } is Picking"
+            case State.results:
+                return "Results"
 
 def initialize_state():
     global state
@@ -68,7 +68,7 @@ def initialize_state():
 def serialize_state():
     return {
         "state": state.name,
-        "state_label": get_state_label( state ),
+        "state_label": state.get_label(),
         "first_ban": first_ban.name,
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
