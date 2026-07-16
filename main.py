@@ -47,7 +47,7 @@ def on_connect( auth ):
 def on_disconnect():
     print( "socket disconnecting" )
     id = session[ "id" ]
-    players.disconnect( id )
+    players.disconnect( id, request.sid )
     print( "socket disconnected" )
 
 @socketio.on( "first-ban" )

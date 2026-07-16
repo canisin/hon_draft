@@ -180,9 +180,12 @@ def connect( id, name, session_id ):
 
     messages.update_rooms( player.team )
 
-def disconnect( id ):
+def disconnect( id, session_id ):
     player = get( id )
     if not player: return
+    if player.session_id != session_id:
+        print( "Discarding disconnect event for invalid socket id" )
+        return
     if logic.state == logic.State.lobby:
         remove( player )
     else:
