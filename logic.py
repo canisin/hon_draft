@@ -162,13 +162,13 @@ def draft_countdown( seconds ):
     Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
-    if state == State.lobby or state == State.results:
+    if state in ( State.lobby, State.results ):
         return
     reset_draft()
     messages.emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
 
 def end_draft( player ):
-    if state != Staet.results:
+    if state != State.results:
         return
     reset_draft()
     messages.emit_message( f"{ player.get_formatted_name() } has ended the draft!" )
@@ -191,7 +191,7 @@ def pool_countdown_callback():
     set_state( State.banning_countdown, banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
-    if state in ( "lobby", "pool_countdown", "results" ):
+    if state in ( State.lobby, State.pool_countdown, State.results ):
         return
 
     if player.is_observer():
@@ -213,7 +213,7 @@ def banning_countdown_callback():
     set_state( State.banning, banning_duration, banning_timer_callback )
 
 def veto_hero( player, hero ):
-    if state not in ( "banning_countdown", "banning" ):
+    if state not in ( State.banning_countdown, State.banning ):
         return
 
     if player.is_observer():
