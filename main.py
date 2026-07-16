@@ -13,6 +13,9 @@ app = Flask( __name__ )
 app.secret_key = "honzor"
 socketio = SocketIO( app )
 
+logic.initialize_state()
+messages.initialize( socketio )
+
 ## ROUTES ##
 @app.route( "/" )
 def home():
@@ -139,9 +142,6 @@ def reset_server():
     messages.emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 
 if __name__ == "__main__":
-    logic.initialize_state()
-    messages.initialize( socketio )
-
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None
     debug = logic.getenv_bool( "DEBUG", False )
