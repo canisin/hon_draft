@@ -1,4 +1,4 @@
-import logic
+import draft
 import teams
 import players
 
@@ -10,7 +10,7 @@ def initialize( socketio ):
     globals()[ "socketio" ] = socketio
 
 def emit_update_state( **kwargs ):
-    socketio.emit( "update-state", logic.serialize_state(), **kwargs )
+    socketio.emit( "update-state", draft.serialize_state(), **kwargs )
 
 def emit_update_client_id( player, **kwargs ):
     kwargs[ "to" ] = player.session_id

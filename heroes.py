@@ -1,5 +1,5 @@
 import teams
-import logic
+import draft
 import messages
 
 import random
@@ -35,7 +35,7 @@ class Hero:
     def serialize( self ):
         return {
             "name": self.name,
-            "path": f"{ logic.hero_set[ "path" ] }/{ self.key }",
+            "path": f"{ draft.hero_set[ "path" ] }/{ self.key }",
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
             "legion_vetos": [ player.name for player in teams.legion.players if player and self in player.veto ],
@@ -47,16 +47,16 @@ class Stat:
         self.name = name
         self.color = color
         self.is_enabled = True
-        self.pool = [ None for _ in range( logic.pool_size ) ]
+        self.pool = [ None for _ in range( draft.pool_size ) ]
 
     def reset( self ):
-        self.pool = [ None for _ in range( logic.pool_size ) ]
+        self.pool = [ None for _ in range( draft.pool_size ) ]
         self.emit_update_heroes()
 
     def generate_pool( self ):
         if not self.is_enabled: return
-        heroes = logic.hero_set[ self.name ]
-        heroes = random.sample( heroes, logic.pool_size )
+        heroes = draft.hero_set[ self.name ]
+        heroes = random.sample( heroes, draft.pool_size )
         self.pool = [ Hero( name, key, self ) for name, key in heroes ]
         self.emit_update_heroes()
 
@@ -74,7 +74,7 @@ class Stat:
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
 
     def emit_update_heroes( self, **kwargs ):
-        for index in range( logic.pool_size ):
+        for index in range( draft.pool_size ):
             messages.emit_update_hero( self, index, **kwargs )
 
     def serialize( self ):

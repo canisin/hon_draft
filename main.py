@@ -8,7 +8,7 @@ import players
 import teams
 import heroes
 import messages
-import logic
+import draft
 
 dotenv.load_dotenv()
 
@@ -16,7 +16,7 @@ app = Flask( __name__ )
 app.secret_key = "honzor"
 socketio = SocketIO( app )
 
-logic.initialize_state()
+draft.initialize_state()
 messages.initialize( socketio )
 
 ## ROUTES ##
@@ -27,8 +27,8 @@ def home():
     if "id" not in session:
         session[ "id" ] = players.generate_id()
     return render_template( "home.html",
-        team_size = logic.team_size,
-        pool_size = logic.pool_size,
+        team_size = draft.team_size,
+        pool_size = draft.pool_size,
     )
 
 @app.route( "/name", methods = [ "POST" ] )
@@ -61,58 +61,58 @@ def on_disconnect():
 def on_first_ban( team ):
     player = players.get( session[ "id" ] )
     team = teams.get( team )
-    logic.set_first_ban( player, team )
+    draft.set_first_ban( player, team )
 
 @socketio.on( "toggle-stat" )
 def on_toggle_stat( stat ):
     player = players.get( session[ "id" ] )
     stat = heroes.get( stat )
-    logic.toggle_stat( player, stat )
+    draft.toggle_stat( player, stat )
 
 @socketio.on( "start-draft" )
 def on_start_draft():
     player = players.get( session[ "id" ] )
-    logic.start_draft( player )
+    draft.start_draft( player )
 
 @socketio.on( "cancel-draft" )
 def on_cancel_draft():
     player = players.get( session[ "id" ] )
-    logic.cancel_draft( player )
+    draft.cancel_draft( player )
 
 @socketio.on( "end-draft" )
 def on_end_draft():
     player = players.get( session[ "id" ] )
-    logic.end_draft( player )
+    draft.end_draft( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):
     player = players.get( session[ "id" ] )
     team = teams.get( team )
-    logic.click_slot( player, team, index )
+    draft.click_slot( player, team, index )
 
 @socketio.on( "dibs-hero" )
 def on_dibs_hero( stat, index ):
     player = players.get( session[ "id" ] )
     hero = heroes.get( stat, index )
-    logic.dibs_hero( player, hero )
+    draft.dibs_hero( player, hero )
 
 @socketio.on( "veto-hero" )
 def on_veto_hero( stat, index ):
     player = players.get( session[ "id" ] )
     hero = heroes.get( stat, index )
-    logic.veto_hero( player, hero )
+    draft.veto_hero( player, hero )
 
 @socketio.on( "ban-hero" )
 def on_ban_hero( stat, index ):
     player = players.get( session[ "id" ] )
     hero = heroes.get( stat, index )
-    logic.ban_hero( player, hero )
+    draft.ban_hero( player, hero )
 
 @socketio.on( "pick-hero" )
 def on_pick_hero( stat, index ):
     player = players.get( session[ "id" ] )
     hero = heroes.get( stat, index )
-    logic.pick_hero( player, hero )
+    draft.pick_hero( player, hero )
 
 @socketio.on( "message" )
 def on_message( message ):
@@ -140,7 +140,7 @@ def set_name( name ):
 
 def reset_server():
     utils.log( "resetting server" )
-    logic.reset_draft( clear_players = True )
+    draft.reset_draft( clear_players = True )
     messages.emit_message( "<span style=\"color: red\">Server has been reset, please refresh the page.</span>" )
 
 if __name__ == "__main__":

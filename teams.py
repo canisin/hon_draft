@@ -1,5 +1,5 @@
 import heroes
-import logic
+import draft
 import messages
 
 import random
@@ -8,7 +8,7 @@ class Team:
     def __init__( self, name, color ):
         self.name = name
         self.color = color
-        self.players = [ None for _ in range( logic.team_size ) ]
+        self.players = [ None for _ in range( draft.team_size ) ]
 
     def get( self, index ):
         return self.players[ index ]
@@ -20,7 +20,7 @@ class Team:
         return all( player is None for player in self.players )
 
     def clear( self ):
-        self.players = [ None for _ in range( logic.team_size ) ]
+        self.players = [ None for _ in range( draft.team_size ) ]
 
     def add_player( self, player, index ):
         assert player not in self.players
@@ -77,7 +77,7 @@ class Team:
         if self == hellbourne: return legion
 
     def emit_update_slots( self, **kwargs ):
-        for index in range( logic.team_size ):
+        for index in range( draft.team_size ):
             messages.emit_update_slot( self, index, **kwargs )
 
     def serialize( self ):

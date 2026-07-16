@@ -1,6 +1,6 @@
 import teams
 import heroes
-import logic
+import draft
 import messages
 
 from uuid import uuid4
@@ -186,7 +186,7 @@ def disconnect( id, session_id ):
     if player.session_id != session_id:
         print( "Discarding disconnect event for invalid socket id" )
         return
-    if logic.state == logic.State.lobby:
+    if draft.state == draft.State.lobby:
         remove( player )
     else:
         player.set_disconnected( True )
