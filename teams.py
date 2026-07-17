@@ -26,13 +26,13 @@ class Team:
         assert player not in self.players
         assert self.players[ index ] is None
         self.players[ index ] = player
-        messages.emit_update_slot( self, index )
+        messages.emit_update_teams()
 
     def remove_player( self, player ):
         assert player in self.players
         index = self.players.index( player )
         self.players[ index ] = None
-        messages.emit_update_slot( self, index )
+        messages.emit_update_teams()
 
     def set_player_index( self, player, index ):
         assert player in self.players
@@ -76,12 +76,8 @@ class Team:
         if self == legion: return hellbourne
         if self == hellbourne: return legion
 
-    def emit_update_slots( self, **kwargs ):
-        for index in range( draft.team_size ):
-            messages.emit_update_slot( self, index, **kwargs )
-
     def serialize( self ):
-        return [ player.serialize_slot() if player else None for player in self.players ]
+        return [ player.id if player else None for player in self.players ]
 
     def get_formatted_name( self ):
         return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
@@ -120,10 +116,6 @@ def get( team ):
 
 def can_draft():
     return not any( team.is_empty() for team in teams )
-
-def emit_update_slots( **kwargs ):
-    for team in teams:
-        team.emit_update_slots( **kwargs )
 
 def serialize():
     return { team.name: team.serialize() for team in teams }

@@ -203,7 +203,6 @@ function setHeroButtons( state )
     }
 };
 
-let current_state = null;
 let client_id = null;
 let client_team = null;
 
@@ -212,10 +211,11 @@ function isClientObserver()
     return client_team == "observers";
 };
 
-function onUpdateState( state )
+let state = null;
+function onUpdateState( new_state )
 {
     console.log( "changing state" );
-    current_state = state.state;
+    state = new_state;
 
     let stateLabel = document.getElementById( "state" );
     stateLabel.innerHTML = state.state_label;
@@ -281,7 +281,7 @@ function onSetTimer( seconds )
 
         if ( seconds > 0 )
         {
-            if ( current_state == "pool_countdown" )
+            if ( state.state == "pool_countdown" )
             {
                 tickAudio.play();
             }
@@ -310,8 +310,6 @@ function setFontSizeToFit( element )
     const fontSize = 18;
     element.style.fontSize = ( fontSize * scale ) + "px";
 };
-
-Array.from( document.getElementsByClassName( "hero-name" ) ).forEach( setFontSizeToFit );
 
 function calcVetoCountString( hero )
 {
@@ -343,9 +341,8 @@ function calcVetoCountString( hero )
     }
 }
 
-function onUpdateHero( stat, index, hero )
+function updateHero( stat, index, hero )
 {
-    console.log( "updating hero" );
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
     let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
     heroName.innerHTML = hero ? hero.name : "";
@@ -360,34 +357,19 @@ function onUpdateHero( stat, index, hero )
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
     heroSound.volume = 0.2;
-};
-socketio.on( "update-hero", onUpdateHero );
+}
 
-function shouldShowHero( slot, team )
+function shouldShowDibs( team )
 {
-    if ( !slot.hero )
-    {
-        return false;
-    }
-
-    if ( !slot.is_dibs )
-    {
-        return true;
-    }
-
-    if ( isClientObserver() )
-    {
-        return true;
-    }
-
-    return team == client_team;
+    return isClientObserver() || team == client_team;
 };
 
-function onUpdateSlot( team, index, slot )
+function updateSlot( team, index, player )
 {
-    console.log( "updating slot" );
+    console.log( `updating slot team: ${ team }, index: ${ index }, player: ${ player }` );
+
     let slotDiv = document.getElementById( `${ team }-${ index }` );
-    if ( !slot )
+    if ( !player )
     {
         slotDiv.classList.add( "empty-slot" );
     }
@@ -396,7 +378,7 @@ function onUpdateSlot( team, index, slot )
         slotDiv.classList.remove( "empty-slot" );
     }
 
-    let isClient = slot && slot.player_id == client_id;
+    let isClient = player && player.id == client_id;
     if ( isClient )
     {
         slotDiv.classList.add( "client-slot" );
@@ -407,22 +389,30 @@ function onUpdateSlot( team, index, slot )
     }
 
     let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
-    playerName.innerHTML = slot ? slot.player_name : "Empty";
+    playerName.innerHTML = player ? player.name : "Empty";
 
     let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
     let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
 
-    if ( !slot )
+    if ( !player )
     {
         heroName.innerHTML = "";
         heroIcon.src = `/static/images/slot-${ team }.png`;
         heroIcon.style.filter = "";
     }
-    else if ( shouldShowHero( slot, team ) )
+    else if ( player.hero )
     {
-        heroName.innerHTML = slot.hero.name;
-        heroIcon.src = `/static/images/${ slot.hero.path }.png`;
-        heroIcon.style.filter = slot.is_dibs ? "grayscale( 1 )" : "";
+        let hero = findHero( player.hero );
+        heroName.innerHTML = hero.name;
+        heroIcon.src = `/static/images/${ hero.path }.png`;
+        heroIcon.style.filter = "";
+    }
+    else if ( player.dibs && shouldShowDibs )
+    {
+        let dibs = findHero( player.dibs );
+        heroName.innerHTML = dibs.name;
+        heroIcon.src = `/static/images/${ dibs.path }.png`;
+        heroIcon.style.filter = "grayscale( 1 )";
     }
     else
     {
@@ -431,15 +421,6 @@ function onUpdateSlot( team, index, slot )
         heroIcon.style.filter = "";
     }
 };
-socketio.on( "update-slot", onUpdateSlot );
-
-function onHeroPicked( stat, index )
-{
-    let heroDiv = document.getElementById( `${ stat }-${ index }` );
-    let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
-    playAudioWithDelay( heroSound );
-};
-socketio.on( "hero-picked", onHeroPicked );
 
 // TODO: This should be doable via css
 // TODO: Colors should also be removed from python code
@@ -471,8 +452,6 @@ function getTeamIcon( team )
 
 function updatePlayer( player )
 {
-    console.log( `updating player id=${ player.id } name=${ player.name } team=${ player.team }` )
-
     let playerDiv = document.getElementById( player.id );
     let isClient = player.id == client_id;
     if ( isClient )
@@ -489,16 +468,103 @@ function updatePlayer( player )
     playerName.style.color = getTeamColor( player.team );
     let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
+
+    let [ team, index ] = findPlayer( player.id );
+    if ( team != "observers" )
+    {
+        updateSlot( team, index, player );
+    }
 };
 
-function onUpdatePlayers( players )
+function findHeroIndex( hero )
 {
+    for ( let stat in heroes )
+    {
+        let index = heroes[ stat ].findIndex( ( h ) => h.name == hero );
+        if ( index < 0 )
+        {
+            continue;
+        }
+
+        return [ stat, index ];
+    }
+
+    console.log( `hero ${ hero } not in heroes` );
+};
+
+function findHero( hero )
+{
+    let [ stat, index ] = findHeroIndex( hero );
+    return heroes[ stat ][ index ];
+}
+
+function findPlayer( player )
+{
+    for ( let team in teams )
+    {
+        let index = teams[ team ].findIndex( ( p ) => p == player );
+        if ( index < 0 )
+        {
+            continue;
+        }
+
+        return [ team, index ];
+    }
+
+    return [ "observers", 0 ];
+};
+
+function onUpdateHero( hero )
+{
+    console.log( "updating hero" );
+    let [ stat, index ] = findHeroIndex( hero.name );
+    heroes[ stat ][ index ] = hero;
+    updateHero( stat, index, hero );
+};
+socketio.on( "update-hero", onUpdateHero );
+
+let heroes = null;
+function onUpdateHeroes( new_heroes )
+{
+    console.log( "updating heroes" );
+    heroes = new_heroes;
+    for ( let stat in heroes )
+    {
+        for ( let index = 0; index < heroes[ stat ].length; ++index )
+        {
+            updateHero( stat, index, heroes[ stat ][ index ] );
+        }
+    }
+};
+socketio.on( "update-heroes", onUpdateHeroes );
+
+function onHeroPicked( hero )
+{
+    let [ stat, index ] = findHeroIndex( hero );
+    let heroDiv = document.getElementById( `${ stat }-${ index }` );
+    let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
+    playAudioWithDelay( heroSound );
+};
+socketio.on( "hero-picked", onHeroPicked );
+
+function onUpdatePlayer( player )
+{
+    console.log( `updating player ${ player.name }-${ player.id }` );
+    players[ player.id ] = player;
+    updatePlayer( player );
+};
+socketio.on( "update-player", onUpdatePlayer );
+
+let players = null;
+function onUpdatePlayers( new_players )
+{
+    players = new_players;
+
     let playerList = document.getElementById( "players-list" );
     playerList.innerHTML = "";
-    for ( let index in players )
+    for ( let player in players )
     {
-        let player = players[ index ];
-
+        player = players[ player ]
         playerList.innerHTML += `
             <div class="players-list-item" id="${ player.id }">
                 <img class="players-list-icon"/>
@@ -511,12 +577,20 @@ function onUpdatePlayers( players )
 };
 socketio.on( "update-players", onUpdatePlayers );
 
-function onUpdatePlayer( player )
+let teams = null;
+function onUpdateTeams( new_teams )
 {
-    console.log( `updating player ${ player.name }-${ player.id }` );
-    updatePlayer( player );
+    teams = new_teams;
+    for ( let team in teams )
+    {
+        for ( let index = 0; index < teams[ team ].length; ++index )
+        {
+            let player = teams[ team ][ index ];
+            updateSlot( team, index, player ? players[ player ] : null );
+        }
+    }
 };
-socketio.on( "update-player", onUpdatePlayer );
+socketio.on( "update-teams", onUpdateTeams );
 
 function getTimestamp()
 {

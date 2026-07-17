@@ -14,12 +14,12 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        self.emit_update_hero()
+        messages.emit_update_hero( self )
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        self.emit_update_hero()
+        messages.emit_update_hero( self )
 
     def is_available( self ):
         return not self.is_banned and not self.is_picked
@@ -27,19 +27,15 @@ class Hero:
     def calc_veto_count( self, team ):
         return sum( 1 for player in team if self in player.veto )
 
-    def emit_update_hero( self, **kwargs ):
-        stat = self.stat
-        index = stat.index( self )
-        messages.emit_update_hero( stat, index, **kwargs )
-
     def serialize( self ):
         return {
             "name": self.name,
             "path": f"{ draft.hero_set[ "path" ] }/{ self.key }",
+            "stat": self.stat.name,
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
-            "legion_vetos": [ player.name for player in teams.legion.players if player and self in player.veto ],
-            "hellbourne_vetos": [ player.name for player in teams.hellbourne.players if player and self in player.veto ],
+            "legion_vetos": [ player.id for player in teams.legion.players if player and self in player.veto ],
+            "hellbourne_vetos": [ player.id for player in teams.hellbourne.players if player and self in player.veto ],
         }
 
 class Stat:
@@ -51,14 +47,12 @@ class Stat:
 
     def reset( self ):
         self.pool = [ None for _ in range( draft.pool_size ) ]
-        self.emit_update_heroes()
 
     def generate_pool( self ):
         if not self.is_enabled: return
         heroes = draft.hero_set[ self.name ]
         heroes = random.sample( heroes, draft.pool_size )
         self.pool = [ Hero( name, key, self ) for name, key in heroes ]
-        self.emit_update_heroes()
 
     def get( self, index ):
         return self.pool[ index ]
@@ -72,10 +66,6 @@ class Stat:
 
     def get_random( self ):
         return random.choice( [ hero for hero in self.pool if hero.is_available() ] )
-
-    def emit_update_heroes( self, **kwargs ):
-        for index in range( draft.pool_size ):
-            messages.emit_update_hero( self, index, **kwargs )
 
     def serialize( self ):
         return [ hero.serialize() if hero else None for hero in self.pool ]
@@ -92,10 +82,12 @@ stats_dict = { stat.name: stat for stat in stats }
 def reset():
     for stat in stats:
         stat.reset()
+    messages.emit_update_heroes()
 
 def generate_pool():
     for stat in stats:
         stat.generate_pool()
+    messages.emit_update_heroes()
 
 def get( stat, index = None ):
     if index is None: return stats_dict[ stat ]
@@ -103,10 +95,6 @@ def get( stat, index = None ):
 
 def calc_ban_count():
     return sum( stat.calc_ban_count() for stat in stats )
-
-def emit_update_heroes( **kwargs ):
-    for stat in stats:
-        stat.emit_update_heroes( **kwargs )
 
 def serialize():
     return { stat.name: stat.serialize() for stat in stats }

@@ -283,7 +283,7 @@ def pick_hero( player, hero, is_fate = False ):
 
     player.set_hero( hero )
     hero.set_picked()
-    messages.emit_hero_picked( hero.stat, hero.stat.index( hero ) )
+    messages.emit_hero_picked( hero )
     messages.emit_message(
         f"{ player.get_formatted_name() } has picked { hero.name }."
         if not is_fate else
