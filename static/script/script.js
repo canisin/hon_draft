@@ -306,7 +306,6 @@ function setFontSizeToFit( element )
     if ( words.length == 0 ) return;
     let longestWord = words.sort( ( a, b ) => b.length - a.length )[ 0 ];
     let scale = Math.min( 1, 6 / longestWord.length );
-    if ( scale == 1 ) return;
     const fontSize = 18;
     element.style.fontSize = ( fontSize * scale ) + "px";
 };
