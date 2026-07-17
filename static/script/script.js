@@ -365,8 +365,6 @@ function shouldShowDibs( team )
 
 function updateSlot( team, index, player )
 {
-    console.log( `updating slot team: ${ team }, index: ${ index }, player: ${ player }` );
-
     let slotDiv = document.getElementById( `${ team }-${ index }` );
     if ( !player )
     {
@@ -515,7 +513,7 @@ function findPlayer( player )
 
 function onUpdateHero( hero )
 {
-    console.log( "updating hero" );
+    console.log( `updating hero ${ hero.name }` );
     let [ stat, index ] = findHeroIndex( hero.name );
     heroes[ stat ][ index ] = hero;
     updateHero( stat, index, hero );
@@ -557,6 +555,7 @@ socketio.on( "update-player", onUpdatePlayer );
 let players = null;
 function onUpdatePlayers( new_players )
 {
+    console.log( "updating all players" );
     players = new_players;
 
     let playerList = document.getElementById( "players-list" );
