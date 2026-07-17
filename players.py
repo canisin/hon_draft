@@ -83,7 +83,6 @@ class Player:
     def check_veto( self, hero ):
         if hero in self.veto:
             self.veto.remove( hero )
-            messages.emit_update_hero( hero )
             messages.emit_update_player( self )
 
     def clear_veto( self ):
