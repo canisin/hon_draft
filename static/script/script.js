@@ -407,7 +407,7 @@ function updateSlot( team, index, player )
         heroIcon.src = `/static/images/${ hero.path }.png`;
         heroIcon.style.filter = "";
     }
-    else if ( player.dibs && shouldShowDibs )
+    else if ( player.dibs && shouldShowDibs( team ) )
     {
         let dibs = findHero( player.dibs );
         heroName.innerHTML = dibs.name;
