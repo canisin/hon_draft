@@ -1,6 +1,7 @@
 import draft
 import teams
 import players
+import heroes
 
 from flask_socketio import join_room, leave_room
 from os import popen
@@ -23,22 +24,23 @@ def emit_update_client_team( player, **kwargs ):
 def emit_set_timer( seconds, **kwargs ):
     socketio.emit( "set-timer", seconds, **kwargs )
 
-def emit_update_hero( stat, index, **kwargs ):
-    hero = stat.get( index )
-    socketio.emit( "update-hero", ( stat.name, index, hero.serialize() if hero else None ), **kwargs )
+def emit_update_hero( hero, **kwargs ):
+    socketio.emit( "update-hero", hero.serialize(), **kwargs )
 
-def emit_update_slot( team, index, **kwargs ):
-    player = team.get( index )
-    socketio.emit( "update-slot", ( team.name, index, player.serialize_slot() if player else None ), **kwargs )
+def emit_update_heroes( **kwargs ):
+    socketio.emit( "update-heroes", heroes.serialize(), **kwargs )
 
-def emit_hero_picked( stat, index, **kwargs ):
-    socketio.emit( "hero-picked", ( stat.name, index ), **kwargs )
+def emit_hero_picked( hero, **kwargs ):
+    socketio.emit( "hero-picked", hero.name, **kwargs )
 
 def emit_update_player( player, **kwargs ):
-    socketio.emit( "update-player", player.serialize_player(), **kwargs )
+    socketio.emit( "update-player", player.serialize(), **kwargs )
 
 def emit_update_players( **kwargs ):
     socketio.emit( "update-players", players.serialize(), **kwargs )
+
+def emit_update_teams( **kwargs ):
+    socketio.emit( "update-teams", teams.serialize(), **kwargs )
 
 def emit_message( message, team = None, **kwargs ):
     if team: kwargs[ "to" ] = team.name

@@ -20,7 +20,6 @@ class Player:
         old_name = self.get_formatted_name()
         self.name = name
         messages.emit_update_player( self )
-        self.emit_update_slot()
         new_name = self.get_formatted_name()
         messages.emit_message( f"{ old_name } changed name to { new_name }." )
 
@@ -45,18 +44,17 @@ class Player:
         else:
             messages.emit_message( f"{ self.get_formatted_name() } has reconnected." )
         messages.emit_update_player( self )
-        self.emit_update_slot()
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        self.emit_update_slot()
+        messages.emit_update_player( self )
 
     def toggle_dibs( self, hero ):
         assert not self.hero
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
-        self.emit_update_slot()
+        messages.emit_update_player( self )
         messages.emit_message(
             f"{ self.get_formatted_name() } has called dibs on { hero.name }."
             if is_dibs else
@@ -69,7 +67,8 @@ class Player:
             self.veto.append( hero )
         else:
             self.veto.remove( hero )
-        hero.emit_update_hero()
+        messages.emit_update_hero( hero )
+        messages.emit_update_player( self )
         messages.emit_message(
             f"{ self.get_formatted_name() } wants { hero.name } to be banned."
             if is_veto else
@@ -79,51 +78,39 @@ class Player:
     def check_dibs( self, hero ):
         if self.dibs is hero:
             self.dibs = None
-            self.emit_update_slot()
+            messages.emit_update_player( self )
         
     def check_veto( self, hero ):
         if hero in self.veto:
             self.veto.remove( hero )
-            hero.emit_update_hero()
+            messages.emit_update_player( self )
 
     def clear_veto( self ):
         veto = self.veto
         self.veto = []
         for hero in veto:
-            hero.emit_update_hero()
+            messages.emit_update_hero( hero )
+        messages.emit_update_player( self )
 
     def reset( self ):
         self.hero = None
         self.dibs = None
         self.veto = []
-        self.emit_update_slot()
-
-    def emit_update_slot( self, **kwargs ):
-        team = self.team
-        if team is teams.observers: return
-        index = team.index( self )
-        messages.emit_update_slot( team, index, **kwargs )
+        messages.emit_update_player( self )
 
     def update_client_team( self ):
         messages.emit_update_client_team( self )
-        teams.emit_update_slots( to = self.session_id )
         messages.update_rooms( self.team )
 
-    def serialize_slot( self ):
-        return {
-            "player_name": self.name,
-            "player_id": self.id,
-            "is_disconnected": self.is_disconnected,
-            "hero": self.hero.serialize() if self.hero else self.dibs.serialize() if self.dibs else None,
-            "is_dibs": True if self.dibs else False,
-        }
-
-    def serialize_player( self ):
+    def serialize( self ):
         return {
             "name": self.name,
             "id": self.id,
             "is_disconnected": self.is_disconnected,
             "team": self.team.name,
+            "hero": self.hero.name if self.hero else None,
+            "dibs": self.dibs.name if self.dibs else None,
+            "veto": [ hero.name for hero in self.veto ],
         }
 
     def get_formatted_name( self ):
@@ -170,9 +157,9 @@ def connect( id, name, session_id ):
     messages.emit_update_client_team( player )
 
     messages.emit_update_state( to = session_id )
-    teams.emit_update_slots( to = session_id )
-    heroes.emit_update_heroes( to = session_id )
+    messages.emit_update_heroes( to = session_id )
     messages.emit_update_players( to = session_id )
+    messages.emit_update_teams( to = session_id )
 
     if is_new_player:
         add( player )
@@ -211,4 +198,4 @@ def remove( player ):
         messages.emit_message( f"{ player.get_formatted_name() } left." )
 
 def serialize():
-    return [ player.serialize_player() for player in players ]
+    return { player.id : player.serialize() for player in players }

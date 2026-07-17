@@ -91,3 +91,45 @@ add various sounds
    o start/cancel/end draft
    o message received, message sent
 do away with hero selection
+
+
+new serialization reference:
+state = {
+	state = state.name
+	state_label = state.label
+	first_ban = first_ban.name
+	stats = [ stat.name .. ]
+	active_team = active_team.name
+	remaining_picks = remaining_picks
+}
+
+players = {
+	player.id = {
+		name = player.name
+		id = player.id (?)
+		is_disconnected = yes/no
+		team = team.name
+		hero = hero.name or None
+		dibs = dibs.name or None
+		veto = [ hero.name .. ]
+	} ..
+}
+
+teams = {
+	team.name = [ player.id or None .. ] ..
+}
+
+heroes = {
+	stat.name = [
+		{
+			name = hero.name
+			path = path/key
+			stat = stat.name
+			is_banned = yes/no
+			is_picked = yes/no
+			legion_vetos = [ player.id .. ]
+			hellbourne_vetos = [ player.id .. ]
+		} or None ..
+	] ..
+}
+
