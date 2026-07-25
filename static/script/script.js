@@ -10,6 +10,8 @@ let banHeroAudio = document.getElementById( "ban-hero-audio" );
 banHeroAudio.volume = 0.2;
 let pickHeroAudio = document.getElementById( "pick-hero-audio" );
 pickHeroAudio.volume = 0.2;
+let startGameAudio = document.getElementById( "start-game-audio" );
+startGameAudio.volume = 0.2;
 
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
@@ -245,6 +247,11 @@ function onUpdateState( new_state )
     if ( state.state == "picking" && state.active_team == client_team )
     {
         playAudioWithDelay( pickHeroAudio );
+    }
+
+    if ( state.state == "results" )
+    {
+        playAudioWithDelay( startGameAudio );
     }
 
     setFirstBan( state );
