@@ -227,14 +227,15 @@ def ban_hero( player, hero, is_veto = False ):
         return
 
     hero.set_banned()
+    players.check_dibs_veto( hero )
+
+    messages.emit_update_hero( hero )
     if player:
         messages.emit_message( f"{ player.get_formatted_name() } has banned { hero.name }." )
     elif is_veto:
         messages.emit_message( f"{ hero.name } was banned based on veto votes." )
     else:
         messages.emit_message( f"{ fate_formatted } has banned { hero.name }." )
-
-    players.check_dibs_veto( hero )
 
     timer.cancel()
 
@@ -283,14 +284,15 @@ def pick_hero( player, hero, is_fate = False ):
 
     player.set_hero( hero )
     hero.set_picked()
+    players.check_dibs_veto( hero )
+
+    messages.emit_update_hero( hero )
     messages.emit_hero_picked( hero )
     messages.emit_message(
         f"{ player.get_formatted_name() } has picked { hero.name }."
         if not is_fate else
         f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
     )
-
-    players.check_dibs_veto( hero )
 
     global remaining_picks
     remaining_picks -= 1

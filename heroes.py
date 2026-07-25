@@ -14,12 +14,10 @@ class Hero:
 
     def set_banned( self ):
         self.is_banned = True
-        messages.emit_update_hero( self )
 
     def set_picked( self ):
         assert not self.is_banned
         self.is_picked = True
-        messages.emit_update_hero( self )
 
     def is_available( self ):
         return not self.is_banned and not self.is_picked
