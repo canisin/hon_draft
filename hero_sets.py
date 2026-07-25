@@ -252,6 +252,7 @@ reborn = {
         ( "Pestilence", "pestilence" ),
         ( "Pharaoh", "pharaoh" ),
         ( "Predator", "predator" ),
+        ( "Prisoner 945", "prisoner" ),
         ( "Rampage", "rampage" ),
         ( "Ravenor", "ravenor" ),
         ( "Solstice", "solstice" ),
