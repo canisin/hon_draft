@@ -477,6 +477,11 @@ function findHeroIndex( hero )
 {
     for ( let stat in heroes )
     {
+        if ( !state.stats[ stat ] )
+        {
+            continue;
+        }
+
         let index = heroes[ stat ].findIndex( ( h ) => h.name == hero );
         if ( index < 0 )
         {
