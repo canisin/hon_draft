@@ -140,7 +140,7 @@ function calcHeroInformationVetoString( hero )
 let hoveredHeroPosition = null;
 function updateHoveredHero()
 {
-    let hero = hoveredHeroPosition
+    let hero = hoveredHeroPosition && heroes
         ? heroes[ hoveredHeroPosition.stat ][ hoveredHeroPosition.index ]
         : null;
 
@@ -622,7 +622,7 @@ function updatePlayer( player )
 
 function findHeroIndex( hero )
 {
-    for ( let [ stat, pool ] of Object.entries( heroes ) )
+    for ( let [ stat, pool ] of Object.entries( heroes || {} ) )
     {
         if ( !state.stats[ stat ] )
         {
@@ -649,7 +649,7 @@ function findHero( hero )
 
 function findPlayer( player )
 {
-    for ( let [ team, slots ] of Object.entries( teams ) )
+    for ( let [ team, slots ] of Object.entries( teams || {} ) )
     {
         let index = slots.findIndex( ( p ) => p == player );
         if ( index < 0 )
@@ -729,6 +729,7 @@ socketio.on( "update-players", onUpdatePlayers );
 let teams = null;
 function onUpdateTeams( new_teams )
 {
+    console.log( "updating teams" );
     teams = new_teams;
     for ( let [ team, slots ] of Object.entries( teams ) )
     {
