@@ -13,11 +13,6 @@ pickHeroAudio.volume = 0.2;
 let startGameAudio = document.getElementById( "start-game-audio" );
 startGameAudio.volume = 0.2;
 
-let heroInformationNamePlaceholder = "Hover a hero for information";
-let heroInformationName = document.getElementById( "hero-information-name" );
-heroInformationName.textContent = heroInformationNamePlaceholder;
-heroInformationName.classList.add( "no-hero-selected" );
-
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
 function playAudio( audio, noDelay = true )
@@ -76,18 +71,23 @@ function mouseEnterHero( event, stat, index )
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = `/static/images/${ hero.path }.png`;
 
+    let heroInformationName = document.getElementById( "hero-information-name" );
     heroInformationName.textContent = hero.name;
     heroInformationName.classList.remove( "no-hero-selected" );
 };
 
 function mouseLeaveHero( event, stat, index )
 {
+    const heroInformationNamePlaceholder = "Hover a hero for information";
+
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = "/static/images/hero-none.png";
 
+    let heroInformationName = document.getElementById( "hero-information-name" );
     heroInformationName.textContent = heroInformationNamePlaceholder;
     heroInformationName.classList.add( "no-hero-selected" );
 };
+mouseLeaveHero(); // Initialize to empty state
 
 function auxClickHero( event, stat, index )
 {
