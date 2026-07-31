@@ -498,28 +498,28 @@
     font-weight: bold;
 }
 
-.hero-information {
+#hero-information {
     position: fixed;
     left: 10px;
     top: 10px;
 }
 
-.hero-information-icon-container {
+#hero-information-icon-container {
     width: 150px;
     height: 150px;
     display: grid;
     border: 5px solid transparent;
 }
 
-body:has( #agi:hover ) .hero-information-icon-container {
+body:has( #agi:hover ) #hero-information:not( .no-hero-selected ) #hero-information-icon-container {
     border-color: green;
 }
 
-body:has( #int:hover ) .hero-information-icon-container {
+body:has( #int:hover ) #hero-information:not( .no-hero-selected ) #hero-information-icon-container {
     border-color: blue;
 }
 
-body:has( #str:hover ) .hero-information-icon-container {
+body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-information-icon-container {
     border-color: red;
 }
 
@@ -551,18 +551,19 @@ body:has( #str:hover ) .hero-information-icon-container {
     font-weight: bold;
 }
 
-#hero-information-name.no-hero-selected {
+#hero-information.no-hero-selected #hero-information-name {
     font-style: italic;
+    margin-left: 5px;
 }
 
-body:has( #agi:hover ) #hero-information-name {
+body:has( #agi:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
     color: green;
 }
 
-body:has( #int:hover ) #hero-information-name {
+body:has( #int:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
     color: blue;
 }
 
-body:has( #str:hover ) #hero-information-name {
+body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
     color: red;
 }

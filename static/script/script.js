@@ -68,24 +68,28 @@ function mouseEnterHero( event, stat, index )
         return;
     }
 
+    let heroInformation = document.getElementById( "hero-information" );
+    heroInformation.classList.remove( "no-hero-selected" );
+
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = `/static/images/${ hero.path }.png`;
 
     let heroInformationName = document.getElementById( "hero-information-name" );
     heroInformationName.textContent = hero.name;
-    heroInformationName.classList.remove( "no-hero-selected" );
 };
 
 function mouseLeaveHero( event, stat, index )
 {
     const heroInformationNamePlaceholder = "Hover a hero for information";
 
+    let heroInformation = document.getElementById( "hero-information" );
+    heroInformation.classList.add( "no-hero-selected" );
+
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = "/static/images/hero-none.png";
 
     let heroInformationName = document.getElementById( "hero-information-name" );
     heroInformationName.textContent = heroInformationNamePlaceholder;
-    heroInformationName.classList.add( "no-hero-selected" );
 };
 mouseLeaveHero(); // Initialize to empty state
 
