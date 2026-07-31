@@ -226,20 +226,23 @@ function setStatToggles( state )
 
 function setHeroButtons( state )
 {
+    let banButtons = Array.from( document.getElementsByClassName( "ban-hero-button" ) );
+    let pickButtons = Array.from( document.getElementsByClassName( "pick-hero-button" ) );
+
     if ( state.state == "banning" && state.active_team == client_team )
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        banButtons.forEach( banButton => banButton.style.display = "" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
     }
     else if ( state.state == "picking" && state.active_team == client_team )
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "" );
+        banButtons.forEach( banButton => banButton.style.display = "none" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "" );
     }
     else
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        banButtons.forEach( banButton => banButton.style.display = "none" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
     }
 };
 
