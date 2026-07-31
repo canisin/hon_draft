@@ -9,21 +9,21 @@
 <div class="team" id="{{ name }}">
     <div class="team-header">
         <div class="team-header-icon-name">
-            <img class="team-header-icon" src="/static/images/team-{{ name }}.png"/>
+            <img class="team-header-icon" src="/static/images/team-{{ name }}.png" />
             <div class="team-header-name">{{ name }}</div>
         </div>
         <div class="first-ban">
-            <input type="checkbox" class="first-ban-checkbox" id="{{ name }}-first-ban-checkbox" 
-                onClick="clickFirstBan( '{{ name }}' )"/>
+            <input type="checkbox" class="first-ban-checkbox" id="{{ name }}-first-ban-checkbox"
+                   onClick="clickFirstBan( '{{ name }}' )" />
             <label class="first-ban-label" for="{{ name }}-first-ban-checkbox">First Ban</label>
         </div>
     </div>
     <div class="team-status">
         <div class="team-status-title">
             <div class="team-status-arrows">
-                <img class="team-status-arrow"/>
-                <img class="team-status-arrow"/>
-                <img class="team-status-arrow"/>
+                <img class="team-status-arrow" />
+                <img class="team-status-arrow" />
+                <img class="team-status-arrow" />
             </div>
             <div class="team-status-label"></div>
         </div>
@@ -31,14 +31,14 @@
     </div>
     <div class="team-slots">
         {% for index in range( team_size ) %}
-        <div class="slot" id="{{ name }}-{{ index }}" 
-                onClick="clickSlot( '{{ name }}', {{ index }} )">
+        <div class="slot" id="{{ name }}-{{ index }}"
+             onClick="clickSlot( '{{ name }}', {{ index }} )">
             <div class="slot-player">
-                <img class="slot-player-icon" src="/static/images/team-{{ name }}.png"/>
+                <img class="slot-player-icon" src="/static/images/team-{{ name }}.png" />
                 <div class="slot-player-name">Empty</div>
             </div>
             <div class="slot-hero">
-                <img class="slot-hero-icon" src="/static/images/slot-{{ name }}.png"/>
+                <img class="slot-hero-icon" src="/static/images/slot-{{ name }}.png" />
                 <div class="slot-hero-name"></div>
             </div>
         </div>
@@ -48,12 +48,12 @@
 {% endmacro %}
 
 <div class="hero-information">
-	<div class="hero-information-icon-container">
-		<img id="hero-information-icon" src="static/images/hero-none.png" />
-		<img id="hero-information-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden" />
-		<div id="hero-information-veto-count"></div>
-	</div>
-	<div id="hero-information-name"><i>Hover a hero for information</i></div>
+    <div class="hero-information-icon-container">
+        <img id="hero-information-icon" src="static/images/hero-none.png" />
+        <img id="hero-information-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden" />
+        <div id="hero-information-veto-count"></div>
+    </div>
+    <div id="hero-information-name"><i>Hover a hero for information</i></div>
 </div>
 <div class="main">
     <div class="outer-margin"></div>
@@ -63,10 +63,10 @@
         {% for stat, stat_name in [ ( "agi", "agility" ), ( "int", "intelligence" ), ( "str", "strength" ) ] %}
         <div class="stat" id="{{ stat }}">
             <div class="stat-header">
-                <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png"/>
+                <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png" />
                 <div class="stat-header-name">{{ stat_name }}</div>
-                <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox" 
-                        onClick="clickToggleStat( '{{ stat }}' )"/>
+                <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox"
+                       onClick="clickToggleStat( '{{ stat }}' )" />
             </div>
             <div class="stat-heroes">
                 {% for index in range( pool_size ) %}
@@ -76,8 +76,8 @@
                      onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )"
                      oncontextmenu="event.preventDefault()">
                     <div class="hero-icon-container">
-                        <img class="hero-icon" src="static/images/hero-none.png"/>
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden"/>
+                        <img class="hero-icon" src="static/images/hero-none.png" />
+                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden" />
                         <div class="hero-veto-count"></div>
                     </div>
                     <div class="hero-controls">
@@ -89,7 +89,7 @@
                             <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
                         </div>
                     </div>
-                    <audio class="hero-sound"/>
+                    <audio class="hero-sound" />
                 </div>
                 {% endfor %}
             </div>
@@ -101,16 +101,16 @@
     <div class="outer-margin"></div>
 </div>
 <div class="draft-controls">
-	<button id="start-draft-button" onClick="startDraft()">Start Draft</button>
-	<button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
-	<button id="end-draft-button" onClick="endDraft()">End Draft</button>
+    <button id="start-draft-button" onClick="startDraft()">Start Draft</button>
+    <button id="cancel-draft-button" onClick="cancelDraft()">Cancel Draft</button>
+    <button id="end-draft-button" onClick="endDraft()">End Draft</button>
 </div>
 <div class="chat-area">
     <div class="messages">
         <div id="message-log"></div>
         <form id="message-form">
-            <input type="text" id="message-input"/>
-            <input type="submit" id="message-button" value="Send"/>
+            <input type="text" id="message-input" />
+            <input type="submit" id="message-button" value="Send" />
         </form>
     </div>
     <div class="players">
@@ -119,11 +119,11 @@
     </div>
 </div>
 
-<audio id="clock-tick-audio" src="/static/sounds/clock-tick.ogg"/>
-<audio id="start-draft-audio" src="/static/sounds/banning-draft.ogg"/>
-<audio id="ban-hero-audio" src="/static/sounds/ban-hero.ogg"/>
-<audio id="pick-hero-audio" src="/static/sounds/pick-hero.ogg"/>
-<audio id="start-game-audio" src="/static/sounds/start-game.ogg"/>
+<audio id="clock-tick-audio" src="/static/sounds/clock-tick.ogg" />
+<audio id="start-draft-audio" src="/static/sounds/banning-draft.ogg" />
+<audio id="ban-hero-audio" src="/static/sounds/ban-hero.ogg" />
+<audio id="pick-hero-audio" src="/static/sounds/pick-hero.ogg" />
+<audio id="start-game-audio" src="/static/sounds/start-game.ogg" />
 
 <script type="text/javascript" src="/static/script/script.js"></script>
 {% endblock %}
