@@ -55,6 +55,141 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
+function calcHeroInformationStatusString( hero )
+{
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( hero.is_banned )
+    {
+        return "Banned";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    if ( hero.is_picked )
+    {
+        let player = Object.values( players ).find( p => p.hero == hero.name );
+        return `Picked by ${ player.name }`;
+    }
+
+    return "";
+};
+
+function calcHeroInformationDibsString( hero )
+{
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    let dibsPlayers = Object.values( players ).filter( p => p.dibs == hero.name && shouldShowDibs( p.team ) );
+    if ( dibsPlayers.length == 0 )
+    {
+        return "";
+    }
+
+    return `Dibs: ${ dibsPlayers.map( p => p.name ).join( ", " ) }`;
+};
+
+function calcHeroInformationVetoString( hero )
+{
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    let vetos = [];
+    for ( let team of [ "legion", "hellbourne" ] )
+    {
+        if ( !shouldShowDibs( team ) )
+        {
+            continue;
+        }
+
+        for ( let playerId of hero[ `${ team }_vetos` ] )
+        {
+            let player = players[ playerId ];
+            vetos.push( player.name );
+        }
+    }
+
+    if ( vetos.length == 0 )
+    {
+        return "";
+    }
+
+    return `Veto: ${ vetos.join( ", " ) }`;
+};
+
+let hoveredHeroPosition = null;
+function updateHoveredHero()
+{
+    let hero = hoveredHeroPosition
+        ? heroes[ hoveredHeroPosition.stat ][ hoveredHeroPosition.index ]
+        : null;
+
+    if ( hero )
+    {
+        let heroInformation = document.getElementById( "hero-information" );
+        heroInformation.classList.remove( "no-hero-selected" );
+    }
+    else
+    {
+        let heroInformation = document.getElementById( "hero-information" );
+        heroInformation.classList.add( "no-hero-selected" );
+    }
+
+    let heroIcon = document.getElementById( "hero-information-icon" );
+    heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
+    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
+    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
+    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
+    let vetoCount = document.getElementById( "hero-information-veto-count" );
+    vetoCount.innerHTML = calcVetoCountString( hero );
+
+    let heroName = document.getElementById( "hero-information-name" );
+    const heroInformationNamePlaceholder = "Hover a hero for information";
+    heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
+
+    let statusDiv = document.getElementById( "hero-information-status" );
+    statusDiv.innerHTML = calcHeroInformationStatusString( hero );
+
+    let dibsDiv = document.getElementById( "hero-information-dibs" );
+    dibsDiv.innerHTML = calcHeroInformationDibsString( hero );
+
+    let vetoDiv = document.getElementById( "hero-information-veto" );
+    vetoDiv.innerHTML = calcHeroInformationVetoString( hero ); 
+};
+mouseLeaveHero(); // Initialize to empty state
+
+function mouseEnterHero( event, stat, index )
+{
+    hoveredHeroPosition = { stat, index };
+    updateHoveredHero();
+};
+
+function mouseLeaveHero( event, stat, index )
+{
+    hoveredHeroPosition = null;
+    updateHoveredHero();
+};
+
 function auxClickHero( event, stat, index )
 {
     event.preventDefault();
@@ -173,10 +308,8 @@ function setTeamStatus( state, team )
 
 function setStatToggles( state )
 {
-    for ( let stat in state.stats )
+    for ( let [ stat, is_enabled ] of Object.entries( state.stats ) )
     {
-        let is_enabled = state.stats[ stat ];
-
         let checkbox = document.getElementById( `${ stat }-checkbox` );
         checkbox.checked = is_enabled;
 
@@ -188,20 +321,23 @@ function setStatToggles( state )
 
 function setHeroButtons( state )
 {
+    let banButtons = Array.from( document.getElementsByClassName( "ban-hero-button" ) );
+    let pickButtons = Array.from( document.getElementsByClassName( "pick-hero-button" ) );
+
     if ( state.state == "banning" && state.active_team == client_team )
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        banButtons.forEach( banButton => banButton.style.display = "" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
     }
     else if ( state.state == "picking" && state.active_team == client_team )
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "" );
+        banButtons.forEach( banButton => banButton.style.display = "none" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "" );
     }
     else
     {
-        Array.from( document.getElementsByClassName( "ban-hero-button" ) ).forEach( banButton => banButton.style.display = "none" );
-        Array.from( document.getElementsByClassName( "pick-hero-button" ) ).forEach( pickButton => pickButton.style.display = "none" );
+        banButtons.forEach( banButton => banButton.style.display = "none" );
+        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
     }
 };
 
@@ -312,7 +448,7 @@ function setFontSizeToFit( element )
     let words = element.textContent.split( " " );
     if ( words.length == 0 ) return;
     let longestWord = words.sort( ( a, b ) => b.length - a.length )[ 0 ];
-    let scale = Math.min( 1, 6 / longestWord.length );
+    let scale = Math.min( 1, 2 / words.length, 6 / longestWord.length );
     const fontSize = 18;
     element.style.fontSize = ( fontSize * scale ) + "px";
 };
@@ -363,6 +499,8 @@ function updateHero( stat, index, hero )
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
     heroSound.volume = 0.2;
+
+    updateHoveredHero( hero );
 }
 
 function shouldShowDibs( team )
@@ -478,18 +616,20 @@ function updatePlayer( player )
     {
         updateSlot( team, index, player );
     }
+
+    updateHoveredHero();
 };
 
 function findHeroIndex( hero )
 {
-    for ( let stat in heroes )
+    for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
         if ( !state.stats[ stat ] )
         {
             continue;
         }
 
-        let index = heroes[ stat ].findIndex( ( h ) => h.name == hero );
+        let index = pool.findIndex( ( h ) => h.name == hero );
         if ( index < 0 )
         {
             continue;
@@ -509,9 +649,9 @@ function findHero( hero )
 
 function findPlayer( player )
 {
-    for ( let team in teams )
+    for ( let [ team, slots ] of Object.entries( teams ) )
     {
-        let index = teams[ team ].findIndex( ( p ) => p == player );
+        let index = slots.findIndex( ( p ) => p == player );
         if ( index < 0 )
         {
             continue;
@@ -537,11 +677,11 @@ function onUpdateHeroes( new_heroes )
 {
     console.log( "updating heroes" );
     heroes = new_heroes;
-    for ( let stat in heroes )
+    for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
-        for ( let index = 0; index < heroes[ stat ].length; ++index )
+        for ( let [ index, hero ] of pool.entries() )
         {
-            updateHero( stat, index, heroes[ stat ][ index ] );
+            updateHero( stat, index, hero );
         }
     }
 };
@@ -572,9 +712,8 @@ function onUpdatePlayers( new_players )
 
     let playerList = document.getElementById( "players-list" );
     playerList.innerHTML = "";
-    for ( let player in players )
+    for ( let player of Object.values( players ) )
     {
-        player = players[ player ]
         playerList.innerHTML += `
             <div class="players-list-item" id="${ player.id }">
                 <img class="players-list-icon"/>
@@ -591,11 +730,10 @@ let teams = null;
 function onUpdateTeams( new_teams )
 {
     teams = new_teams;
-    for ( let team in teams )
+    for ( let [ team, slots ] of Object.entries( teams ) )
     {
-        for ( let index = 0; index < teams[ team ].length; ++index )
+        for ( let [ index, player ] of slots.entries() )
         {
-            let player = teams[ team ][ index ];
             updateSlot( team, index, player ? players[ player ] : null );
         }
     }
