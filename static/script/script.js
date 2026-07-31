@@ -59,6 +59,7 @@ function createPlayerEntry( player, classPrefix )
 {
     let entry = document.createElement( "div" );
     entry.className = classPrefix;
+    entry.classList.add( `team-${ player.team }` );
 
     let icon = document.createElement( "img" );
     icon.className = `${ classPrefix }-icon`;
@@ -68,7 +69,6 @@ function createPlayerEntry( player, classPrefix )
     let name = document.createElement( "span" );
     name.className = `${ classPrefix }-name`;
     name.textContent = player.name;
-    name.style.color = getTeamColor( player.team );
     entry.appendChild( name );
 
     return entry;
@@ -307,33 +307,30 @@ function setFirstBan( state )
 function setTeamStatus( state, team )
 {
     let teamDiv = document.getElementById( team );
+    teamDiv.classList.remove( "banning", "picking" );
     let arrows = teamDiv.getElementsByClassName( "team-status-arrow" );
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
     if ( state.state == "banning" && team == state.active_team )
     {
+        teamDiv.classList.add( "banning" );
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
         title.textContent = "Banning";
-        title.style.color = "red";
         subtitle.textContent = "";
-        subtitle.style.color = "";
     }
     else if ( state.state == "picking" && team == state.active_team )
     {
+        teamDiv.classList.add( "picking" );
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
         title.textContent = "Picking";
-        title.style.color = "green";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
-        subtitle.style.color = "green";
     }
     else
     {
         Array.from( arrows ).forEach( arrow => arrow.src = "" );
         title.textContent = "";
-        title.style.color = "";
         subtitle.textContent = "";
-        subtitle.style.color = "";
     }
 };
 
@@ -578,21 +575,6 @@ function updateSlot( team, index, player )
     }
 };
 
-// TODO: This should be doable via css
-// TODO: Colors should also be removed from python code
-function getTeamColor( team )
-{
-    switch ( team )
-    {
-        case "legion":
-            return "green";
-        case "hellbourne":
-            return "red";
-        case "observers":
-            return "blue";
-    }
-}
-
 function getTeamIcon( team )
 {
     switch ( team )
@@ -619,9 +601,11 @@ function updatePlayer( player )
         playerDiv.classList.remove( "client-player" );
     }
 
+    playerDiv.classList.remove( ...Array.from( playerDiv.classList ).filter( cls => cls.startsWith( "team-" ) ) );
+    playerDiv.classList.add( `team-${ player.team }` );
+
     let playerName = playerDiv.getElementsByClassName( "players-list-entry-name" )[ 0 ];
     playerName.textContent = player.name;
-    playerName.style.color = getTeamColor( player.team );
     let playerIcon = playerDiv.getElementsByClassName( "players-list-entry-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
 

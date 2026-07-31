@@ -181,6 +181,15 @@ body.state-results #countdown {
     font-size: 10px;
 }
 
+.team.banning .team-status-label {
+    color: red;
+}
+
+.team.picking .team-status-label,
+.team.picking .team-status-subtitle {
+    color: green;
+}
+
 .team-slots {
     padding-top: 20px;
     display: flex;
@@ -517,6 +526,18 @@ body.client-can-pick .pick-hero-button {
     gap: 4px;
 }
 
+.players-list-entry.team-legion {
+    color: green;
+}
+
+.players-list-entry.team-hellbourne {
+    color: red;
+}
+
+.players-list-entry.team-observers {
+    color: blue;
+}
+
 .players-list-entry-icon {
     height: 16px;
 }
@@ -654,6 +675,14 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.hero-information-player-entry.team-legion {
+    color: green;
+}
+
+.hero-information-player-entry.team-hellbourne {
+    color: red;
 }
 
 .hero-information-player-entry-icon {
