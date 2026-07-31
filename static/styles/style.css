@@ -300,6 +300,10 @@ body.state-results #countdown {
     text-transform: capitalize;
 }
 
+.stat.disabled .stat-header-name {
+    text-decoration: line-through;
+}
+
 .stat-checkbox {
     transform: scale( 1.6 );
 }

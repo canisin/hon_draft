@@ -345,8 +345,7 @@ function setStatToggles( state )
         checkbox.checked = is_enabled;
 
         let statDiv = document.getElementById( stat );
-        let label = statDiv.getElementsByClassName( "stat-header-name" )[ 0 ];
-        label.style.textDecoration = is_enabled ? "" : "line-through";
+        statDiv.classList.toggle( "disabled", !is_enabled );
     }
 };
 
