@@ -71,11 +71,16 @@ function mouseEnterHero( event, stat, index )
     let heroInformation = document.getElementById( "hero-information" );
     heroInformation.classList.remove( "no-hero-selected" );
 
-    let heroInformationIcon = document.getElementById( "hero-information-icon" );
-    heroInformationIcon.src = `/static/images/${ hero.path }.png`;
+    let heroIcon = document.getElementById( "hero-information-icon" );
+    heroIcon.src = `/static/images/${ hero.path }.png`;
+    heroIcon.style.filter = hero.is_picked ? "grayscale( 1 )" : "";
+    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
+    bannedIcon.style.visibility = hero.is_banned ? "visible" : "hidden";
+    let vetoCount = document.getElementById( "hero-information-veto-count" );
+    vetoCount.innerHTML = calcVetoCountString( hero );
 
-    let heroInformationName = document.getElementById( "hero-information-name" );
-    heroInformationName.textContent = hero.name;
+    let heroName = document.getElementById( "hero-information-name" );
+    heroName.textContent = hero.name;
 };
 
 function mouseLeaveHero( event, stat, index )
@@ -85,11 +90,16 @@ function mouseLeaveHero( event, stat, index )
     let heroInformation = document.getElementById( "hero-information" );
     heroInformation.classList.add( "no-hero-selected" );
 
-    let heroInformationIcon = document.getElementById( "hero-information-icon" );
-    heroInformationIcon.src = "/static/images/hero-none.png";
+    let heroIcon = document.getElementById( "hero-information-icon" );
+    heroIcon.src = "/static/images/hero-none.png";
+    heroIcon.style.filter = "";
+    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
+    bannedIcon.style.visibility = "hidden";
+    let vetoCount = document.getElementById( "hero-information-veto-count" );
+    vetoCount.innerHTML = "";
 
-    let heroInformationName = document.getElementById( "hero-information-name" );
-    heroInformationName.textContent = heroInformationNamePlaceholder;
+    let heroName = document.getElementById( "hero-information-name" );
+    heroName.textContent = heroInformationNamePlaceholder;
 };
 mouseLeaveHero(); // Initialize to empty state
 
