@@ -508,6 +508,19 @@
     width: 150px;
     height: 150px;
     display: grid;
+    border: 5px solid transparent;
+}
+
+body:has( #agi:hover ) .hero-information-icon-container {
+    border-color: green;
+}
+
+body:has( #int:hover ) .hero-information-icon-container {
+    border-color: blue;
+}
+
+body:has( #str:hover ) .hero-information-icon-container {
+    border-color: red;
 }
 
 #hero-information-icon {
@@ -537,14 +550,14 @@
     font-weight: bold;
 }
 
-#agi:hover #hero-information-name {
+body:has( #agi:hover ) #hero-information-name {
     color: green;
 }
 
-#int:hover #hero-information-name {
+body:has( #int:hover ) #hero-information-name {
     color: blue;
 }
 
-#str:hover #hero-information-name {
+body:has( #str:hover ) #hero-information-name {
     color: red;
 }
