@@ -161,7 +161,7 @@ function updateHoveredHero()
     let bannedIcon = document.getElementById( "hero-information-icon-banned" );
     bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = document.getElementById( "hero-information-veto-count" );
-    vetoCount.innerHTML = calcVetoCountString( hero );
+    vetoCount.textContent = calcVetoCountString( hero );
 
     let heroName = document.getElementById( "hero-information-name" );
     const heroInformationNamePlaceholder = "Hover a hero for information";
@@ -283,25 +283,25 @@ function setTeamStatus( state, team )
     if ( state.state == "banning" && team == state.active_team )
     {
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
-        title.innerHTML = "Banning";
+        title.textContent = "Banning";
         title.style.color = "red";
-        subtitle.innerHTML = "";
+        subtitle.textContent = "";
         subtitle.style.color = "";
     }
     else if ( state.state == "picking" && team == state.active_team )
     {
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
-        title.innerHTML = "Picking";
+        title.textContent = "Picking";
         title.style.color = "green";
-        subtitle.innerHTML = `(Remaining Picks: ${ state.remaining_picks })`;
+        subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
         subtitle.style.color = "green";
     }
     else
     {
         Array.from( arrows ).forEach( arrow => arrow.src = "" );
-        title.innerHTML = "";
+        title.textContent = "";
         title.style.color = "";
-        subtitle.innerHTML = "";
+        subtitle.textContent = "";
         subtitle.style.color = "";
     }
 };
@@ -356,7 +356,7 @@ function onUpdateState( new_state )
     state = new_state;
 
     let stateLabel = document.getElementById( "state" );
-    stateLabel.innerHTML = state.state_label;
+    stateLabel.textContent = state.state_label;
 
     let countdownLabel = document.getElementById( "countdown" );
     countdownLabel.style.visibility = ( state.state == "lobby" || state.state == "results" ) ? "hidden" : "visible";
@@ -420,7 +420,7 @@ function onSetTimer( seconds )
     let countdownLabel = document.getElementById( "countdown" );
 
     let tick = () => {
-        countdownLabel.innerHTML = seconds;
+        countdownLabel.textContent = seconds;
 
         if ( seconds > 0 )
         {
@@ -487,7 +487,7 @@ function updateHero( stat, index, hero )
 {
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
     let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
-    heroName.innerHTML = hero ? hero.name : "";
+    heroName.textContent = hero ? hero.name : "";
     setFontSizeToFit( heroName );
     let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
@@ -495,7 +495,7 @@ function updateHero( stat, index, hero )
     let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
     bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = heroDiv.getElementsByClassName( "hero-veto-count" )[ 0 ];
-    vetoCount.innerHTML = calcVetoCountString( hero );
+    vetoCount.textContent = calcVetoCountString( hero );
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
     heroSound.volume = 0.2;
@@ -531,34 +531,34 @@ function updateSlot( team, index, player )
     }
 
     let playerName = slotDiv.getElementsByClassName( "slot-player-name" )[ 0 ];
-    playerName.innerHTML = player ? player.name : "Empty";
+    playerName.textContent = player ? player.name : "Empty";
 
     let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
     let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
 
     if ( !player )
     {
-        heroName.innerHTML = "";
+        heroName.textContent = "";
         heroIcon.src = `/static/images/slot-${ team }.png`;
         heroIcon.style.filter = "";
     }
     else if ( player.hero )
     {
         let hero = findHero( player.hero );
-        heroName.innerHTML = hero.name;
+        heroName.textContent = hero.name;
         heroIcon.src = `/static/images/${ hero.path }.png`;
         heroIcon.style.filter = "";
     }
     else if ( player.dibs && shouldShowDibs( team ) )
     {
         let dibs = findHero( player.dibs );
-        heroName.innerHTML = dibs.name;
+        heroName.textContent = dibs.name;
         heroIcon.src = `/static/images/${ dibs.path }.png`;
         heroIcon.style.filter = "grayscale( 1 )";
     }
     else
     {
-        heroName.innerHTML = "None";
+        heroName.textContent = "None";
         heroIcon.src = `/static/images/hero-none.png`;
         heroIcon.style.filter = "";
     }
@@ -606,7 +606,7 @@ function updatePlayer( player )
     }
 
     let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
-    playerName.innerHTML = player.name;
+    playerName.textContent = player.name;
     playerName.style.color = getTeamColor( player.team );
     let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
