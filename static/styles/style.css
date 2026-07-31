@@ -499,12 +499,14 @@
 }
 
 .hero-information {
-    width: 300px;
+    position: fixed;
+    left: 10px;
+    top: 10px;
 }
 
-#hero-information-icon-container {
-    width: 50px;
-    height: 50px;
+.hero-information-icon-container {
+    width: 150px;
+    height: 150px;
     display: grid;
 }
 
