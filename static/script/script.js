@@ -76,8 +76,8 @@ function createPlayerEntry( player, classPrefix )
 
 function updateHeroInformationStatus( hero )
 {
-    let statusDiv = document.getElementById( "hero-information-status" );
-    statusDiv.classList.remove( "banned", "picked" );
+    let heroInformation = document.getElementById( "hero-information" );
+    heroInformation.classList.remove( "banned", "picked" );
 
     if ( !hero )
     {
@@ -86,7 +86,7 @@ function updateHeroInformationStatus( hero )
 
     if ( hero.is_banned )
     {
-        statusDiv.classList.add( "banned" );
+        heroInformation.classList.add( "banned" );
         return;
     }
 
@@ -97,7 +97,7 @@ function updateHeroInformationStatus( hero )
 
     if ( hero.is_picked )
     {
-        statusDiv.classList.add( "picked" );
+        heroInformation.classList.add( "picked" );
         let picker = document.getElementById( "hero-information-status-picker" );
         let player = Object.values( players ).find( p => p.hero == hero.name );
         picker.replaceChildren( createPlayerEntry( player, "hero-information-player-entry" ) );
@@ -197,8 +197,6 @@ function updateHoveredHero()
 
     let heroIcon = document.getElementById( "hero-information-icon" );
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
-    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = document.getElementById( "hero-information-veto-count" );
     vetoCount.textContent = calcVetoCountString( hero );
 
@@ -354,24 +352,10 @@ function setStatToggles( state )
 
 function setHeroButtons( state )
 {
-    let banButtons = Array.from( document.getElementsByClassName( "ban-hero-button" ) );
-    let pickButtons = Array.from( document.getElementsByClassName( "pick-hero-button" ) );
-
-    if ( state.state == "banning" && state.active_team == client_team )
-    {
-        banButtons.forEach( banButton => banButton.style.display = "" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
-    }
-    else if ( state.state == "picking" && state.active_team == client_team )
-    {
-        banButtons.forEach( banButton => banButton.style.display = "none" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "" );
-    }
-    else
-    {
-        banButtons.forEach( banButton => banButton.style.display = "none" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
-    }
+    let canBan = state.state == "banning" && state.active_team == client_team;
+    let canPick = state.state == "picking" && state.active_team == client_team;
+    document.body.classList.toggle( "client-can-ban", canBan );
+    document.body.classList.toggle( "client-can-pick", canPick );
 };
 
 let client_id = null;
@@ -519,14 +503,13 @@ function calcVetoCountString( hero )
 function updateHero( stat, index, hero )
 {
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
+    heroDiv.classList.toggle( "banned", hero && hero.is_banned );
+    heroDiv.classList.toggle( "picked", hero && hero.is_picked );
     let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
     heroName.textContent = hero ? hero.name : "";
     setFontSizeToFit( heroName );
     let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
-    let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
-    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = heroDiv.getElementsByClassName( "hero-veto-count" )[ 0 ];
     vetoCount.textContent = calcVetoCountString( hero );
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
@@ -569,31 +552,30 @@ function updateSlot( team, index, player )
     let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
     let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
 
+    let isDibs = player && !player.hero && player.dibs && shouldShowDibs( team );
+    slotDiv.classList.toggle( "dibs", isDibs );
+
     if ( !player )
     {
         heroName.textContent = "";
         heroIcon.src = `/static/images/slot-${ team }.png`;
-        heroIcon.style.filter = "";
     }
     else if ( player.hero )
     {
         let hero = findHero( player.hero );
         heroName.textContent = hero.name;
         heroIcon.src = `/static/images/${ hero.path }.png`;
-        heroIcon.style.filter = "";
     }
-    else if ( player.dibs && shouldShowDibs( team ) )
+    else if ( isDibs )
     {
         let dibs = findHero( player.dibs );
         heroName.textContent = dibs.name;
         heroIcon.src = `/static/images/${ dibs.path }.png`;
-        heroIcon.style.filter = "grayscale( 1 )";
     }
     else
     {
         heroName.textContent = "None";
         heroIcon.src = `/static/images/hero-none.png`;
-        heroIcon.style.filter = "";
     }
 };
 

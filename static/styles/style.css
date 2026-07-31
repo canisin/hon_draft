@@ -258,6 +258,10 @@
     display: block;
 }
 
+.slot.dibs .slot-hero-icon {
+    filter: grayscale( 1 );
+}
+
 .slot-hero-name {
     font-size: 10px;
     text-align: center;
@@ -322,6 +326,15 @@
 .hero-icon-banned {
     width: 100%;
     grid-area: 1/1;
+    visibility: hidden;
+}
+
+.hero.banned .hero-icon-banned {
+    visibility: visible;
+}
+
+.hero.picked .hero-icon {
+    filter: grayscale( 1 );
 }
 
 .hero-veto-count {
@@ -370,12 +383,18 @@
     display: grid;
 }
 
-.ban-hero-button {
+.ban-hero-button,
+.pick-hero-button {
+    display: none;
     font-size: 10px;
 }
 
-.pick-hero-button {
-    font-size: 10px;
+body.client-can-ban .ban-hero-button {
+    display: block;
+}
+
+body.client-can-pick .pick-hero-button {
+    display: block;
 }
 
 .hero-name-container {
@@ -584,14 +603,22 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     margin-top: 8px;
 }
 
-#hero-information-status.banned #hero-information-status-banned {
+#hero-information.banned #hero-information-status-banned {
     display: block;
 }
 
-#hero-information-status.picked #hero-information-status-picked {
+#hero-information.picked #hero-information-status-picked {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+#hero-information-icon-banned {
+    visibility: hidden;
+}
+
+#hero-information.banned #hero-information-icon-banned {
+    visibility: visible;
 }
 
 #hero-information-status-banned {
