@@ -204,8 +204,7 @@ function updateHoveredHero()
     vetoCount.textContent = calcVetoCountString( hero );
 
     let heroName = document.getElementById( "hero-information-name" );
-    const heroInformationNamePlaceholder = "Hover a hero for information";
-    heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
+    heroName.textContent = hero ? hero.name : "";
 
     updateHeroInformationStatus( hero );
     updateHeroInformationDibs( hero );

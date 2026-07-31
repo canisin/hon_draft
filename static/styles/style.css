@@ -546,14 +546,23 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     text-shadow: 0.05em 0 white, 0 0.05em white, -0.05em 0 white, 0 -0.05em white, 0.05em 0.05em white, 0.05em -0.05em white, -0.05em 0.05em white, -0.05em -0.05em white;
 }
 
-#hero-information-name {
+#hero-information-name,
+#hero-information-name-placeholder {
     margin-top: 10px;
     font-weight: bold;
 }
 
-#hero-information.no-hero-selected #hero-information-name {
-    font-style: italic;
+#hero-information-name-placeholder {
     margin-left: 5px;
+    font-style: italic;
+}
+
+#hero-information:not( .no-hero-selected ) #hero-information-name-placeholder {
+    display: none;
+}
+
+#hero-information.no-hero-selected #hero-information-name {
+    display: none;
 }
 
 body:has( #agi:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
