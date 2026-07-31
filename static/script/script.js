@@ -372,11 +372,11 @@ function onUpdateState( new_state )
     console.log( "changing state" );
     state = new_state;
 
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
+    document.body.classList.add( `state-${ state.state }` );
+
     let stateLabel = document.getElementById( "state" );
     stateLabel.textContent = state.state_label;
-
-    let countdownLabel = document.getElementById( "countdown" );
-    countdownLabel.style.visibility = ( state.state == "lobby" || state.state == "results" ) ? "hidden" : "visible";
 
     let startDraftButton = document.getElementById( "start-draft-button" );
     startDraftButton.disabled = state.state != "lobby";

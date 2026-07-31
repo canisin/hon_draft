@@ -24,6 +24,12 @@
     font-size: 14px;
 }
 
+body.state-none #countdown,
+body.state-lobby #countdown,
+body.state-results #countdown {
+    visibility: hidden;
+}
+
 .main {
     display: flex;
     justify-content: center;
