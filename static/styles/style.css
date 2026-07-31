@@ -482,19 +482,19 @@
     padding: 5px;
 }
 
-.players-list-item {
+.players-list-entry {
 }
 
-.players-list-icon {
+.players-list-entry-icon {
     display: inline;
     height: 12px;
 }
 
-.players-list-name {
+.players-list-entry-name {
     display: inline;
 }
 
-.client-player .players-list-name {
+.client-player .players-list-entry-name {
     font-weight: bold;
 }
 
