@@ -55,8 +55,37 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
+function updateHoveredHero( hero )
+{
+    if ( hero )
+    {
+        let heroInformation = document.getElementById( "hero-information" );
+        heroInformation.classList.remove( "no-hero-selected" );
+    }
+    else
+    {
+        let heroInformation = document.getElementById( "hero-information" );
+        heroInformation.classList.add( "no-hero-selected" );
+    }
+
+    let heroIcon = document.getElementById( "hero-information-icon" );
+    heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
+    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
+    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
+    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
+    let vetoCount = document.getElementById( "hero-information-veto-count" );
+    vetoCount.innerHTML = calcVetoCountString( hero );
+
+    let heroName = document.getElementById( "hero-information-name" );
+    const heroInformationNamePlaceholder = "Hover a hero for information";
+    heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
+};
+
+let hoveredHeroPosition = null;
 function mouseEnterHero( event, stat, index )
 {
+    hoveredHeroPosition = `${ stat }-${ index }`;
+
     if ( !state.stats[ stat ] )
     {
         return;
@@ -68,38 +97,13 @@ function mouseEnterHero( event, stat, index )
         return;
     }
 
-    let heroInformation = document.getElementById( "hero-information" );
-    heroInformation.classList.remove( "no-hero-selected" );
-
-    let heroIcon = document.getElementById( "hero-information-icon" );
-    heroIcon.src = `/static/images/${ hero.path }.png`;
-    heroIcon.style.filter = hero.is_picked ? "grayscale( 1 )" : "";
-    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
-    bannedIcon.style.visibility = hero.is_banned ? "visible" : "hidden";
-    let vetoCount = document.getElementById( "hero-information-veto-count" );
-    vetoCount.innerHTML = calcVetoCountString( hero );
-
-    let heroName = document.getElementById( "hero-information-name" );
-    heroName.textContent = hero.name;
+    updateHoveredHero( hero );
 };
 
 function mouseLeaveHero( event, stat, index )
 {
-    const heroInformationNamePlaceholder = "Hover a hero for information";
-
-    let heroInformation = document.getElementById( "hero-information" );
-    heroInformation.classList.add( "no-hero-selected" );
-
-    let heroIcon = document.getElementById( "hero-information-icon" );
-    heroIcon.src = "/static/images/hero-none.png";
-    heroIcon.style.filter = "";
-    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
-    bannedIcon.style.visibility = "hidden";
-    let vetoCount = document.getElementById( "hero-information-veto-count" );
-    vetoCount.innerHTML = "";
-
-    let heroName = document.getElementById( "hero-information-name" );
-    heroName.textContent = heroInformationNamePlaceholder;
+    hoveredHeroPosition = null;
+    updateHoveredHero( null );
 };
 mouseLeaveHero(); // Initialize to empty state
 
@@ -414,6 +418,11 @@ function updateHero( stat, index, hero )
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
     heroSound.volume = 0.2;
+
+    if ( hoveredHeroPosition == `${ stat }-${ index }` )
+    {
+        updateHoveredHero( hero );
+    }
 }
 
 function shouldShowDibs( team )
