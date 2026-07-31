@@ -197,7 +197,6 @@ function updateHoveredHero()
 
     let heroIcon = document.getElementById( "hero-information-icon" );
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
     let bannedIcon = document.getElementById( "hero-information-icon-banned" );
     bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = document.getElementById( "hero-information-veto-count" );
