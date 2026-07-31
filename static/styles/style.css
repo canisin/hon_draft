@@ -497,3 +497,52 @@
 .client-player .players-list-name {
     font-weight: bold;
 }
+
+.hero-information {
+    width: 300px;
+}
+
+#hero-information-icon-container {
+    width: 50px;
+    height: 50px;
+    display: grid;
+}
+
+#hero-information-icon {
+    width: 100%;
+    grid-area: 1/1;
+}
+
+#hero-information-icon-banned {
+    width: 100%;
+    grid-area: 1/1;
+}
+
+#hero-information-veto-count {
+    width: 100%;
+    grid-area: 1/1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    font-size: 32px;
+    font-weight: bolder;
+    color: red;
+    text-shadow: 0.05em 0 white, 0 0.05em white, -0.05em 0 white, 0 -0.05em white, 0.05em 0.05em white, 0.05em -0.05em white, -0.05em 0.05em white, -0.05em -0.05em white;
+}
+
+#hero-information-name {
+    font-weight: bold;
+}
+
+#agi:hover #hero-information-name {
+    color: green;
+}
+
+#int:hover #hero-information-name {
+    color: blue;
+}
+
+#str:hover #hero-information-name {
+    color: red;
+}

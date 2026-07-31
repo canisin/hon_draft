@@ -47,6 +47,14 @@
 </div>
 {% endmacro %}
 
+<div class="hero-information">
+	<div class="hero-information-icon-container">
+		<img id="hero-information-icon" src="static/images/hero-none.png" />
+		<img id="hero-information-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden" />
+		<div id="hero-information-veto-count"></div>
+	</div>
+	<div id="hero-information-name"><i>Hover a hero for information</i></div>
+</div>
 <div class="main">
     <div class="outer-margin"></div>
     {{ team( "legion" ) }}
@@ -63,8 +71,10 @@
             <div class="stat-heroes">
                 {% for index in range( pool_size ) %}
                 <div class="hero" id="{{ stat }}-{{ index }}"
-                        onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )" 
-                        oncontextmenu="event.preventDefault()">
+                     onmouseenter="mouseEnterHero( event, '{{ stat }}', '{{ index }}' )"
+                     onmouseleave="mouseLeaveHero( event, '{{ stat }}', '{{ index }}' )"
+                     onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )"
+                     oncontextmenu="event.preventDefault()">
                     <div class="hero-icon-container">
                         <img class="hero-icon" src="static/images/hero-none.png"/>
                         <img class="hero-icon-banned" src="/static/images/hero-banned.png" style="visibility: hidden"/>

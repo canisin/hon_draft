@@ -55,6 +55,29 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
+function mouseEnterHero( event, stat, index )
+{
+    if ( !state.stats[ stat ] )
+    {
+        return;
+    }
+
+    let hero = heroes[ stat ][ index ];
+    if ( !hero )
+    {
+        return;
+    }
+
+    let heroInformationIcon = document.getElementById( "hero-information-icon" );
+    heroInformationIcon.src = `/static/images/${ hero.path }.png`;
+};
+
+function mouseLeaveHero( event, stat, index )
+{
+    let heroInformationIcon = document.getElementById( "hero-information-icon" );
+    heroInformationIcon.src = "/static/images/hero-none.png";
+};
+
 function auxClickHero( event, stat, index )
 {
     event.preventDefault();
