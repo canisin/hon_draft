@@ -13,6 +13,11 @@ pickHeroAudio.volume = 0.2;
 let startGameAudio = document.getElementById( "start-game-audio" );
 startGameAudio.volume = 0.2;
 
+let heroInformationNamePlaceholder = "Hover a hero for information";
+let heroInformationName = document.getElementById( "hero-information-name" );
+heroInformationName.textContent = heroInformationNamePlaceholder;
+heroInformationName.classList.add( "no-hero-selected" );
+
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
 function playAudio( audio, noDelay = true )
@@ -70,12 +75,18 @@ function mouseEnterHero( event, stat, index )
 
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = `/static/images/${ hero.path }.png`;
+
+    heroInformationName.textContent = hero.name;
+    heroInformationName.classList.remove( "no-hero-selected" );
 };
 
 function mouseLeaveHero( event, stat, index )
 {
     let heroInformationIcon = document.getElementById( "hero-information-icon" );
     heroInformationIcon.src = "/static/images/hero-none.png";
+
+    heroInformationName.textContent = heroInformationNamePlaceholder;
+    heroInformationName.classList.add( "no-hero-selected" );
 };
 
 function auxClickHero( event, stat, index )

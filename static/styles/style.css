@@ -547,7 +547,12 @@ body:has( #str:hover ) .hero-information-icon-container {
 }
 
 #hero-information-name {
+    margin-top: 10px;
     font-weight: bold;
+}
+
+#hero-information-name.no-hero-selected {
+    font-style: italic;
 }
 
 body:has( #agi:hover ) #hero-information-name {
