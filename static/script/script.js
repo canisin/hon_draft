@@ -55,8 +55,95 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
-function updateHoveredHero( hero )
+function calcHeroInformationStatusString( hero )
 {
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( hero.is_banned )
+    {
+        return "Banned";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    if ( hero.is_picked )
+    {
+        let player = Object.values( players ).find( p => p.hero == hero.name );
+        return `Picked by ${ player.name }`;
+    }
+
+    return "";
+};
+
+function calcHeroInformationDibsString( hero )
+{
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    let dibsPlayers = Object.values( players ).filter( p => p.dibs == hero.name && shouldShowDibs( p.team ) );
+    if ( dibsPlayers.length == 0 )
+    {
+        return "";
+    }
+
+    return `Dibs: ${ dibsPlayers.map( p => p.name ).join( ", " ) }`;
+};
+
+function calcHeroInformationVetoString( hero )
+{
+    if ( !hero )
+    {
+        return "";
+    }
+
+    if ( !players )
+    {
+        return "";
+    }
+
+    let vetos = [];
+    for ( let team of [ "legion", "hellbourne" ] )
+    {
+        if ( !shouldShowDibs( team ) )
+        {
+            continue;
+        }
+
+        for ( let playerId of hero[ `${ team }_vetos` ] )
+        {
+            let player = players[ playerId ];
+            vetos.push( player.name );
+        }
+    }
+
+    if ( vetos.length == 0 )
+    {
+        return "";
+    }
+
+    return `Veto: ${ vetos.join( ", " ) }`;
+};
+
+let hoveredHeroPosition = null;
+function updateHoveredHero()
+{
+    let hero = hoveredHeroPosition
+        ? heroes[ hoveredHeroPosition.stat ][ hoveredHeroPosition.index ]
+        : null;
+
     if ( hero )
     {
         let heroInformation = document.getElementById( "hero-information" );
@@ -79,33 +166,29 @@ function updateHoveredHero( hero )
     let heroName = document.getElementById( "hero-information-name" );
     const heroInformationNamePlaceholder = "Hover a hero for information";
     heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
-};
 
-let hoveredHeroPosition = null;
+    let statusDiv = document.getElementById( "hero-information-status" );
+    statusDiv.innerHTML = calcHeroInformationStatusString( hero );
+
+    let dibsDiv = document.getElementById( "hero-information-dibs" );
+    dibsDiv.innerHTML = calcHeroInformationDibsString( hero );
+
+    let vetoDiv = document.getElementById( "hero-information-veto" );
+    vetoDiv.innerHTML = calcHeroInformationVetoString( hero ); 
+};
+mouseLeaveHero(); // Initialize to empty state
+
 function mouseEnterHero( event, stat, index )
 {
-    hoveredHeroPosition = `${ stat }-${ index }`;
-
-    if ( !state.stats[ stat ] )
-    {
-        return;
-    }
-
-    let hero = heroes[ stat ][ index ];
-    if ( !hero )
-    {
-        return;
-    }
-
-    updateHoveredHero( hero );
+    hoveredHeroPosition = { stat, index };
+    updateHoveredHero();
 };
 
 function mouseLeaveHero( event, stat, index )
 {
     hoveredHeroPosition = null;
-    updateHoveredHero( null );
+    updateHoveredHero();
 };
-mouseLeaveHero(); // Initialize to empty state
 
 function auxClickHero( event, stat, index )
 {
@@ -419,10 +502,7 @@ function updateHero( stat, index, hero )
     heroSound.src = hero ? `/static/sounds/${ hero.path }.ogg` : "";
     heroSound.volume = 0.2;
 
-    if ( hoveredHeroPosition == `${ stat }-${ index }` )
-    {
-        updateHoveredHero( hero );
-    }
+    updateHoveredHero( hero );
 }
 
 function shouldShowDibs( team )
@@ -538,6 +618,8 @@ function updatePlayer( player )
     {
         updateSlot( team, index, player );
     }
+
+    updateHoveredHero();
 };
 
 function findHeroIndex( hero )
