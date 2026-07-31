@@ -483,15 +483,16 @@
 }
 
 .players-list-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .players-list-entry-icon {
-    display: inline;
-    height: 12px;
+    height: 16px;
 }
 
 .players-list-entry-name {
-    display: inline;
 }
 
 .client-player .players-list-entry-name {
@@ -619,5 +620,8 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
 }
 
 .hero-information-player-entry-icon {
-    height: 12px;
+    height: 16px;
+}
+
+.hero-information-player-entry-name {
 }
