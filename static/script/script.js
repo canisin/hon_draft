@@ -55,63 +55,100 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
-function calcHeroInformationStatusString( hero )
+function createPlayerEntry( player, classPrefix )
 {
+    let entry = document.createElement( "div" );
+    entry.className = classPrefix;
+
+    let icon = document.createElement( "img" );
+    icon.className = `${ classPrefix }-icon`;
+    icon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
+    entry.appendChild( icon );
+
+    let name = document.createElement( "span" );
+    name.className = `${ classPrefix }-name`;
+    name.textContent = player.name;
+    name.style.color = getTeamColor( player.team );
+    entry.appendChild( name );
+
+    return entry;
+};
+
+function updateHeroInformationStatus( hero )
+{
+    let statusDiv = document.getElementById( "hero-information-status" );
+    statusDiv.classList.remove( "banned", "picked" );
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( hero.is_banned )
     {
-        return "Banned";
+        statusDiv.classList.add( "banned" );
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     if ( hero.is_picked )
     {
+        statusDiv.classList.add( "picked" );
+        let picker = document.getElementById( "hero-information-status-picker" );
         let player = Object.values( players ).find( p => p.hero == hero.name );
-        return `Picked by ${ player.name }`;
+        picker.replaceChildren( createPlayerEntry( player, "hero-information-player-entry" ) );
     }
-
-    return "";
 };
 
-function calcHeroInformationDibsString( hero )
+function updateHeroInformationDibs( hero )
 {
+    let dibsDiv = document.getElementById( "hero-information-dibs" );
+    dibsDiv.classList.add( "empty" );
+    let dibsList = document.getElementById( "hero-information-dibs-list" );
+    dibsList.replaceChildren();
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     let dibsPlayers = Object.values( players ).filter( p => p.dibs == hero.name && shouldShowDibs( p.team ) );
     if ( dibsPlayers.length == 0 )
     {
-        return "";
+        return;
     }
 
-    return `Dibs: ${ dibsPlayers.map( p => p.name ).join( ", " ) }`;
+    dibsDiv.classList.remove( "empty" );
+    for ( let player of dibsPlayers )
+    {
+        dibsList.appendChild( createPlayerEntry( player, "hero-information-player-entry" ) );
+    }
 };
 
-function calcHeroInformationVetoString( hero )
+function updateHeroInformationVeto( hero )
 {
+    let vetoDiv = document.getElementById( "hero-information-veto" );
+    vetoDiv.classList.add( "empty" );
+    let vetoList = document.getElementById( "hero-information-veto-list" );
+    vetoList.replaceChildren();
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     let vetos = [];
@@ -122,19 +159,22 @@ function calcHeroInformationVetoString( hero )
             continue;
         }
 
-        for ( let playerId of hero[ `${ team }_vetos` ] )
+        for ( let player of hero[ `${ team }_vetos` ] )
         {
-            let player = players[ playerId ];
-            vetos.push( player.name );
+            vetos.push( players[ player ] );
         }
     }
 
     if ( vetos.length == 0 )
     {
-        return "";
+        return;
     }
 
-    return `Veto: ${ vetos.join( ", " ) }`;
+    vetoDiv.classList.remove( "empty" );
+    for ( let player of vetos )
+    {
+        vetoList.appendChild( createPlayerEntry( player, "hero-information-player-entry" ) );
+    }
 };
 
 let hoveredHeroPosition = null;
@@ -157,24 +197,17 @@ function updateHoveredHero()
 
     let heroIcon = document.getElementById( "hero-information-icon" );
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
     let bannedIcon = document.getElementById( "hero-information-icon-banned" );
     bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = document.getElementById( "hero-information-veto-count" );
     vetoCount.textContent = calcVetoCountString( hero );
 
     let heroName = document.getElementById( "hero-information-name" );
-    const heroInformationNamePlaceholder = "Hover a hero for information";
-    heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
+    heroName.textContent = hero ? hero.name : "";
 
-    let statusDiv = document.getElementById( "hero-information-status" );
-    statusDiv.innerHTML = calcHeroInformationStatusString( hero );
-
-    let dibsDiv = document.getElementById( "hero-information-dibs" );
-    dibsDiv.innerHTML = calcHeroInformationDibsString( hero );
-
-    let vetoDiv = document.getElementById( "hero-information-veto" );
-    vetoDiv.innerHTML = calcHeroInformationVetoString( hero ); 
+    updateHeroInformationStatus( hero );
+    updateHeroInformationDibs( hero );
+    updateHeroInformationVeto( hero );
 };
 mouseLeaveHero(); // Initialize to empty state
 
@@ -605,10 +638,10 @@ function updatePlayer( player )
         playerDiv.classList.remove( "client-player" );
     }
 
-    let playerName = playerDiv.getElementsByClassName( "players-list-name" )[ 0 ];
+    let playerName = playerDiv.getElementsByClassName( "players-list-entry-name" )[ 0 ];
     playerName.textContent = player.name;
     playerName.style.color = getTeamColor( player.team );
-    let playerIcon = playerDiv.getElementsByClassName( "players-list-icon" )[ 0 ];
+    let playerIcon = playerDiv.getElementsByClassName( "players-list-entry-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
 
     let [ team, index ] = findPlayer( player.id );
@@ -711,15 +744,12 @@ function onUpdatePlayers( new_players )
     players = new_players;
 
     let playerList = document.getElementById( "players-list" );
-    playerList.innerHTML = "";
+    playerList.replaceChildren();
     for ( let player of Object.values( players ) )
     {
-        playerList.innerHTML += `
-            <div class="players-list-item" id="${ player.id }">
-                <img class="players-list-icon"/>
-                <div class="players-list-name"/>
-            </div>
-        `;
+        let entry = createPlayerEntry( player, "players-list-entry" );
+        entry.id = player.id;
+        playerList.appendChild( entry );
 
         updatePlayer( player );
     }

@@ -482,19 +482,20 @@
     padding: 5px;
 }
 
-.players-list-item {
+.players-list-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.players-list-icon {
-    display: inline;
-    height: 12px;
+.players-list-entry-icon {
+    height: 16px;
 }
 
-.players-list-name {
-    display: inline;
+.players-list-entry-name {
 }
 
-.client-player .players-list-name {
+.client-player .players-list-entry-name {
     font-weight: bold;
 }
 
@@ -546,14 +547,23 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     text-shadow: 0.05em 0 white, 0 0.05em white, -0.05em 0 white, 0 -0.05em white, 0.05em 0.05em white, 0.05em -0.05em white, -0.05em 0.05em white, -0.05em -0.05em white;
 }
 
-#hero-information-name {
+#hero-information-name,
+#hero-information-name-placeholder {
     margin-top: 10px;
     font-weight: bold;
 }
 
-#hero-information.no-hero-selected #hero-information-name {
-    font-style: italic;
+#hero-information-name-placeholder {
     margin-left: 5px;
+    font-style: italic;
+}
+
+#hero-information:not( .no-hero-selected ) #hero-information-name-placeholder {
+    display: none;
+}
+
+#hero-information.no-hero-selected #hero-information-name {
+    display: none;
 }
 
 body:has( #agi:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
@@ -566,4 +576,52 @@ body:has( #int:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
 
 body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
     color: red;
+}
+
+#hero-information-status-banned,
+#hero-information-status-picked {
+    display: none;
+    margin-top: 8px;
+}
+
+#hero-information-status.banned #hero-information-status-banned {
+    display: block;
+}
+
+#hero-information-status.picked #hero-information-status-picked {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#hero-information-status-banned {
+    font-weight: bold;
+}
+
+#hero-information-status-picked-label {
+    font-weight: bold;
+}
+
+#hero-information-dibs-label,
+#hero-information-veto-label {
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+#hero-information-dibs.empty,
+#hero-information-veto.empty {
+    display: none;
+}
+
+.hero-information-player-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hero-information-player-entry-icon {
+    height: 16px;
+}
+
+.hero-information-player-entry-name {
 }
