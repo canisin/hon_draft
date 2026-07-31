@@ -55,63 +55,100 @@ function vetoHero( stat, index )
     socketio.emit( "veto-hero", stat, index );
 };
 
-function calcHeroInformationStatusString( hero )
+function createPlayerEntry( player )
 {
+    let entry = document.createElement( "div" );
+    entry.className = "hero-information-player-entry";
+
+    let icon = document.createElement( "img" );
+    icon.className = "hero-information-player-entry-icon";
+    icon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
+    entry.appendChild( icon );
+
+    let name = document.createElement( "span" );
+    name.className = "hero-information-player-entry-name";
+    name.textContent = player.name;
+    name.style.color = getTeamColor( player.team );
+    entry.appendChild( name );
+
+    return entry;
+};
+
+function updateHeroInformationStatus( hero )
+{
+    let statusDiv = document.getElementById( "hero-information-status" );
+    statusDiv.classList.remove( "banned", "picked" );
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( hero.is_banned )
     {
-        return "Banned";
+        statusDiv.classList.add( "banned" );
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     if ( hero.is_picked )
     {
+        statusDiv.classList.add( "picked" );
+        let picker = document.getElementById( "hero-information-status-picker" );
         let player = Object.values( players ).find( p => p.hero == hero.name );
-        return `Picked by ${ player.name }`;
+        picker.replaceChildren( createPlayerEntry( player ) );
     }
-
-    return "";
 };
 
-function calcHeroInformationDibsString( hero )
+function updateHeroInformationDibs( hero )
 {
+    let dibsDiv = document.getElementById( "hero-information-dibs" );
+    dibsDiv.classList.add( "empty" );
+    let dibsList = document.getElementById( "hero-information-dibs-list" );
+    dibsList.replaceChildren();
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     let dibsPlayers = Object.values( players ).filter( p => p.dibs == hero.name && shouldShowDibs( p.team ) );
     if ( dibsPlayers.length == 0 )
     {
-        return "";
+        return;
     }
 
-    return `Dibs: ${ dibsPlayers.map( p => p.name ).join( ", " ) }`;
+    dibsDiv.classList.remove( "empty" );
+    for ( let player of dibsPlayers )
+    {
+        dibsList.appendChild( createPlayerEntry( player ) );
+    }
 };
 
-function calcHeroInformationVetoString( hero )
+function updateHeroInformationVeto( hero )
 {
+    let vetoDiv = document.getElementById( "hero-information-veto" );
+    vetoDiv.classList.add( "empty" );
+    let vetoList = document.getElementById( "hero-information-veto-list" );
+    vetoList.replaceChildren();
+
     if ( !hero )
     {
-        return "";
+        return;
     }
 
     if ( !players )
     {
-        return "";
+        return;
     }
 
     let vetos = [];
@@ -122,19 +159,22 @@ function calcHeroInformationVetoString( hero )
             continue;
         }
 
-        for ( let playerId of hero[ `${ team }_vetos` ] )
+        for ( let player of hero[ `${ team }_vetos` ] )
         {
-            let player = players[ playerId ];
-            vetos.push( player.name );
+            vetos.push( players[ player ] );
         }
     }
 
     if ( vetos.length == 0 )
     {
-        return "";
+        return;
     }
 
-    return `Veto: ${ vetos.join( ", " ) }`;
+    vetoDiv.classList.remove( "empty" );
+    for ( let player of vetos )
+    {
+        vetoList.appendChild( createPlayerEntry( player ) );
+    }
 };
 
 let hoveredHeroPosition = null;
@@ -167,14 +207,9 @@ function updateHoveredHero()
     const heroInformationNamePlaceholder = "Hover a hero for information";
     heroName.textContent = hero ? hero.name : heroInformationNamePlaceholder;
 
-    let statusDiv = document.getElementById( "hero-information-status" );
-    statusDiv.innerHTML = calcHeroInformationStatusString( hero );
-
-    let dibsDiv = document.getElementById( "hero-information-dibs" );
-    dibsDiv.innerHTML = calcHeroInformationDibsString( hero );
-
-    let vetoDiv = document.getElementById( "hero-information-veto" );
-    vetoDiv.innerHTML = calcHeroInformationVetoString( hero ); 
+    updateHeroInformationStatus( hero );
+    updateHeroInformationDibs( hero );
+    updateHeroInformationVeto( hero );
 };
 mouseLeaveHero(); // Initialize to empty state
 

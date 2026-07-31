@@ -567,3 +567,48 @@ body:has( #int:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
 body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-information-name {
     color: red;
 }
+
+#hero-information-status-banned,
+#hero-information-status-picked {
+    display: none;
+    margin-top: 8px;
+}
+
+#hero-information-status.banned #hero-information-status-banned {
+    display: block;
+}
+
+#hero-information-status.picked #hero-information-status-picked {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#hero-information-status-banned {
+    font-weight: bold;
+}
+
+#hero-information-status-picked-label {
+    font-weight: bold;
+}
+
+#hero-information-dibs-label,
+#hero-information-veto-label {
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+#hero-information-dibs.empty,
+#hero-information-veto.empty {
+    display: none;
+}
+
+.hero-information-player-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hero-information-player-entry-icon {
+    height: 12px;
+}
