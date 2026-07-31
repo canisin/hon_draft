@@ -308,10 +308,8 @@ function setTeamStatus( state, team )
 
 function setStatToggles( state )
 {
-    for ( let stat in state.stats )
+    for ( let [ stat, is_enabled ] of Object.entries( state.stats ) )
     {
-        let is_enabled = state.stats[ stat ];
-
         let checkbox = document.getElementById( `${ stat }-checkbox` );
         checkbox.checked = is_enabled;
 
@@ -624,14 +622,14 @@ function updatePlayer( player )
 
 function findHeroIndex( hero )
 {
-    for ( let stat in heroes )
+    for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
         if ( !state.stats[ stat ] )
         {
             continue;
         }
 
-        let index = heroes[ stat ].findIndex( ( h ) => h.name == hero );
+        let index = pool.findIndex( ( h ) => h.name == hero );
         if ( index < 0 )
         {
             continue;
@@ -651,9 +649,9 @@ function findHero( hero )
 
 function findPlayer( player )
 {
-    for ( let team in teams )
+    for ( let [ team, slots ] of Object.entries( teams ) )
     {
-        let index = teams[ team ].findIndex( ( p ) => p == player );
+        let index = slots.findIndex( ( p ) => p == player );
         if ( index < 0 )
         {
             continue;
@@ -679,11 +677,11 @@ function onUpdateHeroes( new_heroes )
 {
     console.log( "updating heroes" );
     heroes = new_heroes;
-    for ( let stat in heroes )
+    for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
-        for ( let index = 0; index < heroes[ stat ].length; ++index )
+        for ( let [ index, hero ] of pool.entries() )
         {
-            updateHero( stat, index, heroes[ stat ][ index ] );
+            updateHero( stat, index, hero );
         }
     }
 };
@@ -714,9 +712,8 @@ function onUpdatePlayers( new_players )
 
     let playerList = document.getElementById( "players-list" );
     playerList.innerHTML = "";
-    for ( let player in players )
+    for ( let player of Object.values( players ) )
     {
-        player = players[ player ]
         playerList.innerHTML += `
             <div class="players-list-item" id="${ player.id }">
                 <img class="players-list-icon"/>
@@ -733,11 +730,10 @@ let teams = null;
 function onUpdateTeams( new_teams )
 {
     teams = new_teams;
-    for ( let team in teams )
+    for ( let [ team, slots ] of Object.entries( teams ) )
     {
-        for ( let index = 0; index < teams[ team ].length; ++index )
+        for ( let [ index, player ] of slots.entries() )
         {
-            let player = teams[ team ][ index ];
             updateSlot( team, index, player ? players[ player ] : null );
         }
     }
