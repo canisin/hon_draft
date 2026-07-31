@@ -540,7 +540,7 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    font-size: 32px;
+    font-size: 64px;
     font-weight: bolder;
     color: red;
     text-shadow: 0.05em 0 white, 0 0.05em white, -0.05em 0 white, 0 -0.05em white, 0.05em 0.05em white, 0.05em -0.05em white, -0.05em 0.05em white, -0.05em -0.05em white;
