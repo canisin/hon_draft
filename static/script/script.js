@@ -59,6 +59,7 @@ function createPlayerEntry( player, classPrefix )
 {
     let entry = document.createElement( "div" );
     entry.className = classPrefix;
+    entry.classList.add( `team-${ player.team }` );
 
     let icon = document.createElement( "img" );
     icon.className = `${ classPrefix }-icon`;
@@ -68,7 +69,6 @@ function createPlayerEntry( player, classPrefix )
     let name = document.createElement( "span" );
     name.className = `${ classPrefix }-name`;
     name.textContent = player.name;
-    name.style.color = getTeamColor( player.team );
     entry.appendChild( name );
 
     return entry;
@@ -76,8 +76,8 @@ function createPlayerEntry( player, classPrefix )
 
 function updateHeroInformationStatus( hero )
 {
-    let statusDiv = document.getElementById( "hero-information-status" );
-    statusDiv.classList.remove( "banned", "picked" );
+    let heroInformation = document.getElementById( "hero-information" );
+    heroInformation.classList.remove( "banned", "picked" );
 
     if ( !hero )
     {
@@ -86,7 +86,7 @@ function updateHeroInformationStatus( hero )
 
     if ( hero.is_banned )
     {
-        statusDiv.classList.add( "banned" );
+        heroInformation.classList.add( "banned" );
         return;
     }
 
@@ -97,7 +97,7 @@ function updateHeroInformationStatus( hero )
 
     if ( hero.is_picked )
     {
-        statusDiv.classList.add( "picked" );
+        heroInformation.classList.add( "picked" );
         let picker = document.getElementById( "hero-information-status-picker" );
         let player = Object.values( players ).find( p => p.hero == hero.name );
         picker.replaceChildren( createPlayerEntry( player, "hero-information-player-entry" ) );
@@ -197,8 +197,6 @@ function updateHoveredHero()
 
     let heroIcon = document.getElementById( "hero-information-icon" );
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    let bannedIcon = document.getElementById( "hero-information-icon-banned" );
-    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = document.getElementById( "hero-information-veto-count" );
     vetoCount.textContent = calcVetoCountString( hero );
 
@@ -309,33 +307,30 @@ function setFirstBan( state )
 function setTeamStatus( state, team )
 {
     let teamDiv = document.getElementById( team );
+    teamDiv.classList.remove( "banning", "picking" );
     let arrows = teamDiv.getElementsByClassName( "team-status-arrow" );
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
     if ( state.state == "banning" && team == state.active_team )
     {
+        teamDiv.classList.add( "banning" );
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
         title.textContent = "Banning";
-        title.style.color = "red";
         subtitle.textContent = "";
-        subtitle.style.color = "";
     }
     else if ( state.state == "picking" && team == state.active_team )
     {
+        teamDiv.classList.add( "picking" );
         Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
         title.textContent = "Picking";
-        title.style.color = "green";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
-        subtitle.style.color = "green";
     }
     else
     {
         Array.from( arrows ).forEach( arrow => arrow.src = "" );
         title.textContent = "";
-        title.style.color = "";
         subtitle.textContent = "";
-        subtitle.style.color = "";
     }
 };
 
@@ -347,31 +342,16 @@ function setStatToggles( state )
         checkbox.checked = is_enabled;
 
         let statDiv = document.getElementById( stat );
-        let label = statDiv.getElementsByClassName( "stat-header-name" )[ 0 ];
-        label.style.textDecoration = is_enabled ? "" : "line-through";
+        statDiv.classList.toggle( "disabled", !is_enabled );
     }
 };
 
 function setHeroButtons( state )
 {
-    let banButtons = Array.from( document.getElementsByClassName( "ban-hero-button" ) );
-    let pickButtons = Array.from( document.getElementsByClassName( "pick-hero-button" ) );
-
-    if ( state.state == "banning" && state.active_team == client_team )
-    {
-        banButtons.forEach( banButton => banButton.style.display = "" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
-    }
-    else if ( state.state == "picking" && state.active_team == client_team )
-    {
-        banButtons.forEach( banButton => banButton.style.display = "none" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "" );
-    }
-    else
-    {
-        banButtons.forEach( banButton => banButton.style.display = "none" );
-        pickButtons.forEach( pickButton => pickButton.style.display = "none" );
-    }
+    let canBan = state.state == "banning" && state.active_team == client_team;
+    let canPick = state.state == "picking" && state.active_team == client_team;
+    document.body.classList.toggle( "client-can-ban", canBan );
+    document.body.classList.toggle( "client-can-pick", canPick );
 };
 
 let client_id = null;
@@ -388,11 +368,11 @@ function onUpdateState( new_state )
     console.log( "changing state" );
     state = new_state;
 
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
+    document.body.classList.add( `state-${ state.state }` );
+
     let stateLabel = document.getElementById( "state" );
     stateLabel.textContent = state.state_label;
-
-    let countdownLabel = document.getElementById( "countdown" );
-    countdownLabel.style.visibility = ( state.state == "lobby" || state.state == "results" ) ? "hidden" : "visible";
 
     let startDraftButton = document.getElementById( "start-draft-button" );
     startDraftButton.disabled = state.state != "lobby";
@@ -519,14 +499,13 @@ function calcVetoCountString( hero )
 function updateHero( stat, index, hero )
 {
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
+    heroDiv.classList.toggle( "banned", hero && hero.is_banned );
+    heroDiv.classList.toggle( "picked", hero && hero.is_picked );
     let heroName = heroDiv.getElementsByClassName( "hero-name" )[ 0 ];
     heroName.textContent = hero ? hero.name : "";
     setFontSizeToFit( heroName );
     let heroIcon = heroDiv.getElementsByClassName( "hero-icon" )[ 0 ];
     heroIcon.src = `/static/images/${ hero ? hero.path : "hero-none" }.png`;
-    heroIcon.style.filter = hero && hero.is_picked ? "grayscale( 1 )" : "";
-    let bannedIcon = heroDiv.getElementsByClassName( "hero-icon-banned" )[ 0 ];
-    bannedIcon.style.visibility = hero && hero.is_banned ? "visible" : "hidden";
     let vetoCount = heroDiv.getElementsByClassName( "hero-veto-count" )[ 0 ];
     vetoCount.textContent = calcVetoCountString( hero );
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
@@ -569,48 +548,32 @@ function updateSlot( team, index, player )
     let heroName = slotDiv.getElementsByClassName( "slot-hero-name" )[ 0 ];
     let heroIcon = slotDiv.getElementsByClassName( "slot-hero-icon" )[ 0 ];
 
+    let isDibs = player && !player.hero && player.dibs && shouldShowDibs( team );
+    slotDiv.classList.toggle( "dibs", isDibs );
+
     if ( !player )
     {
         heroName.textContent = "";
         heroIcon.src = `/static/images/slot-${ team }.png`;
-        heroIcon.style.filter = "";
     }
     else if ( player.hero )
     {
         let hero = findHero( player.hero );
         heroName.textContent = hero.name;
         heroIcon.src = `/static/images/${ hero.path }.png`;
-        heroIcon.style.filter = "";
     }
-    else if ( player.dibs && shouldShowDibs( team ) )
+    else if ( isDibs )
     {
         let dibs = findHero( player.dibs );
         heroName.textContent = dibs.name;
         heroIcon.src = `/static/images/${ dibs.path }.png`;
-        heroIcon.style.filter = "grayscale( 1 )";
     }
     else
     {
         heroName.textContent = "None";
         heroIcon.src = `/static/images/hero-none.png`;
-        heroIcon.style.filter = "";
     }
 };
-
-// TODO: This should be doable via css
-// TODO: Colors should also be removed from python code
-function getTeamColor( team )
-{
-    switch ( team )
-    {
-        case "legion":
-            return "green";
-        case "hellbourne":
-            return "red";
-        case "observers":
-            return "blue";
-    }
-}
 
 function getTeamIcon( team )
 {
@@ -638,9 +601,11 @@ function updatePlayer( player )
         playerDiv.classList.remove( "client-player" );
     }
 
+    playerDiv.classList.remove( ...Array.from( playerDiv.classList ).filter( cls => cls.startsWith( "team-" ) ) );
+    playerDiv.classList.add( `team-${ player.team }` );
+
     let playerName = playerDiv.getElementsByClassName( "players-list-entry-name" )[ 0 ];
     playerName.textContent = player.name;
-    playerName.style.color = getTeamColor( player.team );
     let playerIcon = playerDiv.getElementsByClassName( "players-list-entry-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
 
