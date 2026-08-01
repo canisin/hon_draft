@@ -12,7 +12,7 @@ class Player:
         self.session_id = None
         self.hero = None
         self.dibs = None
-        self.veto = []
+        self.veto = {}
         self.team = teams.observers
         self.is_disconnected = False
 
@@ -62,18 +62,20 @@ class Player:
             team = self.team )
 
     def toggle_veto( self, hero ):
-        is_veto = hero not in self.veto
-        if is_veto:
-            self.veto.append( hero )
+        if draft.veto_count == 0: return
+
+        count = self.veto.get( hero, 0 ) + 1
+        if count <= draft.veto_count:
+            self.veto[ hero ] = count
+            if count == 1:
+                messages.emit_message( f"{ self.get_formatted_name() } adds a vote for { hero.name } to be banned.", team = self.team )
+            else:
+                messages.emit_message( f"{ self.get_formatted_name() } now has { count } votes for { hero.name } to be banned.", team = self.team )
         else:
-            self.veto.remove( hero )
+            self.veto.pop( hero )
+            messages.emit_message( f"{ self.get_formatted_name() } no longer wants { hero.name } to be banned.", team = self.team )
         messages.emit_update_hero( hero )
         messages.emit_update_player( self )
-        messages.emit_message(
-            f"{ self.get_formatted_name() } wants { hero.name } to be banned."
-            if is_veto else
-            f"{ self.get_formatted_name() } no longer wants { hero.name } to be banned.",
-            team = self.team )
 
     def check_dibs( self, hero ):
         if self.dibs is hero:
@@ -82,12 +84,12 @@ class Player:
         
     def check_veto( self, hero ):
         if hero in self.veto:
-            self.veto.remove( hero )
+            del self.veto[ hero ]
             messages.emit_update_player( self )
 
     def clear_veto( self ):
         veto = self.veto
-        self.veto = []
+        self.veto = {}
         for hero in veto:
             messages.emit_update_hero( hero )
         messages.emit_update_player( self )
@@ -95,7 +97,7 @@ class Player:
     def reset( self ):
         self.hero = None
         self.dibs = None
-        self.veto = []
+        self.veto = {}
         messages.emit_update_player( self )
 
     def update_client_team( self ):
@@ -110,7 +112,7 @@ class Player:
             "team": self.team.name,
             "hero": self.hero.name if self.hero else None,
             "dibs": self.dibs.name if self.dibs else None,
-            "veto": [ hero.name for hero in self.veto ],
+            "veto": { hero.name: count for hero, count in self.veto.items() },
         }
 
     def get_formatted_name( self ):

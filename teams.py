@@ -46,9 +46,9 @@ class Team:
         veto_counts = {}
         for player in self.players:
             if player is None: continue
-            for hero in player.veto:
+            for hero, veto_count in player.veto.items():
                 veto_counts.setdefault( hero, 0 )
-                veto_counts[ hero ] += 1
+                veto_counts[ hero ] += veto_count
         if veto_counts:
             max_count = max( veto_counts.values() )
             max_count_heroes = [ hero for hero, count in veto_counts.items() if count == max_count ]
