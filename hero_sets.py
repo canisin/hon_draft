@@ -179,6 +179,7 @@ reborn = {
         ( "Slither", "slither" ),
         ( "Soulstealer", "soulstealer" ),
         ( "Swiftblade", "swiftblade" ),
+        ( "Tarot", "tarot" ),
         ( "Valkyrie", "valkyrie" ),
         ( "Zephyr", "zephyr" ),
     ],
