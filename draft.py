@@ -20,9 +20,10 @@ picking_duration = int( getenv( "PICKING_DURATION" ) or 30 )
 team_size = 3
 pool_size = 8
 
-ban_count = 4
-initial_pick_count = 1
-later_pick_count = 2
+ban_count = int( getenv( "BAN_COUNT" ) or 4 )
+veto_count = int( getenv( "VETO_COUNT" ) or 2 )
+initial_pick_count = int( getenv( "INITIAL_PICK_COUNT" ) or 1 )
+later_pick_count = int( getenv( "LATER_PICK_COUNT" ) or 2 )
 
 fate_formatted = "<span style=\"color:orange\">Fate</span>"
 
@@ -233,7 +234,7 @@ def ban_hero( player, hero, is_veto = False ):
     if player:
         messages.emit_message( f"{ player.get_formatted_name() } has banned { hero.name }." )
     elif is_veto:
-        messages.emit_message( f"{ hero.name } was banned based on veto votes." )
+        messages.emit_message( f"{ hero.name } was banned based on votes." )
     else:
         messages.emit_message( f"{ fate_formatted } has banned { hero.name }." )
 

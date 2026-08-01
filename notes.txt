@@ -111,7 +111,7 @@ players = {
 		team = team.name
 		hero = hero.name or None
 		dibs = dibs.name or None
-		veto = [ hero.name .. ]
+		veto = { hero.name = count .. ]
 	} ..
 }
 
@@ -127,8 +127,8 @@ heroes = {
 			stat = stat.name
 			is_banned = yes/no
 			is_picked = yes/no
-			legion_vetos = [ player.id .. ]
-			hellbourne_vetos = [ player.id .. ]
+			legion_vetos = { player.id = count .. }
+			hellbourne_vetos = { player.id = count .. }
 		} or None ..
 	] ..
 }

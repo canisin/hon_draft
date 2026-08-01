@@ -23,7 +23,7 @@ class Hero:
         return not self.is_banned and not self.is_picked
 
     def calc_veto_count( self, team ):
-        return sum( 1 for player in team if self in player.veto )
+        return sum( player.veto.get( self ) or 0 for player in team )
 
     def serialize( self ):
         return {
@@ -32,8 +32,8 @@ class Hero:
             "stat": self.stat.name,
             "is_banned": self.is_banned,
             "is_picked": self.is_picked,
-            "legion_vetos": [ player.id for player in teams.legion.players if player and self in player.veto ],
-            "hellbourne_vetos": [ player.id for player in teams.hellbourne.players if player and self in player.veto ],
+            "legion_vetos": { player.id: player.veto[ self ] for player in teams.legion.players if player and self in player.veto },
+            "hellbourne_vetos": { player.id: player.veto[ self ] for player in teams.hellbourne.players if player and self in player.veto },
         }
 
 class Stat:

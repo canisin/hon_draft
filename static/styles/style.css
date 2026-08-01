@@ -691,3 +691,6 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
 
 .hero-information-player-entry-name {
 }
+
+.hero-information-player-entry-veto-count {
+}

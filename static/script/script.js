@@ -159,9 +159,9 @@ function updateHeroInformationVeto( hero )
             continue;
         }
 
-        for ( let player of hero[ `${ team }_vetos` ] )
+        for ( let [ player, count ] of Object.entries( hero[ `${ team }_vetos` ] ) )
         {
-            vetos.push( players[ player ] );
+            vetos.push( { player: players[ player ], count } );
         }
     }
 
@@ -171,9 +171,17 @@ function updateHeroInformationVeto( hero )
     }
 
     vetoDiv.classList.remove( "empty" );
-    for ( let player of vetos )
+    for ( let { player, count } of vetos )
     {
-        vetoList.appendChild( createPlayerEntry( player, "hero-information-player-entry" ) );
+        let entry = createPlayerEntry( player, "hero-information-player-entry" );
+        if ( count > 1 )
+        {
+            let countSpan = document.createElement( "span" );
+            countSpan.className = "hero-information-player-entry-veto-count";
+            countSpan.textContent = `x ${ count }`;
+            entry.appendChild( countSpan );
+        }
+        vetoList.appendChild( entry );
     }
 };
 
@@ -473,10 +481,12 @@ function calcVetoCountString( hero )
         return "";
     }
 
+    let sumVotes = vetos => Object.values( vetos ).reduce( ( a, b ) => a + b, 0 );
+
     if ( isClientObserver() )
     {
-        let legionVetoCount = hero.legion_vetos.length;
-        let hellbourneVetoCount = hero.hellbourne_vetos.length;
+        let legionVetoCount = sumVotes( hero.legion_vetos );
+        let hellbourneVetoCount = sumVotes( hero.hellbourne_vetos );
         if ( legionVetoCount == 0 && hellbourneVetoCount == 0 )
         {
             return "";
@@ -486,7 +496,7 @@ function calcVetoCountString( hero )
     }
     else
     {
-        let vetoCount = hero[ `${ client_team }_vetos` ].length;
+        let vetoCount = sumVotes( hero[ `${ client_team }_vetos` ] );
         if ( vetoCount == 0 )
         {
             return "";
