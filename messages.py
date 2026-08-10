@@ -21,9 +21,6 @@ def emit_update_client_team( player, **kwargs ):
     kwargs[ "to" ] = player.session_id
     socketio.emit( "update-client-team", player.team.name, **kwargs )
 
-def emit_set_timer( seconds, **kwargs ):
-    socketio.emit( "set-timer", seconds, **kwargs )
-
 def emit_update_hero( hero, **kwargs ):
     socketio.emit( "update-hero", hero.serialize(), **kwargs )
 

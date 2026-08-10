@@ -71,27 +71,36 @@ class Timer:
             if self.state == Timer.State.paused: return self.remaining_interval
             if self.state == Timer.State.running: return self._calc_remaining_interval()
 
-    def pause( self ):
+    def try_pause( self ):
         with self.lock:
-            if self.state == Timer.State.stopped: return    # nothing to pause
-            if self.state == Timer.State.paused: return     # already paused
+            if self.state == Timer.State.stopped: return False      # nothing to pause
+            if self.state == Timer.State.paused: return False       # already paused
             remaining_interval = self._calc_remaining_interval()
             self._clear_timer()
             self.remaining_interval = remaining_interval
             self.state = Timer.State.paused
+            return True
 
-    def resume( self ):
+    def try_resume( self ):
         with self.lock:
-            if self.state == Timer.State.stopped: return    # nothing to resume
-            if self.state == Timer.State.running: return    # already running
+            if self.state == Timer.State.stopped: return False      # nothing to resume
+            if self.state == Timer.State.running: return False      # already running
             self._set_timer( self.remaining_interval )
+            return True
 
-    def extend( self, seconds ):
+    def try_extend( self, seconds ):
         with self.lock:
-            if self.state == Timer.State.stopped: return    # nothing to extend
+            if self.state == Timer.State.stopped: return False      # nothing to extend
             if self.state == Timer.State.running:
                 remaining_interval = self._calc_remaining_interval()
                 self._clear_timer()
                 self._set_timer( remaining_interval + seconds )
             if self.state == Timer.State.paused:
                 self.remaining_interval += seconds
+            return True
+
+    def serialize( self ):
+        with self.lock:
+            if self.state == Timer.State.stopped: return { "state": "stopped", "seconds": 0 }
+            if self.state == Timer.State.running: return { "state": "running", "seconds": self._calc_remaining_interval() }
+            if self.state == Timer.State.paused:  return { "state": "paused",  "seconds": self.remaining_interval }

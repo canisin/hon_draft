@@ -291,6 +291,21 @@ function endDraft()
     socketio.emit( "end-draft" );
 };
 
+function pauseTimer()
+{
+    socketio.emit( "pause-timer" );
+};
+
+function resumeTimer()
+{
+    socketio.emit( "resume-timer" );
+};
+
+function extendTimer()
+{
+    socketio.emit( "extend-timer" );
+};
+
 let messageForm = document.getElementById( "message-form" );
 messageForm.addEventListener( "submit", sendMessage );
 function sendMessage( event )
@@ -411,6 +426,7 @@ function onUpdateState( new_state )
         playAudioWithDelay( startGameAudio );
     }
 
+    setTimer( state );
     setFirstBan( state );
     setTeamStatus( state, "legion" );
     setTeamStatus( state, "hellbourne" );
@@ -434,10 +450,15 @@ function onUpdateClientTeam( team )
 socketio.on( "update-client-team", onUpdateClientTeam );
 
 let timer;
-function onSetTimer( seconds )
+function setTimer( state )
 {
-    console.log( "setting timer" );
+    if ( !state.timer )
+    {
+        return;
+    }
 
+    console.log( "setting timer" );
+    let seconds = state.timer.seconds;
     let countdownLabel = document.getElementById( "countdown" );
 
     let tick = () => {
@@ -460,9 +481,12 @@ function onSetTimer( seconds )
 
     clearInterval( timer );
     tick();
-    timer = setInterval( tick, 1000 );
+
+    if ( state.timer.state == "running" )
+    {
+        timer = setInterval( tick, 1000 );
+    }
 };
-socketio.on( "set-timer", onSetTimer );
 
 function setFontSizeToFit( element )
 {
