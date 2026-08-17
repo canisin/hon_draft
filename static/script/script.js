@@ -458,7 +458,7 @@ function setTimer( state )
     }
 
     console.log( "setting timer" );
-    let seconds = state.timer.seconds;
+    let seconds = Math.ceil( state.timer.seconds );
     let countdownLabel = document.getElementById( "countdown" );
 
     let tick = () => {
