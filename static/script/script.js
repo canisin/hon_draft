@@ -452,10 +452,14 @@ socketio.on( "update-client-team", onUpdateClientTeam );
 let timer;
 function setTimer()
 {
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "timer-" ) ) );
+
     if ( !state.timer )
     {
         return;
     }
+
+    document.body.classList.add( `timer-${ state.timer.state }` );
 
     console.log( "setting timer" );
     let seconds = Math.ceil( state.timer.seconds );

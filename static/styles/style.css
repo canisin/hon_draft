@@ -54,6 +54,14 @@ body.state-pool_countdown #countdown-controls {
     padding: 1px 6px;
 }
 
+body:not(.timer-running) #pause-timer-button {
+    display: none;
+}
+
+body:not(.timer-paused) #resume-timer-button {
+    display: none;
+}
+
 .main {
     display: flex;
     justify-content: center;
