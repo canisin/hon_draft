@@ -359,30 +359,30 @@ function setTeamStatus( team )
 
 function setStatToggles()
 {
-    for ( let [ stat, is_enabled ] of Object.entries( state.stats ) )
+    for ( let [ stat, isEnabled ] of Object.entries( state.stats ) )
     {
         let checkbox = document.getElementById( `${ stat }-checkbox` );
-        checkbox.checked = is_enabled;
+        checkbox.checked = isEnabled;
 
         let statDiv = document.getElementById( stat );
-        statDiv.classList.toggle( "disabled", !is_enabled );
+        statDiv.classList.toggle( "disabled", !isEnabled );
     }
 };
 
 function setHeroButtons()
 {
-    let canBan = state.state == "banning" && state.active_team == client_team;
-    let canPick = state.state == "picking" && state.active_team == client_team;
+    let canBan = state.state == "banning" && state.active_team == clientTeam;
+    let canPick = state.state == "picking" && state.active_team == clientTeam;
     document.body.classList.toggle( "client-can-ban", canBan );
     document.body.classList.toggle( "client-can-pick", canPick );
 };
 
-let client_id = null;
-let client_team = null;
+let clientId = null;
+let clientTeam = null;
 
 function isClientObserver()
 {
-    return client_team == "observers";
+    return clientTeam == "observers";
 };
 
 function checkAnnouncer( previousState )
@@ -392,7 +392,7 @@ function checkAnnouncer( previousState )
 
     let stateHasChanged = !isRefresh && state.state != previousState.state;
     let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
-    let clientTeamIsActive = state.active_team == client_team;
+    let clientTeamIsActive = state.active_team == clientTeam;
 
     // start draft and result announcements are only played if the client sees the state transition
     let shouldPlayTransition = stateHasChanged;
@@ -456,14 +456,14 @@ socketio.on( "update-state", onUpdateState );
 function onUpdateClientId( id )
 {
     console.log( "updating client id" );
-    client_id = id;
+    clientId = id;
 };
 socketio.on( "update-client-id", onUpdateClientId );
 
 function onUpdateClientTeam( team )
 {
     console.log( "updating client team" );
-    client_team = team;
+    clientTeam = team;
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 
@@ -542,7 +542,7 @@ function calcVetoCountString( hero )
     }
     else
     {
-        let vetoCount = sumVotes( hero[ `${ client_team }_vetos` ] );
+        let vetoCount = sumVotes( hero[ `${ clientTeam }_vetos` ] );
         if ( vetoCount == 0 )
         {
             return "";
@@ -573,7 +573,7 @@ function updateHero( stat, index, hero )
 
 function shouldShowDibs( team )
 {
-    return isClientObserver() || team == client_team;
+    return isClientObserver() || team == clientTeam;
 };
 
 function updateSlot( team, index, player )
@@ -588,7 +588,7 @@ function updateSlot( team, index, player )
         slotDiv.classList.remove( "empty-slot" );
     }
 
-    let isClient = player && player.id == client_id;
+    let isClient = player && player.id == clientId;
     if ( isClient )
     {
         slotDiv.classList.add( "client-slot" );
@@ -647,7 +647,7 @@ function getTeamIcon( team )
 function updatePlayer( player )
 {
     let playerDiv = document.getElementById( player.id );
-    let isClient = player.id == client_id;
+    let isClient = player.id == clientId;
     if ( isClient )
     {
         playerDiv.classList.add( "client-player" );
@@ -727,10 +727,10 @@ function onUpdateHero( hero )
 socketio.on( "update-hero", onUpdateHero );
 
 let heroes = null;
-function onUpdateHeroes( new_heroes )
+function onUpdateHeroes( newHeroes )
 {
     console.log( "updating heroes" );
-    heroes = new_heroes;
+    heroes = newHeroes;
     for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
         for ( let [ index, hero ] of pool.entries() )
@@ -759,10 +759,10 @@ function onUpdatePlayer( player )
 socketio.on( "update-player", onUpdatePlayer );
 
 let players = null;
-function onUpdatePlayers( new_players )
+function onUpdatePlayers( newPlayers )
 {
     console.log( "updating all players" );
-    players = new_players;
+    players = newPlayers;
 
     let playerList = document.getElementById( "players-list" );
     playerList.replaceChildren();
@@ -778,10 +778,10 @@ function onUpdatePlayers( new_players )
 socketio.on( "update-players", onUpdatePlayers );
 
 let teams = null;
-function onUpdateTeams( new_teams )
+function onUpdateTeams( newTeams )
 {
     console.log( "updating teams" );
-    teams = new_teams;
+    teams = newTeams;
     for ( let [ team, slots ] of Object.entries( teams ) )
     {
         for ( let [ index, player ] of slots.entries() )
