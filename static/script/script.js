@@ -371,8 +371,8 @@ function setStatToggles()
 
 function setHeroButtons()
 {
-    let canBan = state.state == "banning" && state.active_team == clientTeam;
-    let canPick = state.state == "picking" && state.active_team == clientTeam;
+    let canBan = state.state == "banning" && isClientTeamActive();
+    let canPick = state.state == "picking" && isClientTeamActive();
     document.body.classList.toggle( "client-can-ban", canBan );
     document.body.classList.toggle( "client-can-pick", canPick );
 };
@@ -385,6 +385,11 @@ function isClientObserver()
     return clientTeam == "observers";
 };
 
+function isClientTeamActive()
+{
+    return clientTeam == state.active_team;
+};
+
 function checkAnnouncer( previousState )
 {
     // if the previous state was null, then the client is just loading in or refreshing the page
@@ -392,13 +397,12 @@ function checkAnnouncer( previousState )
 
     let stateHasChanged = !isRefresh && state.state != previousState.state;
     let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
-    let clientTeamIsActive = state.active_team == clientTeam;
 
     // start draft and result announcements are only played if the client sees the state transition
     let shouldPlayTransition = stateHasChanged;
 
     // active team announcements are played on refresh and turn changes
-    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && clientTeamIsActive;
+    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && isClientTeamActive();
 
     if ( shouldPlayTransition && state.state == "banning_countdown" )
     {
