@@ -362,14 +362,6 @@ function setStatToggles()
     }
 };
 
-function setHeroButtons()
-{
-    let canBan = state.state == "banning" && isClientTeamActive();
-    let canPick = state.state == "picking" && isClientTeamActive();
-    document.body.classList.toggle( "client-can-ban", canBan );
-    document.body.classList.toggle( "client-can-pick", canPick );
-};
-
 let clientId = null;
 let clientTeam = null;
 
@@ -380,7 +372,7 @@ function isClientObserver()
 
 function isClientTeamActive()
 {
-    return clientTeam == state.active_team;
+    return state && clientTeam == state.active_team;
 };
 
 function checkAnnouncer( previousState )
@@ -434,6 +426,8 @@ function onUpdateState( newState )
         document.body.classList.add( `active-team-${ state.active_team }` );
     }
 
+    document.body.classList.toggle( "client-team-active", isClientTeamActive() );
+
     let stateLabel = document.getElementById( "state" );
     stateLabel.textContent = state.state_label;
 
@@ -451,7 +445,6 @@ function onUpdateState( newState )
     setTeamStatus( "legion" );
     setTeamStatus( "hellbourne" );
     setStatToggles();
-    setHeroButtons();
     checkAnnouncer( previousState );
 };
 socketio.on( "update-state", onUpdateState );
@@ -467,6 +460,7 @@ function onUpdateClientTeam( team )
 {
     console.log( "updating client team" );
     clientTeam = team;
+    document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 

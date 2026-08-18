@@ -453,11 +453,11 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
     font-size: 10px;
 }
 
-body.client-can-ban .ban-hero-button {
+body.state-banning.client-team-active .ban-hero-button {
     display: block;
 }
 
-body.client-can-pick .pick-hero-button {
+body.state-picking.client-team-active .pick-hero-button {
     display: block;
 }
 
