@@ -385,11 +385,48 @@ function isClientObserver()
     return client_team == "observers";
 };
 
+function checkAnnouncer( previousState )
+{
+    // if the previous state was null, then the client is just loading in or refreshing the page
+    let isRefresh = !previousState;
+
+    let stateHasChanged = !isRefresh && state.state != previousState.state;
+    let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
+    let clientTeamIsActive = state.active_team == client_team;
+
+    // start draft and result announcements are only played if the client sees the state transition
+    let shouldPlayTransition = stateHasChanged;
+
+    // active team announcements are played on refresh and turn changes
+    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && clientTeamIsActive;
+
+    if ( shouldPlayTransition && state.state == "banning_countdown" )
+    {
+        playAudio( startDraftAudio );
+    }
+
+    if ( shouldPlayActiveState && state.state == "banning" )
+    {
+        playAudioWithDelay( banHeroAudio );
+    }
+
+    if ( shouldPlayActiveState && state.state == "picking" )
+    {
+        playAudioWithDelay( pickHeroAudio );
+    }
+
+    if ( shouldPlayTransition && state.state == "results" )
+    {
+        playAudioWithDelay( startGameAudio );
+    }
+};
+
 let state = null;
-function onUpdateState( new_state )
+function onUpdateState( newState )
 {
     console.log( "changing state" );
-    state = new_state;
+    let previousState = state;
+    state = newState;
 
     document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
     document.body.classList.add( `state-${ state.state }` );
@@ -406,32 +443,13 @@ function onUpdateState( new_state )
     let endDraftButton = document.getElementById( "end-draft-button" );
     endDraftButton.disabled = state.state != "results";
 
-    if ( state.state == "banning_countdown" )
-    {
-        playAudio( startDraftAudio );
-    }
-
-    if ( state.state == "banning" && state.active_team == client_team )
-    {
-        playAudioWithDelay( banHeroAudio );
-    }
-
-    if ( state.state == "picking" && state.active_team == client_team )
-    {
-        playAudioWithDelay( pickHeroAudio );
-    }
-
-    if ( state.state == "results" )
-    {
-        playAudioWithDelay( startGameAudio );
-    }
-
     setTimer();
     setFirstBan();
     setTeamStatus( "legion" );
     setTeamStatus( "hellbourne" );
     setStatToggles();
     setHeroButtons();
+    checkAnnouncer( previousState );
 };
 socketio.on( "update-state", onUpdateState );
 
