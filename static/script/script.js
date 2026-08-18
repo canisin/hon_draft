@@ -330,28 +330,21 @@ function setFirstBan()
 function setTeamStatus( team )
 {
     let teamDiv = document.getElementById( team );
-    teamDiv.classList.remove( "banning", "picking" );
-    let arrows = teamDiv.getElementsByClassName( "team-status-arrow" );
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
     if ( state.state == "banning" && team == state.active_team )
     {
-        teamDiv.classList.add( "banning" );
-        Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
         title.textContent = "Banning";
         subtitle.textContent = "";
     }
     else if ( state.state == "picking" && team == state.active_team )
     {
-        teamDiv.classList.add( "picking" );
-        Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
         title.textContent = "Picking";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
     }
     else
     {
-        Array.from( arrows ).forEach( arrow => arrow.src = "" );
         title.textContent = "";
         subtitle.textContent = "";
     }
@@ -434,6 +427,12 @@ function onUpdateState( newState )
 
     document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
     document.body.classList.add( `state-${ state.state }` );
+
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "active-team-" ) ) );
+    if ( state.active_team )
+    {
+        document.body.classList.add( `active-team-${ state.active_team }` );
+    }
 
     let stateLabel = document.getElementById( "state" );
     stateLabel.textContent = state.state_label;

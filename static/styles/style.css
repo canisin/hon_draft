@@ -206,6 +206,16 @@ body:not(.timer-paused) #resume-timer-button {
     padding-top: 1px;
 }
 
+body.state-banning.active-team-legion #legion .team-status-arrow,
+body.state-banning.active-team-hellbourne #hellbourne .team-status-arrow {
+    content: url( "/static/images/arrow-red.png" );
+}
+
+body.state-picking.active-team-legion #legion .team-status-arrow,
+body.state-picking.active-team-hellbourne #hellbourne .team-status-arrow {
+    content: url( "/static/images/arrow-green.png" );
+}
+
 .team-status-label {
     display: inline;
     font-size: 18px;
@@ -215,12 +225,13 @@ body:not(.timer-paused) #resume-timer-button {
     font-size: 10px;
 }
 
-.team.banning .team-status-label {
+body.state-banning.active-team-legion #legion :is( .team-status-label, .team-status-subtitle ),
+body.state-banning.active-team-hellbourne #hellbourne :is( .team-status-label, .team-status-subtitle ) {
     color: red;
 }
 
-.team.picking .team-status-label,
-.team.picking .team-status-subtitle {
+body.state-picking.active-team-legion #legion :is( .team-status-label, .team-status-subtitle ),
+body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .team-status-subtitle ) {
     color: green;
 }
 
