@@ -460,6 +460,8 @@ function onUpdateClientTeam( team )
 {
     console.log( "updating client team" );
     clientTeam = team;
+    document.body.classList.remove( "client-team-legion", "client-team-hellbourne", "client-team-observers" );
+    document.body.classList.add( `client-team-${ team }` );
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 };
 socketio.on( "update-client-team", onUpdateClientTeam );

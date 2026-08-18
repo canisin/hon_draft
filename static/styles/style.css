@@ -131,6 +131,11 @@ body:not(.timer-paused) #resume-timer-button {
     color: red;
 }
 
+body.client-team-legion #legion .team-header-name,
+body.client-team-hellbourne #hellbourne .team-header-name {
+    font-weight: bold;
+}
+
 .first-ban {
     grid-area: 1/1;
     display: flex;
