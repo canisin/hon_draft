@@ -318,7 +318,7 @@ function sendMessage( event )
     input.value = "";
 };
 
-function setFirstBan( state )
+function setFirstBan()
 {
     let legionFirstBan = document.getElementById( "legion-first-ban-checkbox" );
     let hellbourneFirstBan = document.getElementById( "hellbourne-first-ban-checkbox" );
@@ -327,7 +327,7 @@ function setFirstBan( state )
     hellbourneFirstBan.checked = state.first_ban == "hellbourne";
 };
 
-function setTeamStatus( state, team )
+function setTeamStatus( team )
 {
     let teamDiv = document.getElementById( team );
     teamDiv.classList.remove( "banning", "picking" );
@@ -357,7 +357,7 @@ function setTeamStatus( state, team )
     }
 };
 
-function setStatToggles( state )
+function setStatToggles()
 {
     for ( let [ stat, is_enabled ] of Object.entries( state.stats ) )
     {
@@ -369,7 +369,7 @@ function setStatToggles( state )
     }
 };
 
-function setHeroButtons( state )
+function setHeroButtons()
 {
     let canBan = state.state == "banning" && state.active_team == client_team;
     let canPick = state.state == "picking" && state.active_team == client_team;
@@ -426,12 +426,12 @@ function onUpdateState( new_state )
         playAudioWithDelay( startGameAudio );
     }
 
-    setTimer( state );
-    setFirstBan( state );
-    setTeamStatus( state, "legion" );
-    setTeamStatus( state, "hellbourne" );
-    setStatToggles( state );
-    setHeroButtons( state );
+    setTimer();
+    setFirstBan();
+    setTeamStatus( "legion" );
+    setTeamStatus( "hellbourne" );
+    setStatToggles();
+    setHeroButtons();
 };
 socketio.on( "update-state", onUpdateState );
 
@@ -450,7 +450,7 @@ function onUpdateClientTeam( team )
 socketio.on( "update-client-team", onUpdateClientTeam );
 
 let timer;
-function setTimer( state )
+function setTimer()
 {
     if ( !state.timer )
     {
