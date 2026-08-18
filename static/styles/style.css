@@ -45,7 +45,9 @@ body.state-results #countdown-container {
     gap: 5px;
 }
 
-body.state-pool_countdown #countdown-controls {
+body.state-pool_countdown #countdown-controls,
+body.state-banning_countdown #countdown-controls,
+body.state-picking_countdown #countdown-controls {
     visibility: hidden;
 }
 

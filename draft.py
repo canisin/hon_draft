@@ -95,23 +95,24 @@ def set_timer( seconds, callback ):
         timer = utils.Timer( callback )
         timer.start( seconds )
 
+def can_modify_timer():
+    if not timer: return False
+    return state in ( State.banning, State.picking )
+
 def pause_timer( player ):
-    if not timer: return
-    if state == State.pool_countdown: return
+    if not can_modify_timer(): return
     if timer.try_pause():
         messages.emit_update_state()
         messages.emit_message( f"{ player.get_formatted_name() } has paused the timer." )
 
 def resume_timer( player ):
-    if not timer: return
-    if state == State.pool_countdown: return
+    if not can_modify_timer(): return
     if timer.try_resume():
         messages.emit_update_state()
         messages.emit_message( f"{ player.get_formatted_name() } has resumed the timer." )
 
 def extend_timer( player ):
-    if not timer: return
-    if state == State.pool_countdown: return
+    if not can_modify_timer(): return
     if timer.try_extend( timer_extension ):
         messages.emit_update_state()
         messages.emit_message( f"{ player.get_formatted_name() } has extended the timer by { timer_extension } seconds." )
