@@ -14,20 +14,44 @@
 }
 
 #state {
-    font-size: 22px;
+    font-size: 32px;
     color: orange;
     text-transform: uppercase;
     font-weight: bolder;
 }
 
-#countdown {
-    font-size: 14px;
+#countdown-container {
+    position: relative;
+    display: inline-block;
+    width: 320px;
 }
 
-body.state-none #countdown,
-body.state-lobby #countdown,
-body.state-results #countdown {
+body.state-none #countdown-container,
+body.state-lobby #countdown-container,
+body.state-results #countdown-container {
     visibility: hidden;
+}
+
+#countdown {
+    font-size: 22px;
+}
+
+#countdown-controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY( -50% );
+    display: flex;
+    gap: 5px;
+}
+
+body.state-pool_countdown #countdown-controls {
+    visibility: hidden;
+}
+
+#countdown-controls button {
+    font-size: 22px;
+    padding: 1px 6px;
 }
 
 .main {
