@@ -104,18 +104,20 @@
                      onmouseleave="mouseLeaveHero( event, '{{ stat }}', '{{ index }}' )"
                      onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )"
                      oncontextmenu="event.preventDefault()">
-                    <div class="hero-icon-container">
-                        <img class="hero-icon" src="static/images/hero-none.png" />
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" />
-                        <div class="hero-veto-count"></div>
-                    </div>
-                    <div class="hero-controls">
-                        <div class="hero-name-container">
-                            <div class="hero-name"></div>
+                    <div class="hero-visual">
+                        <div class="hero-icon-container">
+                            <img class="hero-icon" src="static/images/hero-none.png" />
+                            <img class="hero-icon-banned" src="/static/images/hero-banned.png" />
+                            <div class="hero-veto-count"></div>
                         </div>
-                        <div class="hero-button-container">
-                            <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
-                            <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
+                        <div class="hero-controls">
+                            <div class="hero-name-container">
+                                <div class="hero-name"></div>
+                            </div>
+                            <div class="hero-button-container">
+                                <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
+                                <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
+                            </div>
                         </div>
                     </div>
                     <audio class="hero-sound" />

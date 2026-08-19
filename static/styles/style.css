@@ -401,8 +401,18 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 }
 
 .hero:hover {
-    transform: scale( 2 );
+    position: relative;
     z-index: 10;
+}
+
+.hero-visual {
+    grid-area: 1/1;
+    display: grid;
+}
+
+.hero:hover .hero-visual {
+    transform: scale( 2 );
+    pointer-events: none;
 }
 
 .hero-icon-container {
@@ -469,6 +479,7 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 .hero-button-container {
     display: none;
     justify-content: center;
+    pointer-events: auto;
 }
 
 .hero:hover .hero-button-container {
@@ -501,15 +512,15 @@ body.state-picking.client-team-active .pick-hero-button {
     font-weight: bold;
 }
 
-#agi .hero {
+#agi .hero-visual {
     border: 5px solid green;
 }
 
-#int .hero {
+#int .hero-visual {
     border: 5px solid blue;
 }
 
-#str .hero {
+#str .hero-visual {
     border: 5px solid red;
 }
 
