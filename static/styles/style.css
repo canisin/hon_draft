@@ -56,6 +56,29 @@ body.state-picking_countdown #countdown-controls {
     padding: 1px 6px;
 }
 
+#countdown-controls .tooltip {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 6px;
+
+    background: darkslategray;
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+#countdown-controls button:hover .tooltip,
+#countdown-controls button:focus-visible .tooltip {
+    display: block;
+}
+
 body:not(.timer-running) #pause-timer-button {
     display: none;
 }

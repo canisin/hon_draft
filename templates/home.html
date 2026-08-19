@@ -5,9 +5,15 @@
     <div id="countdown-container">
         <div id="countdown">0</div>
         <div id="countdown-controls">
-            <button id="pause-timer-button" onClick="pauseTimer()">P</button>
-            <button id="resume-timer-button" onClick="resumeTimer()">R</button>
-            <button id="extend-timer-button" onClick="extendTimer()">E</button>
+            <button id="pause-timer-button" onClick="pauseTimer()">
+                <span class="label">P</span><span class="tooltip">Pause timer</span>
+            </button>
+            <button id="resume-timer-button" onClick="resumeTimer()">
+                <span class="label">R</span><span class="tooltip">Resume timer</span>
+            </button>
+            <button id="extend-timer-button" onClick="extendTimer()">
+                <span class="label">E</span><span class="tooltip">Extend timer by {{ timer_extension }} s</span>
+            </button>
         </div>
     </div>
 </div>
