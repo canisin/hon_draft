@@ -54,6 +54,13 @@ body.state-picking_countdown #countdown-controls {
 
 #countdown-controls button {
     padding: 3px 3px;
+    background: transparent;
+    border: 1px solid orange;
+    border-radius: 4px;
+}
+
+#countdown-controls button:hover {
+    background: color-mix( in srgb, orange 15%, transparent );
 }
 
 #countdown-controls button img {
