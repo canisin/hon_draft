@@ -33,7 +33,7 @@ body.state-results #countdown-container {
 }
 
 #countdown {
-    font-size: 22px;
+    font-size: 32px;
 }
 
 #countdown-controls {
@@ -41,6 +41,7 @@ body.state-results #countdown-container {
     right: 0;
     top: 50%;
     transform: translateY( -50% );
+    margin-top: 10px;
     display: flex;
     gap: 5px;
 }
@@ -52,8 +53,13 @@ body.state-picking_countdown #countdown-controls {
 }
 
 #countdown-controls button {
-    font-size: 22px;
-    padding: 1px 6px;
+    padding: 3px 3px;
+}
+
+#countdown-controls button img {
+    display: block;
+    width: 22px;
+    height: 22px;
 }
 
 #countdown-controls .tooltip {
