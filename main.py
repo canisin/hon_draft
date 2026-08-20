@@ -30,6 +30,7 @@ def home():
     return render_template( "home.html",
         team_size = draft.team_size,
         pool_size = draft.pool_size,
+        timer_extension = draft.timer_extension,
     )
 
 @app.route( "/name", methods = [ "POST" ] )
@@ -84,6 +85,21 @@ def on_cancel_draft():
 def on_end_draft():
     player = players.get( session[ "id" ] )
     draft.end_draft( player )
+
+@socketio.on( "pause-timer" )
+def on_pause_timer():
+    player = players.get( session[ "id" ] )
+    draft.pause_timer( player )
+
+@socketio.on( "resume-timer" )
+def on_resume_timer():
+    player = players.get( session[ "id" ] )
+    draft.resume_timer( player )
+
+@socketio.on( "extend-timer" )
+def on_extend_timer():
+    player = players.get( session[ "id" ] )
+    draft.extend_timer( player )
 
 @socketio.on( "click-slot" )
 def on_click_slot( team, index ):

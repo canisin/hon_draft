@@ -1,13 +1,14 @@
-from threading import Timer
 from os import getenv
 import enum
 from enum import Enum
+import threading
 
 import hero_sets
 import players
 import teams
 import heroes
 import messages
+import utils
 
 hero_set = getenv( "HERO_SET" ) or "reborn"
 hero_set = getattr( hero_sets, hero_set )
@@ -16,6 +17,7 @@ banning_countdown_duration = int( getenv( "BANNING_COUNTDOWN_DURATION" ) or 10 )
 banning_duration = int( getenv( "BANNING_DURATION" ) or 30 )
 picking_countdown_duration = int( getenv( "PICKING_COUNTDOWN_DURATION" ) or 10 )
 picking_duration = int( getenv( "PICKING_DURATION" ) or 30 )
+timer_extension = int( getenv( "TIMER_EXTENSION" ) or 10 )
 
 team_size = 3
 pool_size = 8
@@ -74,13 +76,14 @@ def serialize_state():
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
         "remaining_picks": remaining_picks,
+        "timer": timer.serialize() if timer else None,
     }
 
 def set_state( new_state, seconds, callback ):
     global state
     state = new_state
-    messages.emit_update_state()
     set_timer( seconds, callback )
+    messages.emit_update_state()
 
 def set_timer( seconds, callback ):
     global timer
@@ -89,9 +92,30 @@ def set_timer( seconds, callback ):
     if seconds == 0:
         if callback: callback()
     else:
-        timer = Timer( seconds, callback )
-        timer.start()
-        messages.emit_set_timer( seconds )
+        timer = utils.Timer( callback )
+        timer.start( seconds )
+
+def can_modify_timer():
+    if not timer: return False
+    return state in ( State.banning, State.picking )
+
+def pause_timer( player ):
+    if not can_modify_timer(): return
+    if timer.try_pause():
+        messages.emit_update_state()
+        messages.emit_message( f"{ player.get_formatted_name() } has paused the timer." )
+
+def resume_timer( player ):
+    if not can_modify_timer(): return
+    if timer.try_resume():
+        messages.emit_update_state()
+        messages.emit_message( f"{ player.get_formatted_name() } has resumed the timer." )
+
+def extend_timer( player ):
+    if not can_modify_timer(): return
+    if timer.try_extend( timer_extension ):
+        messages.emit_update_state()
+        messages.emit_message( f"{ player.get_formatted_name() } has extended the timer by { timer_extension } seconds." )
 
 def set_first_ban( player, team ):
     if state != State.lobby:
@@ -149,7 +173,7 @@ def draft_countdown( seconds ):
     if state != State.pool_countdown: return
     if seconds == 0: return
     messages.emit_message( f"Draft starting in { seconds } seconds.." )
-    Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
+    threading.Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
     if state in ( State.lobby, State.results ):
@@ -307,7 +331,7 @@ def pick_hero( player, hero, is_fate = False ):
 def picking_timer_callback():
     for _ in range( remaining_picks ):
         picking_players = active_team.picking_players()
-        assert( picking_players )
+        assert picking_players
         player = next( ( player for player in picking_players if player.dibs ), picking_players[ 0 ] )
         hero = player.dibs if player.dibs else active_team.get_random_pick()
         pick_hero( player, hero, is_fate = not player.dibs )

@@ -2,7 +2,20 @@
 {% block content %}
 <div class="header">
     <div id="state"></div>
-    <div id="countdown">0</div>
+    <div id="countdown-container">
+        <div id="countdown">0</div>
+        <div id="countdown-controls">
+            <button id="pause-timer-button" onClick="pauseTimer()">
+                <img src="/static/images/circle-pause.svg" alt="Pause" /><span class="tooltip">Pause timer</span>
+            </button>
+            <button id="resume-timer-button" onClick="resumeTimer()">
+                <img src="/static/images/circle-play.svg" alt="Resume" /><span class="tooltip">Resume timer</span>
+            </button>
+            <button id="extend-timer-button" onClick="extendTimer()">
+                <img src="/static/images/clock-plus.svg" alt="Extend" /><span class="tooltip">Extend timer by {{ timer_extension }} s</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 {% macro team( name ) %}
@@ -91,18 +104,20 @@
                      onmouseleave="mouseLeaveHero( event, '{{ stat }}', '{{ index }}' )"
                      onauxclick="auxClickHero( event, '{{ stat }}', {{ index }} )"
                      oncontextmenu="event.preventDefault()">
-                    <div class="hero-icon-container">
-                        <img class="hero-icon" src="static/images/hero-none.png" />
-                        <img class="hero-icon-banned" src="/static/images/hero-banned.png" />
-                        <div class="hero-veto-count"></div>
-                    </div>
-                    <div class="hero-controls">
-                        <div class="hero-name-container">
-                            <div class="hero-name"></div>
+                    <div class="hero-visual">
+                        <div class="hero-icon-container">
+                            <img class="hero-icon" src="static/images/hero-none.png" />
+                            <img class="hero-icon-banned" src="/static/images/hero-banned.png" />
+                            <div class="hero-veto-count"></div>
                         </div>
-                        <div class="hero-button-container">
-                            <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
-                            <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
+                        <div class="hero-controls">
+                            <div class="hero-name-container">
+                                <div class="hero-name"></div>
+                            </div>
+                            <div class="hero-button-container">
+                                <button class="ban-hero-button" onClick="banHero( '{{ stat }}', {{ index }} )">Ban!</button>
+                                <button class="pick-hero-button" onClick="pickHero( '{{ stat }}', {{ index }} )">Pick</button>
+                            </div>
                         </div>
                     </div>
                     <audio class="hero-sound" />

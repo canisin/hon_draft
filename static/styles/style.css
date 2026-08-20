@@ -14,20 +14,90 @@
 }
 
 #state {
-    font-size: 22px;
+    font-size: 32px;
     color: orange;
     text-transform: uppercase;
     font-weight: bolder;
 }
 
-#countdown {
-    font-size: 14px;
+#countdown-container {
+    position: relative;
+    display: inline-block;
+    width: 320px;
 }
 
-body.state-none #countdown,
-body.state-lobby #countdown,
-body.state-results #countdown {
+body.state-none #countdown-container,
+body.state-lobby #countdown-container,
+body.state-results #countdown-container {
     visibility: hidden;
+}
+
+#countdown {
+    font-size: 32px;
+}
+
+#countdown-controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY( -50% );
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+body.state-pool_countdown #countdown-controls,
+body.state-banning_countdown #countdown-controls,
+body.state-picking_countdown #countdown-controls {
+    visibility: hidden;
+}
+
+#countdown-controls button {
+    padding: 3px 3px;
+    background: transparent;
+    border: 1px solid orange;
+    border-radius: 4px;
+}
+
+#countdown-controls button:hover {
+    background: color-mix( in srgb, orange 15%, transparent );
+}
+
+#countdown-controls button img {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+#countdown-controls .tooltip {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 6px;
+
+    background: darkslategray;
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+#countdown-controls button:hover .tooltip,
+#countdown-controls button:focus-visible .tooltip {
+    display: block;
+}
+
+body:not(.timer-running) #pause-timer-button {
+    display: none;
+}
+
+body:not(.timer-paused) #resume-timer-button {
+    display: none;
 }
 
 .main {
@@ -95,6 +165,11 @@ body.state-results #countdown {
 
 #hellbourne .team-header-name {
     color: red;
+}
+
+body.client-team-legion #legion .team-header-name,
+body.client-team-hellbourne #hellbourne .team-header-name {
+    font-weight: bold;
 }
 
 .first-ban {
@@ -172,6 +247,16 @@ body.state-results #countdown {
     padding-top: 1px;
 }
 
+body.state-banning.active-team-legion #legion .team-status-arrow,
+body.state-banning.active-team-hellbourne #hellbourne .team-status-arrow {
+    content: url( "/static/images/arrow-red.png" );
+}
+
+body.state-picking.active-team-legion #legion .team-status-arrow,
+body.state-picking.active-team-hellbourne #hellbourne .team-status-arrow {
+    content: url( "/static/images/arrow-green.png" );
+}
+
 .team-status-label {
     display: inline;
     font-size: 18px;
@@ -181,12 +266,13 @@ body.state-results #countdown {
     font-size: 10px;
 }
 
-.team.banning .team-status-label {
+body.state-banning.active-team-legion #legion :is( .team-status-label, .team-status-subtitle ),
+body.state-banning.active-team-hellbourne #hellbourne :is( .team-status-label, .team-status-subtitle ) {
     color: red;
 }
 
-.team.picking .team-status-label,
-.team.picking .team-status-subtitle {
+body.state-picking.active-team-legion #legion :is( .team-status-label, .team-status-subtitle ),
+body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .team-status-subtitle ) {
     color: green;
 }
 
@@ -328,8 +414,18 @@ body.state-results #countdown {
 }
 
 .hero:hover {
-    transform: scale( 2 );
+    position: relative;
     z-index: 10;
+}
+
+.hero-visual {
+    grid-area: 1/1;
+    display: grid;
+}
+
+.hero:hover .hero-visual {
+    transform: scale( 2 );
+    pointer-events: none;
 }
 
 .hero-icon-container {
@@ -396,6 +492,7 @@ body.state-results #countdown {
 .hero-button-container {
     display: none;
     justify-content: center;
+    pointer-events: auto;
 }
 
 .hero:hover .hero-button-container {
@@ -408,11 +505,11 @@ body.state-results #countdown {
     font-size: 10px;
 }
 
-body.client-can-ban .ban-hero-button {
+body.state-banning.client-team-active .ban-hero-button {
     display: block;
 }
 
-body.client-can-pick .pick-hero-button {
+body.state-picking.client-team-active .pick-hero-button {
     display: block;
 }
 
@@ -428,15 +525,15 @@ body.client-can-pick .pick-hero-button {
     font-weight: bold;
 }
 
-#agi .hero {
+#agi .hero-visual {
     border: 5px solid green;
 }
 
-#int .hero {
+#int .hero-visual {
     border: 5px solid blue;
 }
 
-#str .hero {
+#str .hero-visual {
     border: 5px solid red;
 }
 

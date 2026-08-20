@@ -291,6 +291,21 @@ function endDraft()
     socketio.emit( "end-draft" );
 };
 
+function pauseTimer()
+{
+    socketio.emit( "pause-timer" );
+};
+
+function resumeTimer()
+{
+    socketio.emit( "resume-timer" );
+};
+
+function extendTimer()
+{
+    socketio.emit( "extend-timer" );
+};
+
 let messageForm = document.getElementById( "message-form" );
 messageForm.addEventListener( "submit", sendMessage );
 function sendMessage( event )
@@ -303,7 +318,7 @@ function sendMessage( event )
     input.value = "";
 };
 
-function setFirstBan( state )
+function setFirstBan()
 {
     let legionFirstBan = document.getElementById( "legion-first-ban-checkbox" );
     let hellbourneFirstBan = document.getElementById( "hellbourne-first-ban-checkbox" );
@@ -312,72 +327,106 @@ function setFirstBan( state )
     hellbourneFirstBan.checked = state.first_ban == "hellbourne";
 };
 
-function setTeamStatus( state, team )
+function setTeamStatus( team )
 {
     let teamDiv = document.getElementById( team );
-    teamDiv.classList.remove( "banning", "picking" );
-    let arrows = teamDiv.getElementsByClassName( "team-status-arrow" );
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
     if ( state.state == "banning" && team == state.active_team )
     {
-        teamDiv.classList.add( "banning" );
-        Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-red.png" );
         title.textContent = "Banning";
         subtitle.textContent = "";
     }
     else if ( state.state == "picking" && team == state.active_team )
     {
-        teamDiv.classList.add( "picking" );
-        Array.from( arrows ).forEach( arrow => arrow.src = "/static/images/arrow-green.png" );
         title.textContent = "Picking";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
     }
     else
     {
-        Array.from( arrows ).forEach( arrow => arrow.src = "" );
         title.textContent = "";
         subtitle.textContent = "";
     }
 };
 
-function setStatToggles( state )
+function setStatToggles()
 {
-    for ( let [ stat, is_enabled ] of Object.entries( state.stats ) )
+    for ( let [ stat, isEnabled ] of Object.entries( state.stats ) )
     {
         let checkbox = document.getElementById( `${ stat }-checkbox` );
-        checkbox.checked = is_enabled;
+        checkbox.checked = isEnabled;
 
         let statDiv = document.getElementById( stat );
-        statDiv.classList.toggle( "disabled", !is_enabled );
+        statDiv.classList.toggle( "disabled", !isEnabled );
     }
 };
 
-function setHeroButtons( state )
-{
-    let canBan = state.state == "banning" && state.active_team == client_team;
-    let canPick = state.state == "picking" && state.active_team == client_team;
-    document.body.classList.toggle( "client-can-ban", canBan );
-    document.body.classList.toggle( "client-can-pick", canPick );
-};
-
-let client_id = null;
-let client_team = null;
+let clientId = null;
+let clientTeam = null;
 
 function isClientObserver()
 {
-    return client_team == "observers";
+    return clientTeam == "observers";
+};
+
+function isClientTeamActive()
+{
+    return state && clientTeam == state.active_team;
+};
+
+function checkAnnouncer( previousState )
+{
+    // if the previous state was null, then the client is just loading in or refreshing the page
+    let isRefresh = !previousState;
+
+    let stateHasChanged = !isRefresh && state.state != previousState.state;
+    let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
+
+    // start draft and result announcements are only played if the client sees the state transition
+    let shouldPlayTransition = stateHasChanged;
+
+    // active team announcements are played on refresh and turn changes
+    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && isClientTeamActive();
+
+    if ( shouldPlayTransition && state.state == "banning_countdown" )
+    {
+        playAudio( startDraftAudio );
+    }
+
+    if ( shouldPlayActiveState && state.state == "banning" )
+    {
+        playAudioWithDelay( banHeroAudio );
+    }
+
+    if ( shouldPlayActiveState && state.state == "picking" )
+    {
+        playAudioWithDelay( pickHeroAudio );
+    }
+
+    if ( shouldPlayTransition && state.state == "results" )
+    {
+        playAudioWithDelay( startGameAudio );
+    }
 };
 
 let state = null;
-function onUpdateState( new_state )
+function onUpdateState( newState )
 {
     console.log( "changing state" );
-    state = new_state;
+    let previousState = state;
+    state = newState;
 
     document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
     document.body.classList.add( `state-${ state.state }` );
+
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "active-team-" ) ) );
+    if ( state.active_team )
+    {
+        document.body.classList.add( `active-team-${ state.active_team }` );
+    }
+
+    document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
     let stateLabel = document.getElementById( "state" );
     stateLabel.textContent = state.state_label;
@@ -391,53 +440,46 @@ function onUpdateState( new_state )
     let endDraftButton = document.getElementById( "end-draft-button" );
     endDraftButton.disabled = state.state != "results";
 
-    if ( state.state == "banning_countdown" )
-    {
-        playAudio( startDraftAudio );
-    }
-
-    if ( state.state == "banning" && state.active_team == client_team )
-    {
-        playAudioWithDelay( banHeroAudio );
-    }
-
-    if ( state.state == "picking" && state.active_team == client_team )
-    {
-        playAudioWithDelay( pickHeroAudio );
-    }
-
-    if ( state.state == "results" )
-    {
-        playAudioWithDelay( startGameAudio );
-    }
-
-    setFirstBan( state );
-    setTeamStatus( state, "legion" );
-    setTeamStatus( state, "hellbourne" );
-    setStatToggles( state );
-    setHeroButtons( state );
+    setTimer();
+    setFirstBan();
+    setTeamStatus( "legion" );
+    setTeamStatus( "hellbourne" );
+    setStatToggles();
+    checkAnnouncer( previousState );
 };
 socketio.on( "update-state", onUpdateState );
 
 function onUpdateClientId( id )
 {
     console.log( "updating client id" );
-    client_id = id;
+    clientId = id;
 };
 socketio.on( "update-client-id", onUpdateClientId );
 
 function onUpdateClientTeam( team )
 {
     console.log( "updating client team" );
-    client_team = team;
+    clientTeam = team;
+    document.body.classList.remove( "client-team-legion", "client-team-hellbourne", "client-team-observers" );
+    document.body.classList.add( `client-team-${ team }` );
+    document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 
 let timer;
-function onSetTimer( seconds )
+function setTimer()
 {
-    console.log( "setting timer" );
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "timer-" ) ) );
 
+    if ( !state.timer )
+    {
+        return;
+    }
+
+    document.body.classList.add( `timer-${ state.timer.state }` );
+
+    console.log( "setting timer" );
+    let seconds = Math.ceil( state.timer.seconds );
     let countdownLabel = document.getElementById( "countdown" );
 
     let tick = () => {
@@ -460,9 +502,12 @@ function onSetTimer( seconds )
 
     clearInterval( timer );
     tick();
-    timer = setInterval( tick, 1000 );
+
+    if ( state.timer.state == "running" )
+    {
+        timer = setInterval( tick, 1000 );
+    }
 };
-socketio.on( "set-timer", onSetTimer );
 
 function setFontSizeToFit( element )
 {
@@ -496,7 +541,7 @@ function calcVetoCountString( hero )
     }
     else
     {
-        let vetoCount = sumVotes( hero[ `${ client_team }_vetos` ] );
+        let vetoCount = sumVotes( hero[ `${ clientTeam }_vetos` ] );
         if ( vetoCount == 0 )
         {
             return "";
@@ -527,7 +572,7 @@ function updateHero( stat, index, hero )
 
 function shouldShowDibs( team )
 {
-    return isClientObserver() || team == client_team;
+    return isClientObserver() || team == clientTeam;
 };
 
 function updateSlot( team, index, player )
@@ -542,7 +587,7 @@ function updateSlot( team, index, player )
         slotDiv.classList.remove( "empty-slot" );
     }
 
-    let isClient = player && player.id == client_id;
+    let isClient = player && player.id == clientId;
     if ( isClient )
     {
         slotDiv.classList.add( "client-slot" );
@@ -601,7 +646,7 @@ function getTeamIcon( team )
 function updatePlayer( player )
 {
     let playerDiv = document.getElementById( player.id );
-    let isClient = player.id == client_id;
+    let isClient = player.id == clientId;
     if ( isClient )
     {
         playerDiv.classList.add( "client-player" );
@@ -681,10 +726,10 @@ function onUpdateHero( hero )
 socketio.on( "update-hero", onUpdateHero );
 
 let heroes = null;
-function onUpdateHeroes( new_heroes )
+function onUpdateHeroes( newHeroes )
 {
     console.log( "updating heroes" );
-    heroes = new_heroes;
+    heroes = newHeroes;
     for ( let [ stat, pool ] of Object.entries( heroes ) )
     {
         for ( let [ index, hero ] of pool.entries() )
@@ -713,10 +758,10 @@ function onUpdatePlayer( player )
 socketio.on( "update-player", onUpdatePlayer );
 
 let players = null;
-function onUpdatePlayers( new_players )
+function onUpdatePlayers( newPlayers )
 {
     console.log( "updating all players" );
-    players = new_players;
+    players = newPlayers;
 
     let playerList = document.getElementById( "players-list" );
     playerList.replaceChildren();
@@ -732,10 +777,10 @@ function onUpdatePlayers( new_players )
 socketio.on( "update-players", onUpdatePlayers );
 
 let teams = null;
-function onUpdateTeams( new_teams )
+function onUpdateTeams( newTeams )
 {
     console.log( "updating teams" );
-    teams = new_teams;
+    teams = newTeams;
     for ( let [ team, slots ] of Object.entries( teams ) )
     {
         for ( let [ index, player ] of slots.entries() )
