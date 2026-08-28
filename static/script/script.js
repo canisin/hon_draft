@@ -801,10 +801,17 @@ function getTimestamp()
             + time.getSeconds().toString().padStart( 2, "0" );
 };
 
+function escapeHtml( str )
+{
+    let div = document.createElement( "div" );
+    div.textContent = str;
+    return div.innerHTML;
+};
+
 function formatPlayerName( player, nameOverride = null )
 {
     player = players[ player ];
-    return `<span class="team-${ player.team }">${ nameOverride ?? player.name }</span>`;
+    return `<span class="team-${ player.team }">${ escapeHtml( nameOverride ?? player.name ) }</span>`;
 };
 
 function formatTeamName( team )
@@ -879,7 +886,7 @@ function formatMessage( message )
         case "fate_pick_hero":
             return `<span style=\"color:orange\">Fate</span> has picked ${ formatHeroName( message.hero ) } for ${ formatPlayerName( message.player ) }.`;
         case "message":
-            return `${ formatPlayerName( message.player ) }: ${ message.text }`;
+            return `${ formatPlayerName( message.player ) }: ${ escapeHtml( message.text ) }`;
         case "name_change":
             return `${ formatPlayerName( message.player, message.old_name ) } changed name to ${ formatPlayerName( message.player ) }.`;
         case "change_team_observer":
