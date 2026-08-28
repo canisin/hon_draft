@@ -804,45 +804,18 @@ function getTimestamp()
 function formatPlayerName( player )
 {
     player = players[ player ];
-    return `<span style=\"color: ${ getTeamColor( player.team ) }\">${ player.name }</span>`;
-};
-
-function getTeamColor( team )
-{
-    switch ( team )
-    {
-        case "legion":
-            return "green";
-        case "hellbourne":
-            return "red";
-        case "observers":
-            return "blue";
-    }
+    return `<span class="team-${ player.team }">${ player.name }</span>`;
 };
 
 function formatTeamName( team )
 {
-    // TODO: Capitalize team name, use a span and css style?
-    return `<span style=\"color: ${ getTeamColor( team ) }\">The ${ team }</span>`;
+    return `<span class="team-name team-${ team }">The ${ team }</span>`;
 };
 
 function formatHeroName( hero )
 {
     hero = findHero( hero );
-    return `<span style=\"color: ${ getStatColor( hero.stat ) }\">${ hero.name }</span>`;
-};
-
-function getStatColor( stat )
-{
-    switch ( stat )
-    {
-        case "agi":
-            return "green";
-        case "int":
-            return "blue";
-        case "str":
-            return "red";
-    }
+    return `<span class="stat-${ hero.stat }">${ hero.name }</span>`;
 };
 
 function getStatName( stat )
@@ -860,7 +833,7 @@ function getStatName( stat )
 
 function formatStatName( stat )
 {
-    return `<span style=\"color: ${ getStatColor( stat ) }\">${ getStatName( stat ) }</span>`;
+    return `<span class="stat-name stat-${ stat }">${ getStatName( stat ) }</span>`;
 };
 
 function formatMessage( message )
