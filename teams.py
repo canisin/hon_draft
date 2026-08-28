@@ -5,9 +5,8 @@ import messages
 import random
 
 class Team:
-    def __init__( self, name, color ):
+    def __init__( self, name ):
         self.name = name
-        self.color = color
         self.players = [ None for _ in range( draft.team_size ) ]
 
     def get( self, index ):
@@ -79,13 +78,9 @@ class Team:
     def serialize( self ):
         return [ player.id if player else None for player in self.players ]
 
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.color }\">The { self.name.capitalize() }</span>"
-
 class Observers:
-    def __init__( self, name, color ):
+    def __init__( self, name ):
         self.name = name
-        self.color = color
         self.players = []
 
     def clear( self ):
@@ -100,10 +95,10 @@ class Observers:
         assert player in self.players
         self.players.remove( player )
 
-legion = Team( "legion", "green" )
-hellbourne = Team( "hellbourne", "red" )
+legion = Team( "legion" )
+hellbourne = Team( "hellbourne" )
 teams = [ legion, hellbourne ]
-observers = Observers( "observers", "blue" )
+observers = Observers( "observers" )
 
 def clear():
     legion.clear()

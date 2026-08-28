@@ -107,9 +107,6 @@ class Player:
             "veto": { hero.name: count for hero, count in self.veto.items() },
         }
 
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
-
 players = []
 
 def reset():

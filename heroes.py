@@ -37,10 +37,8 @@ class Hero:
         }
 
 class Stat:
-    def __init__( self, name, full_name, color ):
+    def __init__( self, name ):
         self.name = name
-        self.full_name = full_name
-        self.color = color
         self.is_enabled = True
         self.pool = [ None for _ in range( draft.pool_size ) ]
 
@@ -69,12 +67,9 @@ class Stat:
     def serialize( self ):
         return [ hero.serialize() if hero else None for hero in self.pool ]
 
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.color }\">{ self.full_name.capitalize() }</span>"
-
-agi = Stat( "agi", "agility", "green" )
-int = Stat( "int", "intelligence", "blue" )
-str = Stat( "str", "strength", "red" )
+agi = Stat( "agi" )
+int = Stat( "int" )
+str = Stat( "str" )
 stats = [ agi, int, str ]
 stats_dict = { stat.name: stat for stat in stats }
 
