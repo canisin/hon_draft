@@ -2,6 +2,7 @@
 #   key: template
 #   @field: message field
 #   #key: key substitution
+#   #@field: dynamic key substitution where key is a message field
 #   [[ expr ]]: javascript invocation, @field can still be used
 
 welcome:                    Welcome to HoNDraft! [.@revision-@sha]
@@ -11,10 +12,14 @@ unrecognized_command:       <span style="color: red">Unrecognized command</span>
 server_reset:               <span style="color: red">#player has reset the server, please refresh the page.</span>
 missing_key:                <span style="color: red">Unknown message key: @missing_key</span>
 
-player: 					[[formatPlayerName( @player )]]
-hero:						[[formatHeroName( @hero )]]
-team:						[[formatTeamName( @team )]]
-stat:						[[formatStatName( @stat )]]
+player:                     <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( players[ @player ].name ) ]]</span>
+name_change:                <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( @old_name ) ]]</span> changed name to #player.
+hero:                       <span class="stat-[[ findHero( @hero ).stat ]]">[[ findHero( @hero ).name ]]</span>
+team:                       <span class="team-name team-[[ @team ]]">The [[ @team ]]</span>
+agi:                        agility
+int:                        intelligence
+str:                        strength
+stat:                       <span class="stat-name stat-@stat">#@stat</span>
 
 pause_timer:                #player has paused the timer.
 resume_timer:               #player has resumed the timer.
@@ -42,7 +47,6 @@ set_veto_count:             #player now has @count votes for #hero to be banned.
 remove_veto:                #player no longer wants #hero to be banned.
 
 message:                    #player: [[escapeHtml( @text )]]
-name_change:                [[formatPlayerName( @player, @old_name )]] changed name to #player.
 change_team:                #player has joined #team.
 change_team_observer:       #player is now an observer.
 player_joined:              #player joined.

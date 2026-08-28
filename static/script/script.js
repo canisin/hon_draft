@@ -808,41 +808,6 @@ function escapeHtml( str )
     return div.innerHTML;
 };
 
-function formatPlayerName( player, nameOverride = null )
-{
-    player = players[ player ];
-    return `<span class="team-${ player.team }">${ escapeHtml( nameOverride ?? player.name ) }</span>`;
-};
-
-function formatTeamName( team )
-{
-    return `<span class="team-name team-${ team }">The ${ team }</span>`;
-};
-
-function formatHeroName( hero )
-{
-    hero = findHero( hero );
-    return `<span class="stat-${ hero.stat }">${ hero.name }</span>`;
-};
-
-function getStatName( stat )
-{
-    switch ( stat )
-    {
-        case "agi":
-            return "agility";
-        case "int":
-            return "intelligence";
-        case "str":
-            return "strength";
-    }
-};
-
-function formatStatName( stat )
-{
-    return `<span class="stat-name stat-${ stat }">${ getStatName( stat ) }</span>`;
-};
-
 function formatMessage( message )
 {
     let template = messageTemplates[ message.key ];
