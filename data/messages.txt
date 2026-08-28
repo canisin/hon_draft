@@ -9,6 +9,7 @@ name_help:                  Type <b>/name new_name</b> in chat to change your na
 command_help:               <span style="font-family: monospace, monospace; color: blue">/@command</span>: @help
 unrecognized_command:       <span style="color: red">Unrecognized command</span>
 server_reset:               <span style="color: red">#player has reset the server, please refresh the page.</span>
+missing_key:                <span style="color: red">Unknown message key: @missing_key</span>
 
 player: 					[[formatPlayerName( @player )]]
 hero:						[[formatHeroName( @hero )]]

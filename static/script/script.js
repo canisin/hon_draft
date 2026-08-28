@@ -849,7 +849,9 @@ function formatMessage( message )
     if ( !template )
     {
         console.warn( `unknown message key: ${ message.key }` );
-        return `<span style="color: red">Unknown message key: ${ message.key }</span>`;
+        return "missing_key" in messageTemplates
+            ? formatMessage( { key: "missing_key", missing_key: message.key } )
+            : message.key;
     }
 
     return template( message );
