@@ -1,7 +1,7 @@
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, send_from_directory, session, request
 from flask_socketio import SocketIO
 import dotenv
-from os import getenv
+from os import getenv, makedirs
 import re
 
 import utils
@@ -14,28 +14,7 @@ import commands
 
 dotenv.load_dotenv()
 
-app = Flask( __name__ )
-app.secret_key = "honzor"
-socketio = SocketIO( app )
-
-draft.initialize_state()
-messages.initialize( socketio )
-
-## ROUTES ##
-@app.route( "/" )
-def home():
-    if "name" not in session:
-        session[ "name" ] = "Unnamed Player"
-    if "id" not in session:
-        session[ "id" ] = players.generate_id()
-    return render_template( "home.html",
-        team_size = draft.team_size,
-        pool_size = draft.pool_size,
-        timer_extension = draft.timer_extension,
-    )
-
-@app.route( "/messageTemplates.js" )
-def message_templates():
+def generate_message_templates():
     def replace_function_call( match ):
         body = match.group( 1 )
         body = re.sub( r"(?<!\\)@(\w+)", r"message.\1", body )
@@ -51,16 +30,38 @@ def message_templates():
         template = template.replace( r"\#", "#" )
         return template
 
-    script = "const messageTemplates = {\n"
-    with open( "data/messages.txt" ) as messages:
-        for line in messages:
-            line = line.strip()
-            if not line or line.startswith( "#" ):
-                continue
-            key, _, template = line.partition( ":" )
-            script += f"\"{ key.strip() }\": ( message ) => `{ process_template( template.strip() ) }`,\n"
-    script += "};"
-    return script, { "Content-Type": "application/javascript" }
+    makedirs( "generated/script", exist_ok = True )
+    with open( "generated/script/messageTemplates.js", "w" ) as generated:
+        generated.write( "const messageTemplates = {\n" )
+        with open( "data/messages.txt" ) as messages:
+            for line in messages:
+                line = line.strip()
+                if not line or line.startswith( "#" ):
+                    continue
+                key, _, template = line.partition( ":" )
+                generated.write( f"\"{ key.strip() }\": ( message ) => `{ process_template( template.strip() ) }`,\n" )
+        generated.write( "};\n" )
+
+app = Flask( __name__ )
+app.secret_key = "honzor"
+socketio = SocketIO( app )
+
+draft.initialize_state()
+messages.initialize( socketio )
+generate_message_templates()
+
+## ROUTES ##
+@app.route( "/" )
+def home():
+    if "name" not in session:
+        session[ "name" ] = "Unnamed Player"
+    if "id" not in session:
+        session[ "id" ] = players.generate_id()
+    return render_template( "home.html",
+        team_size = draft.team_size,
+        pool_size = draft.pool_size,
+        timer_extension = draft.timer_extension,
+    )
 
 @app.route( "/name", methods = [ "POST" ] )
 def name():
@@ -71,6 +72,10 @@ def name():
     player.set_name( name )
     session[ "name" ] = name
     return ""
+
+@app.route( "/generated/<path:filename>" )
+def generated( filename ):
+    return send_from_directory( "generated", filename )
 
 ## INCOMING SOCKET EVENTS ##
 @socketio.on( "connect" )
@@ -170,4 +175,5 @@ if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None
     debug = utils.getenv_bool( "DEBUG", False )
-    socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug )
+    extra_files = [ "data/messages.txt" ]
+    socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug, extra_files = extra_files )
