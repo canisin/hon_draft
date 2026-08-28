@@ -2,6 +2,7 @@ from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO
 import dotenv
 from os import getenv
+import re
 
 import utils
 import players
@@ -32,6 +33,34 @@ def home():
         pool_size = draft.pool_size,
         timer_extension = draft.timer_extension,
     )
+
+@app.route( "/messageTemplates.js" )
+def message_templates():
+    def replace_function_call( match ):
+        body = match.group( 1 )
+        body = re.sub( r"(?<!\\)@(\w+)", r"message.\1", body )
+        return f"${{{ body }}}"
+
+    def process_template( template ):
+        template = re.sub( r"(?<!\\)\[\[(.*?)(?<!\\)\]\]", replace_function_call, template )
+        template = re.sub( r"(?<!\\)@(\w+)", r"${ message.\1 }", template )
+        template = re.sub( r"(?<!\\)#(\w+)", r"${ messageTemplates.\1( message ) }", template )
+        template = template.replace( r"\[[", "[[" )
+        template = template.replace( r"\]]", "]]" )
+        template = template.replace( r"\@", "@" )
+        template = template.replace( r"\#", "#" )
+        return template
+
+    script = "const messageTemplates = {\n"
+    with open( "data/messages.txt" ) as messages:
+        for line in messages:
+            line = line.strip()
+            if not line or line.startswith( "#" ):
+                continue
+            key, _, template = line.partition( ":" )
+            script += f"\"{ key.strip() }\": ( message ) => `{ process_template( template.strip() ) }`,\n"
+    script += "};"
+    return script, { "Content-Type": "application/javascript" }
 
 @app.route( "/name", methods = [ "POST" ] )
 def name():
