@@ -38,7 +38,7 @@ def try_dispatch( player, message ):
     return True
 
 def dispatch( player, command, parameters ):
-    function = next( function for _command, help, function in commands if _command == command )
+    function = next( ( function for _command, help, function in commands if _command == command ), None )
     if not function:
             messages.message( "unrecognized_command" ).emit( to = request.sid )
             return
