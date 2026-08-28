@@ -22,9 +22,9 @@ def generate_message_templates():
 
     def process_template( template ):
         template = re.sub( r"(?<!\\)\[\[(.*?)(?<!\\)\]\]", replace_function_call, template )
-        template = re.sub( r"(?<!\\)@(\w+)", r"${ message.\1 }", template )
-        template = re.sub( r"(?<!\\)#(\w+)", r"${ formatMessage( { ...message, key: '\1' } ) }", template )
         template = re.sub( r"(?<!\\)#@(\w+)", r"${ formatMessage( { ...message, key: message.\1 } ) }", template )
+        template = re.sub( r"(?<!\\)#(\w+)", r"${ formatMessage( { ...message, key: '\1' } ) }", template )
+        template = re.sub( r"(?<!\\)@(\w+)", r"${ message.\1 }", template )
         template = template.replace( r"\[[", "[[" )
         template = template.replace( r"\]]", "]]" )
         template = template.replace( r"\@", "@" )
