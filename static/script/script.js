@@ -801,10 +801,10 @@ function getTimestamp()
             + time.getSeconds().toString().padStart( 2, "0" );
 };
 
-function formatPlayerName( player )
+function formatPlayerName( player, nameOverride = null )
 {
     player = players[ player ];
-    return `<span class="team-${ player.team }">${ player.name }</span>`;
+    return `<span class="team-${ player.team }">${ nameOverride ?? player.name }</span>`;
 };
 
 function formatTeamName( team )
@@ -881,8 +881,7 @@ function formatMessage( message )
         case "message":
             return `${ formatPlayerName( message.player ) }: ${ message.text }`;
         case "name_change":
-            // TODO: Re-implement formatting
-            return `${ message.old_name } changed name to ${ message.new_name }.`;
+            return `${ formatPlayerName( message.player, message.old_name ) } changed name to ${ formatPlayerName( message.player ) }.`;
         case "change_team_observer":
             return `${ formatPlayerName( message.player ) } is now an observer.`;
         case "change_team":

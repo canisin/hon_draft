@@ -20,7 +20,7 @@ class Player:
         old_name = self.name
         self.name = name
         messages.emit_update_player( self )
-        messages.message( "name_change", old_name = old_name, new_name = self.name ).emit()
+        messages.message( "name_change", player = self.id, old_name = old_name ).emit()
 
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
