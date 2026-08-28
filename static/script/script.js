@@ -810,16 +810,24 @@ function escapeHtml( str )
 
 function formatMessage( message )
 {
+    const recursionLimit = 10;
+    let depth = ( message._depth ?? 0 ) + 1;
+    if ( depth >= recursionLimit )
+    {
+        let error = `recursion limit reached in '${ message.key }'`;
+        console.warn( error );
+        return messageTemplates.error?.( { error } ) ?? error;
+    }
+
     let template = messageTemplates[ message.key ];
     if ( !template )
     {
-        console.warn( `unknown message key: ${ message.key }` );
-        return "missing_key" in messageTemplates
-            ? formatMessage( { key: "missing_key", missing_key: message.key } )
-            : message.key;
+        let error = `unknown message key '${ message.key }'`;
+        console.warn( error );
+        return messageTemplates.error?.( { error } ) ?? error;
     }
 
-    return template( message );
+    return template( { ...message, _depth: depth } );
 };
 
 function onMessage( message )
