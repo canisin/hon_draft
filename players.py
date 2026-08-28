@@ -17,11 +17,10 @@ class Player:
         self.is_disconnected = False
 
     def set_name( self, name ):
-        old_name = self.get_formatted_name()
+        old_name = self.name
         self.name = name
         messages.emit_update_player( self )
-        new_name = self.get_formatted_name()
-        messages.emit_message( f"{ old_name } changed name to { new_name }." )
+        messages.message( "name_change", old_name = old_name, new_name = self.name ).emit()
 
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
@@ -30,9 +29,9 @@ class Player:
         messages.emit_update_player( self )
         team.add_player( self, index )
         if team is teams.observers:
-            messages.emit_message( f"{ self.get_formatted_name() } is now an observer." )
+            messages.message( "change_team_observer", player = self.id ).emit()
         else:
-            messages.emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
+            messages.message( "change_team", player = self.id, team = team.name ).emit()
 
     def is_observer( self ):
         return self.team is teams.observers
@@ -40,9 +39,9 @@ class Player:
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
         if is_disconnected:
-            messages.emit_message( f"{ self.get_formatted_name() } has disconnected." )
+            messages.message( "player_disconnect", player = self.id ).emit()
         else:
-            messages.emit_message( f"{ self.get_formatted_name() } has reconnected." )
+            messages.message( "player_reconnect", player = self.id ).emit()
         messages.emit_update_player( self )
 
     def set_hero( self, hero ):
@@ -55,11 +54,7 @@ class Player:
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
         messages.emit_update_player( self )
-        messages.emit_message(
-            f"{ self.get_formatted_name() } has called dibs on { hero.name }."
-            if is_dibs else
-            f"{ self.get_formatted_name() } has retracted their dibs for { hero.name }.",
-            team = self.team )
+        messages.message( "set_dibs" if is_dibs else "remove_dibs", player = self.id, hero = hero.name ).emit( team = self.team )
 
     def toggle_veto( self, hero ):
         if draft.veto_count == 0: return
@@ -67,13 +62,10 @@ class Player:
         count = self.veto.get( hero, 0 ) + 1
         if count <= draft.veto_count:
             self.veto[ hero ] = count
-            if count == 1:
-                messages.emit_message( f"{ self.get_formatted_name() } adds a vote for { hero.name } to be banned.", team = self.team )
-            else:
-                messages.emit_message( f"{ self.get_formatted_name() } now has { count } votes for { hero.name } to be banned.", team = self.team )
+            messages.message( "set_veto" if count == 1 else "set_veto_count", count = count, player = self.id, hero = hero.name ).emit( team = self.team )
         else:
             self.veto.pop( hero )
-            messages.emit_message( f"{ self.get_formatted_name() } no longer wants { hero.name } to be banned.", team = self.team )
+            messages.message( "remove_veto", player = self.id, hero = hero.name ).emit( team = self.team )
         messages.emit_update_hero( hero )
         messages.emit_update_player( self )
 
@@ -185,7 +177,7 @@ def add( player ):
     players.append( player )
     teams.observers.add_player( player )
     messages.emit_update_players()
-    messages.emit_message( f"{ player.get_formatted_name() } joined." )
+    messages.message( "player_joined", player = player.id ).emit()
 
 def restore( player ):
     player.set_disconnected( False )
@@ -195,9 +187,9 @@ def remove( player ):
     player.team.remove_player( player )
     messages.emit_update_players()
     if player.is_disconnected:
-        messages.emit_message( f"{ player.get_formatted_name() } has been removed." )
+        messages.message( "player_removed", player = player.id ).emit()
     else:
-        messages.emit_message( f"{ player.get_formatted_name() } left." )
+        messages.message( "player_left", player = player.id ).emit()
 
 def serialize():
     return { player.id : player.serialize() for player in players }

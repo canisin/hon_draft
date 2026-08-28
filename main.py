@@ -135,7 +135,7 @@ def on_pick_hero( stat, index ):
 def on_message( message ):
     player = players.get( session[ "id" ] )
     if commands.try_dispatch( player, message ): return
-    messages.emit_message( f"{ player.get_formatted_name() }: { message }", team = player.team )
+    messages.message( "message", player = player.id, text = message ).emit( team = player.team )
 
 if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"

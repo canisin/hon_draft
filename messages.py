@@ -39,15 +39,23 @@ def emit_update_players( **kwargs ):
 def emit_update_teams( **kwargs ):
     socketio.emit( "update-teams", teams.serialize(), **kwargs )
 
-def emit_message( message, team = None, **kwargs ):
-    if team: kwargs[ "to" ] = team.name
-    socketio.emit( "message", message, **kwargs )
+class _MessageHelper:
+    def __init__( self, key, **kwargs ):
+        self.payload = kwargs
+        self.payload[ "key" ] = key
+
+    def emit( self, team = None, **kwargs ):
+        if team: kwargs[ "to" ] = team.name
+        socketio.emit( "message", self.payload, **kwargs )
+
+def message( key, **kwargs ):
+    return _MessageHelper( key, **kwargs )
 
 revision = open( "revision.txt" ).read().strip()
 sha = popen( "git rev-parse --short HEAD" ).read().strip()
 def emit_welcome( **kwargs ):
-    emit_message( f"Welcome to HoNDraft! [.{revision}-{sha}]", **kwargs )
-    emit_message( "Type <b>/name new_name</b> in chat to change your name.", **kwargs )
+    message( "welcome", revision = revision, sha = sha ).emit( **kwargs )
+    message( "name_help" ).emit( **kwargs )
 
 def update_rooms( team ):
     if team is teams.observers:

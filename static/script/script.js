@@ -801,6 +801,150 @@ function getTimestamp()
             + time.getSeconds().toString().padStart( 2, "0" );
 };
 
+function formatPlayerName( player )
+{
+    player = players[ player ];
+    return `<span style=\"color: ${ getTeamColor( player.team ) }\">${ player.name }</span>`;
+};
+
+function getTeamColor( team )
+{
+    switch ( team )
+    {
+        case "legion":
+            return "green";
+        case "hellbourne":
+            return "red";
+        case "observers":
+            return "blue";
+    }
+};
+
+function formatTeamName( team )
+{
+    // TODO: Capitalize team name, use a span and css style?
+    return `<span style=\"color: ${ getTeamColor( team ) }\">The ${ team }</span>`;
+};
+
+function formatHeroName( hero )
+{
+    hero = findHero( hero );
+    return `<span style=\"color: ${ getStatColor( hero.stat ) }\">${ hero.name }</span>`;
+};
+
+function getStatColor( stat )
+{
+    switch ( stat )
+    {
+        case "agi":
+            return "green";
+        case "int":
+            return "blue";
+        case "str":
+            return "red";
+    }
+};
+
+function getStatName( stat )
+{
+    switch ( stat )
+    {
+        case "agi":
+            return "agility";
+        case "int":
+            return "intelligence";
+        case "str":
+            return "strength";
+    }
+};
+
+function formatStatName( stat )
+{
+    return `<span style=\"color: ${ getStatColor( stat ) }\">${ getStatName( stat ) }</span>`;
+};
+
+function formatMessage( message )
+{
+    switch( message.key )
+    {
+        case "command_help":
+            return `<span style=\"font-family: monospace, monospace; color: blue\">/${ message.command }</span>: ${ message.help }`;
+        case "server_reset":
+            return `<span style=\"color: red\">${ formatPlayerName( message.player ) } has reset the server, please refresh the page.</span>`;
+        case "unrecognized_command":
+            return `<span style=\"color: red\">Unrecognized command</span>`;
+        case "pause_timer":
+            return `${ formatPlayerName( message.player ) } has paused the timer.`;
+        case "resume_timer":
+            return `${ formatPlayerName( message.player ) } has resumed the timer.`;
+        case "extend_timer":
+            return `${ formatPlayerName( message.player ) } has extended the timer by ${ message.seconds } seconds.`;
+        case "set_first_ban":
+            return `${ formatPlayerName( message.player ) } has set ${ formatTeamName( message.team ) } to ban first.`;
+        case "enable_stat":
+            return `${ formatPlayerName( message.player ) } has enabled ${ formatStatName( message.stat ) } heroes.`;
+        case "disable_stat":
+            return `${ formatPlayerName( message.player ) } has disabled ${ formatStatName( message.stat ) } heroes.`;
+        case "cannot_start_empty_teams":
+            return `<span style=\"color: red\">Cannot start with empty teams</span>`;
+        case "start_draft":
+            return `${ formatPlayerName( message.player ) } has started the draft!`;
+        case "draft_countdown":
+            return `Draft starting in ${ message.seconds } seconds..`;
+        case "cancel_draft":
+            return `${ formatPlayerName( message.player ) } has cancelled the draft!`;
+        case "end_draft":
+            return `${ formatPlayerName( message.player ) } has ended the draft!`;
+        case "player_ban_hero":
+            return `${ formatPlayerName( message.player ) } has banned ${ formatHeroName( message.hero ) }.`;
+        case "vote_ban_hero":
+            return `${ formatHeroName( message.hero ) } was banned based on votes.`;
+        case "fate_ban_hero":
+            return `<span style=\"color:orange\">Fate</span> has banned ${ formatHeroName( message.hero ) }.`;
+        case "player_pick_hero":
+            return `${ formatPlayerName( message.player ) } has picked ${ formatHeroName( message.hero ) }.`;
+        case "fate_pick_hero":
+            return `<span style=\"color:orange\">Fate</span> has picked ${ formatHeroName( message.hero ) } for ${ formatPlayerName( message.player ) }.`;
+        case "message":
+            return `${ formatPlayerName( message.player ) }: ${ message.text }`;
+        case "name_change":
+            // TODO: Re-implement formatting
+            return `${ message.old_name } changed name to ${ message.new_name }.`;
+        case "change_team_observer":
+            return `${ formatPlayerName( message.player ) } is now an observer.`;
+        case "change_team":
+            return `${ formatPlayerName( message.player ) } has joined ${ formatTeamName( message.team ) }.`;
+        case "player_disconnect":
+            return `${ formatPlayerName( message.player ) } has disconnected.`;
+        case "player_reconnect":
+            return `${ formatPlayerName( message.player ) } has reconnected.`;
+        case "set_dibs":
+            return `${ formatPlayerName( message.player ) } has called dibs on ${ formatHeroName( message.hero ) }.`;
+        case "remove_dibs":
+            return `${ formatPlayerName( message.player ) } has retracted their dibs for ${ formatHeroName( message.hero ) }.`;
+        case "set_veto":
+            return `${ formatPlayerName( message.player ) } adds a vote for ${ formatHeroName( message.hero ) } to be banned.`;
+        case "set_veto_count":
+            return `${ formatPlayerName( message.player ) } now has ${ message.count } votes for ${ formatHeroName( message.hero ) } to be banned.`;
+        case "remove_veto":
+            return `${ formatPlayerName( message.player ) } no longer wants ${ formatHeroName( message.hero ) } to be banned.`;
+        case "player_joined":
+            return `${ formatPlayerName( message.player ) } joined.`;
+        case "player_removed":
+            return `${ formatPlayerName( message.player ) } has been removed.`;
+        case "player_left":
+            return `${ formatPlayerName( message.player ) } left.`;
+        case "welcome":
+            return `Welcome to HoNDraft! [.${ message.revision }-${ message.sha }]`;
+        case "name_help":
+            return `Type <b>/name new_name</b> in chat to change your name.`;
+
+        default:
+            console.warn( `unknown message key: ${ message.key }` );
+            return `<span style=\"color: red\">Unknown message key: ${ message.key }</span>`;
+    }
+};
+
 function onMessage( message )
 {
     console.log( "message received" );
@@ -808,7 +952,7 @@ function onMessage( message )
     messageLog.innerHTML += `
         <div class="message">
             <span class="message-timestamp">${ getTimestamp() }</span>
-            <span class="message-message">${ message }</span>
+            <span class="message-message">${ formatMessage( message ) }</span>
         </div>
     `;
     messageLog.scrollTop = messageLog.scrollHeight;

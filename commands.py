@@ -16,7 +16,7 @@ def command( command, help ):
 @command( "help", "prints help" )
 def print_help( player, parameters ):
     for command, help, function in commands:
-        messages.emit_message( f"<span style=\"font-family: monspace, monospace; color: blue\">/{ command }</span>: { help }", to = request.sid )
+        messages.message( "command_help", command = command, help = help ).emit( to = request.sid )
 
 @command( "name", "sets player name" )
 def set_name( player, name ):
@@ -29,7 +29,7 @@ def set_name( player, name ):
 def reset_server( player, parameters ):
     utils.log( "resetting server" )
     draft.reset_draft( clear_players = True )
-    messages.emit_message( f"<span style=\"color: red\">{ player.get_formatted_name() } has reset the server, please refresh the page.</span>" )
+    messages.message( "server_reset", player = player.id ).emit()
 
 def try_dispatch( player, message ):
     if message[:1] != "/": return False
@@ -40,6 +40,6 @@ def try_dispatch( player, message ):
 def dispatch( player, command, parameters ):
     function = next( function for _command, help, function in commands if _command == command )
     if not function:
-            messages.emit_message( "<span style=\"color: red\">Unrecognized command</span>", to = request.sid )
+            messages.message( "unrecognized_command" ).emit( to = request.sid )
             return
     function( player, parameters )
