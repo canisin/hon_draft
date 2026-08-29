@@ -429,7 +429,7 @@ function onUpdateState( newState )
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
     let stateLabel = document.getElementById( "state" );
-    stateLabel.textContent = state.state_label;
+    stateLabel.innerHTML = formatMessage( { key: state.state } );
 
     let startDraftButton = document.getElementById( "start-draft-button" );
     startDraftButton.disabled = state.state != "lobby";

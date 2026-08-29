@@ -21,6 +21,14 @@ int:                        intelligence
 str:                        strength
 stat:                       <span class="stat-name stat-@stat">#@stat</span>
 
+lobby:                      Lobby
+pool_countdown:             Draft Coundown
+banning_countdown:          Banning Countdown
+banning:                    [[ state.active_team ]] is Banning
+picking_countdown:          Picking Countdown
+picking:                    [[ state.active_team ]] is Picking
+results:                    Results
+
 pause_timer:                #player has paused the timer.
 resume_timer:               #player has resumed the timer.
 extend_timer:               #player has extended the timer by @seconds seconds.
