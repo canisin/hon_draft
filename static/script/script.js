@@ -429,7 +429,7 @@ function onUpdateState( newState )
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
     let stateLabel = document.getElementById( "state" );
-    stateLabel.innerHTML = formatMessage( { key: state.state } );
+    stateLabel.innerHTML = localize( state.state );
 
     let startDraftButton = document.getElementById( "start-draft-button" );
     startDraftButton.disabled = state.state != "lobby";
@@ -808,26 +808,26 @@ function escapeHtml( str )
     return div.innerHTML;
 };
 
-function formatMessage( message )
+function localize( key, params = {} )
 {
     const recursionLimit = 10;
-    let depth = ( message._depth ?? 0 ) + 1;
+    let depth = ( params._depth ?? 0 ) + 1;
     if ( depth >= recursionLimit )
     {
-        let error = `recursion limit reached in '${ message.key }'`;
+        let error = `recursion limit reached in '${ key }'`;
         console.warn( error );
-        return messageTemplates.error?.( { error } ) ?? error;
+        return localizations.error?.( { error } ) ?? error;
     }
 
-    let template = messageTemplates[ message.key ];
-    if ( !template )
+    let localization = localizations[ key ];
+    if ( !localization )
     {
-        let error = `unknown message key '${ message.key }'`;
+        let error = `unknown loc key '${ key }'`;
         console.warn( error );
-        return messageTemplates.error?.( { error } ) ?? error;
+        return localizations.error?.( { error } ) ?? error;
     }
 
-    return template( { ...message, _depth: depth } );
+    return localization( { ...params, _depth: depth } );
 };
 
 function onMessage( message )
@@ -837,7 +837,7 @@ function onMessage( message )
     messageLog.innerHTML += `
         <div class="message">
             <span class="message-timestamp">${ getTimestamp() }</span>
-            <span class="message-message">${ formatMessage( message ) }</span>
+            <span class="message-message">${ localize( message.key, message.params ) }</span>
         </div>
     `;
     messageLog.scrollTop = messageLog.scrollHeight;

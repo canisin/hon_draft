@@ -1,8 +1,8 @@
 # Syntax:
 #   key: template
-#   @field: message field
-#   #key: key substitution
-#   #@field: dynamic key substitution where key is a message field
+#   @param: localization parameter
+#   #other_key: key substitution
+#   #@param: dynamic key substitution where key is a localization parameter
 #   [[ expr ]]: javascript invocation, @field can still be used
 
 welcome:                    Welcome to HoNDraft! [.@revision-@sha]

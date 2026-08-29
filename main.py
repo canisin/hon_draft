@@ -14,33 +14,33 @@ import commands
 
 dotenv.load_dotenv()
 
-def generate_message_templates():
-    def replace_function_call( match ):
+def generate_localization_script():
+    def replace_code_block( match ):
         body = match.group( 1 )
-        body = re.sub( r"(?<!\\)@(\w+)", r"message.\1", body )
+        body = re.sub( r"(?<!\\)@(\w+)", r"params.\1", body )
         return f"${{{ body }}}"
 
-    def process_template( template ):
-        template = re.sub( r"(?<!\\)\[\[(.*?)(?<!\\)\]\]", replace_function_call, template )
-        template = re.sub( r"(?<!\\)#@(\w+)", r"${ formatMessage( { ...message, key: message.\1 } ) }", template )
-        template = re.sub( r"(?<!\\)#(\w+)", r"${ formatMessage( { ...message, key: '\1' } ) }", template )
-        template = re.sub( r"(?<!\\)@(\w+)", r"${ message.\1 }", template )
-        template = template.replace( r"\[[", "[[" )
-        template = template.replace( r"\]]", "]]" )
-        template = template.replace( r"\@", "@" )
-        template = template.replace( r"\#", "#" )
-        return template
+    def process_loc( loc ):
+        loc = re.sub( r"(?<!\\)\[\[(.*?)(?<!\\)\]\]", replace_code_block, loc )
+        loc = re.sub( r"(?<!\\)#@(\w+)", r"${ localize( params.\1, params ) }", loc )
+        loc = re.sub( r"(?<!\\)#(\w+)", r"${ localize( '\1', params ) }", loc )
+        loc = re.sub( r"(?<!\\)@(\w+)", r"${ params.\1 }", loc )
+        loc = loc.replace( r"\[[", "[[" )
+        loc = loc.replace( r"\]]", "]]" )
+        loc = loc.replace( r"\@", "@" )
+        loc = loc.replace( r"\#", "#" )
+        return loc
 
     makedirs( "generated/script", exist_ok = True )
-    with open( "generated/script/messageTemplates.js", "w" ) as generated:
-        generated.write( "const messageTemplates = {\n" )
-        with open( "data/messages.txt" ) as messages:
-            for line in messages:
+    with open( "generated/script/localization.js", "w" ) as generated:
+        generated.write( "const localizations = {\n" )
+        with open( "data/localization.txt" ) as source:
+            for line in source:
                 line = line.strip()
                 if not line or line.startswith( "#" ):
                     continue
-                key, _, template = line.partition( ":" )
-                generated.write( f"\"{ key.strip() }\": ( message ) => `{ process_template( template.strip() ) }`,\n" )
+                key, _, loc = line.partition( ":" )
+                generated.write( f"\"{ key.strip() }\": ( params ) => `{ process_loc( loc.strip() ) }`,\n" )
         generated.write( "};\n" )
 
 app = Flask( __name__ )
@@ -49,7 +49,7 @@ socketio = SocketIO( app )
 
 draft.initialize_state()
 messages.initialize( socketio )
-generate_message_templates()
+generate_localization_script()
 
 ## ROUTES ##
 @app.route( "/" )
@@ -176,5 +176,5 @@ if __name__ == "__main__":
     host = getenv( "HOST" ) or "0.0.0.0"
     port = getenv( "PORT" ) or None
     debug = utils.getenv_bool( "DEBUG", False )
-    extra_files = [ "data/messages.txt" ]
+    extra_files = [ "data/localization.txt" ]
     socketio.run( app, allow_unsafe_werkzeug = True, host = host, port = port, debug = debug, extra_files = extra_files )

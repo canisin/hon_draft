@@ -41,12 +41,12 @@ def emit_update_teams( **kwargs ):
 
 class _MessageHelper:
     def __init__( self, key, **kwargs ):
-        self.payload = kwargs
-        self.payload[ "key" ] = key
+        self.key = key
+        self.params = kwargs
 
     def emit( self, team = None, **kwargs ):
         if team: kwargs[ "to" ] = team.name
-        socketio.emit( "message", self.payload, **kwargs )
+        socketio.emit( "message", { "key": self.key, "params": self.params }, **kwargs )
 
 def message( key, **kwargs ):
     return _MessageHelper( key, **kwargs )
