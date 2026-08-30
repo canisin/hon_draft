@@ -7,7 +7,7 @@ import hero_sets
 import players
 import teams
 import heroes
-import messages
+import sockets
 import utils
 
 hero_set = getenv( "HERO_SET" ) or "reborn"
@@ -63,7 +63,7 @@ def set_state( new_state, seconds, callback ):
     global state
     state = new_state
     set_timer( seconds, callback )
-    messages.emit_update_state()
+    sockets.emit_update_state()
 
 def set_timer( seconds, callback ):
     global timer
@@ -82,20 +82,20 @@ def can_modify_timer():
 def pause_timer( player ):
     if not can_modify_timer(): return
     if timer.try_pause():
-        messages.emit_update_state()
-        messages.message( "pause_timer", player = player.id ).emit()
+        sockets.emit_update_state()
+        sockets.message( "pause_timer", player = player.id ).emit()
 
 def resume_timer( player ):
     if not can_modify_timer(): return
     if timer.try_resume():
-        messages.emit_update_state()
-        messages.message( "resume_timer", player = player.id ).emit()
+        sockets.emit_update_state()
+        sockets.message( "resume_timer", player = player.id ).emit()
 
 def extend_timer( player ):
     if not can_modify_timer(): return
     if timer.try_extend( timer_extension ):
-        messages.emit_update_state()
-        messages.message( "extend_timer", player = player.id, seconds = timer_extension ).emit()
+        sockets.emit_update_state()
+        sockets.message( "extend_timer", player = player.id, seconds = timer_extension ).emit()
 
 def set_first_ban( player, team ):
     if state != State.lobby:
@@ -106,16 +106,16 @@ def set_first_ban( player, team ):
         return
 
     first_ban = team
-    messages.emit_update_state()
-    messages.message( "set_first_ban", player = player.id, team = team.name ).emit()
+    sockets.emit_update_state()
+    sockets.message( "set_first_ban", player = player.id, team = team.name ).emit()
 
 def toggle_stat( player, stat ):
     if state != State.lobby:
         return
 
     stat.is_enabled = not stat.is_enabled
-    messages.emit_update_state()
-    messages.message( "enable_stat" if stat.is_enabled else "disable_stat", player = player.id, stat = stat.name ).emit()
+    sockets.emit_update_state()
+    sockets.message( "enable_stat" if stat.is_enabled else "disable_stat", player = player.id, stat = stat.name ).emit()
 
 def click_slot( player, team, index ):
     assert team is not teams.observers
@@ -140,10 +140,10 @@ def start_draft( player ):
         return
 
     if not teams.can_draft():
-        messages.message( "cannot_start_empty_teams" ).emit( to = player.session_id )
+        sockets.message( "cannot_start_empty_teams" ).emit( to = player.session_id )
         return
 
-    messages.message( "start_draft", player = player.id ).emit()
+    sockets.message( "start_draft", player = player.id ).emit()
 
     set_state( State.pool_countdown, pool_countdown_duration, pool_countdown_callback )
     draft_countdown( pool_countdown_duration )
@@ -151,20 +151,20 @@ def start_draft( player ):
 def draft_countdown( seconds ):
     if state != State.pool_countdown: return
     if seconds == 0: return
-    messages.message( "draft_countdown", seconds = seconds ).emit()
+    sockets.message( "draft_countdown", seconds = seconds ).emit()
     threading.Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
     if state in ( State.lobby, State.results ):
         return
     reset_draft()
-    messages.message( "cancel_draft", player = player.id ).emit()
+    sockets.message( "cancel_draft", player = player.id ).emit()
 
 def end_draft( player ):
     if state != State.results:
         return
     reset_draft()
-    messages.message( "end_draft", player = player.id ).emit()
+    sockets.message( "end_draft", player = player.id ).emit()
 
 def reset_draft( clear_players = False ):
     global active_team
@@ -233,13 +233,13 @@ def ban_hero( player, hero, is_veto = False ):
     hero.set_banned()
     players.check_dibs_veto( hero )
 
-    messages.emit_update_hero( hero )
+    sockets.emit_update_hero( hero )
     if player:
-        messages.message( "player_ban_hero", player = player.id, hero = hero.name ).emit()
+        sockets.message( "player_ban_hero", player = player.id, hero = hero.name ).emit()
     elif is_veto:
-        messages.message( "vote_ban_hero", hero = hero.name ).emit()
+        sockets.message( "vote_ban_hero", hero = hero.name ).emit()
     else:
-        messages.message( "fate_ban_hero", hero = hero.name ).emit()
+        sockets.message( "fate_ban_hero", hero = hero.name ).emit()
 
     timer.cancel()
 
@@ -290,9 +290,9 @@ def pick_hero( player, hero, is_fate = False ):
     hero.set_picked()
     players.check_dibs_veto( hero )
 
-    messages.emit_update_hero( hero )
-    messages.emit_hero_picked( hero )
-    messages.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id, hero = hero.name ).emit()
+    sockets.emit_update_hero( hero )
+    sockets.emit_hero_picked( hero )
+    sockets.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id, hero = hero.name ).emit()
 
     global remaining_picks
     remaining_picks -= 1

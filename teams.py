@@ -1,8 +1,8 @@
+import random
+
 import heroes
 import draft
-import messages
-
-import random
+import sockets
 
 class Team:
     def __init__( self, name ):
@@ -25,13 +25,13 @@ class Team:
         assert player not in self.players
         assert self.players[ index ] is None
         self.players[ index ] = player
-        messages.emit_update_teams()
+        sockets.emit_update_teams()
 
     def remove_player( self, player ):
         assert player in self.players
         index = self.players.index( player )
         self.players[ index ] = None
-        messages.emit_update_teams()
+        sockets.emit_update_teams()
 
     def set_player_index( self, player, index ):
         assert player in self.players

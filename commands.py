@@ -1,7 +1,7 @@
 from flask import request
 from flask_socketio import emit
 
-import messages
+import sockets
 import draft
 import utils
 
@@ -16,7 +16,7 @@ def command( command, help ):
 @command( "help", "prints help" )
 def print_help( player, parameters ):
     for command, help, function in commands:
-        messages.message( "command_help", command = command, help = help ).emit( to = request.sid )
+        sockets.message( "command_help", command = command, help = help ).emit( to = request.sid )
 
 @command( "name", "sets player name" )
 def set_name( player, name ):
@@ -29,7 +29,7 @@ def set_name( player, name ):
 def reset_server( player, parameters ):
     utils.log( "resetting server" )
     draft.reset_draft( clear_players = True )
-    messages.message( "server_reset", player = player.id ).emit()
+    sockets.message( "server_reset", player = player.id ).emit()
 
 def try_dispatch( player, message ):
     if message[:1] != "/": return False
@@ -40,6 +40,6 @@ def try_dispatch( player, message ):
 def dispatch( player, command, parameters ):
     function = next( ( function for _command, help, function in commands if _command == command ), None )
     if not function:
-            messages.message( "unrecognized_command" ).emit( to = request.sid )
+            sockets.message( "unrecognized_command" ).emit( to = request.sid )
             return
     function( player, parameters )

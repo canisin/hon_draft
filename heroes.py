@@ -1,8 +1,8 @@
+import random
+
 import teams
 import draft
-import messages
-
-import random
+import sockets
 
 class Hero:
     def __init__( self, name, key, stat ):
@@ -76,12 +76,12 @@ stats_dict = { stat.name: stat for stat in stats }
 def reset():
     for stat in stats:
         stat.reset()
-    messages.emit_update_heroes()
+    sockets.emit_update_heroes()
 
 def generate_pool():
     for stat in stats:
         stat.generate_pool()
-    messages.emit_update_heroes()
+    sockets.emit_update_heroes()
 
 def get( stat, index = None ):
     if index is None: return stats_dict[ stat ]
