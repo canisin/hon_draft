@@ -2,6 +2,7 @@ from os import getenv
 import enum
 from enum import Enum
 import threading
+import random
 
 import hero_sets
 import players
@@ -260,10 +261,7 @@ def start_picking( team, pick_count ):
     active_team = team
 
     global remaining_picks
-    remaining_picks = min(
-        pick_count,
-        sum( 1 for player in active_team.picking_players() )
-    )
+    remaining_picks = min( pick_count, len( active_team.picking_players() ) )
 
     if remaining_picks == 0:
         active_team = None
@@ -307,6 +305,6 @@ def picking_timer_callback():
     for _ in range( remaining_picks ):
         picking_players = active_team.picking_players()
         assert picking_players
-        player = next( ( player for player in picking_players if player.dibs ), picking_players[ 0 ] )
+        player = random.choice( [ player for player in picking_players if player.dibs ] or picking_players )
         hero = player.dibs if player.dibs else active_team.get_random_pick()
         pick_hero( player, hero, is_fate = not player.dibs )
