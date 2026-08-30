@@ -466,6 +466,22 @@ function onUpdateClientTeam( team )
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 
+const tickAudioSeconds = 5;
+function shouldPlayTickAudio( seconds )
+{
+    if ( state.state == "pool_countdown" )
+    {
+        return true;
+    }
+
+    if ( [ "banning", "picking" ].includes( state.state ) )
+    {
+        return seconds <= tickAudioSeconds;
+    }
+ 
+    return false;
+};
+
 let timer;
 function setTimer()
 {
@@ -487,7 +503,7 @@ function setTimer()
 
         if ( seconds > 0 )
         {
-            if ( state.state == "pool_countdown" )
+            if ( shouldPlayTickAudio( seconds ) )
             {
                 tickAudio.play();
             }

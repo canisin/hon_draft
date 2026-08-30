@@ -40,7 +40,6 @@ Add sounds
     Button sounds (hover and click)
     Slot sounds (on sitting and leaving)
     Easter egg: Play "counter pick" if a dibs is picked
-    last 5 seconds of every countdown
 
 Add a button to name yourself
   o as a relatively simple way to implement this, it could simply add /name to the chat box
