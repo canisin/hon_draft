@@ -39,7 +39,6 @@ Add animation to the active team indicaitor
 Add sounds
     Button sounds (hover and click)
     Slot sounds (on sitting and leaving)
-    Easter egg: Play "counter pick" if a dibs is picked
 
 Add a button to name yourself
   o as a relatively simple way to implement this, it could simply add /name to the chat box

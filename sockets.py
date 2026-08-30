@@ -28,8 +28,8 @@ def emit_update_hero( hero, **kwargs ):
 def emit_update_heroes( **kwargs ):
     socketio.emit( "update-heroes", heroes.serialize(), **kwargs )
 
-def emit_hero_picked( hero, **kwargs ):
-    socketio.emit( "hero-picked", hero.name, **kwargs )
+def emit_hero_picked( hero, is_denied, **kwargs ):
+    socketio.emit( "hero-picked", ( hero.name, is_denied ), **kwargs )
 
 def emit_update_player( player, **kwargs ):
     socketio.emit( "update-player", player.serialize(), **kwargs )

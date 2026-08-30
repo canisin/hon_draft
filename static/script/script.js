@@ -12,6 +12,8 @@ let pickHeroAudio = document.getElementById( "pick-hero-audio" );
 pickHeroAudio.volume = 0.2;
 let startGameAudio = document.getElementById( "start-game-audio" );
 startGameAudio.volume = 0.2;
+let counterPickAudio = document.getElementById( "counter-pick-audio" );
+counterPickAudio.volume = 0.2;
 
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
@@ -756,12 +758,17 @@ function onUpdateHeroes( newHeroes )
 };
 socketio.on( "update-heroes", onUpdateHeroes );
 
-function onHeroPicked( hero )
+function onHeroPicked( hero, isDenied )
 {
     let [ stat, index ] = findHeroIndex( hero );
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     playAudioWithDelay( heroSound );
+
+    if ( isDenied )
+    {
+        playAudioWithDelay( counterPickAudio );
+    }
 };
 socketio.on( "hero-picked", onHeroPicked );
 

@@ -284,12 +284,14 @@ def pick_hero( player, hero, is_fate = False ):
     if not hero.is_available():
         return
 
+    is_denied = any( player and player.dibs == hero for player in player.team.get_other().players )
+
     player.set_hero( hero )
     hero.set_picked()
     players.check_dibs_veto( hero )
 
     sockets.emit_update_hero( hero )
-    sockets.emit_hero_picked( hero )
+    sockets.emit_hero_picked( hero, is_denied )
     sockets.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id, hero = hero.name ).emit()
 
     global remaining_picks
