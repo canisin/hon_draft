@@ -468,7 +468,7 @@ function onUpdateClientTeam( team )
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 
-const tickAudioSeconds = 5;
+const tickAudioSeconds = 3;
 function shouldPlayTickAudio( seconds )
 {
     if ( state.state == "pool_countdown" )
