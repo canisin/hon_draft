@@ -35,7 +35,6 @@ serving on render with gunicorn
 
 TODO
 Add hover and click animations
-Add animation to the active team indicaitor
 Add sounds
     Button sounds (hover and click)
     Slot sounds (on sitting and leaving)
