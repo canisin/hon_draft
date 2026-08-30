@@ -156,15 +156,6 @@ body:not(.timer-paused) #resume-timer-button {
 .team-header-name {
     display: inline;
     font-size: 28px;
-    text-transform: capitalize;
-}
-
-#legion .team-header-name {
-    color: green;
-}
-
-#hellbourne .team-header-name {
-    color: red;
 }
 
 body.client-team-legion #legion .team-header-name,
@@ -256,6 +247,26 @@ body.state-picking.active-team-legion #legion .team-status-arrow,
 body.state-picking.active-team-hellbourne #hellbourne .team-status-arrow {
     content: url( "/static/images/arrow-green.png" );
 }
+
+@keyframes team-status-arrow-marquee {
+    0%   { opacity: 0.2; }
+    5%   { opacity: 1;   }
+    50%  { opacity: 0.2; }
+    100% { opacity: 0.2; }
+}
+
+body:is( .state-banning, .state-picking ).active-team-legion #legion .team-status-arrow,
+body:is( .state-banning, .state-picking ).active-team-hellbourne #hellbourne .team-status-arrow {
+    animation-name: team-status-arrow-marquee;
+    animation-duration: 1.0s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-fill-mode: backwards;
+}
+
+.team-status-arrow:nth-child( 1 ) { animation-delay: 0.0s; }
+.team-status-arrow:nth-child( 2 ) { animation-delay: 0.3s; }
+.team-status-arrow:nth-child( 3 ) { animation-delay: 0.6s; }
 
 .team-status-label {
     display: inline;
@@ -392,7 +403,6 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 .stat-header-name {
     font-size: 22px;
     font-variant: small-caps;
-    text-transform: capitalize;
 }
 
 .stat.disabled .stat-header-name {
@@ -623,16 +633,36 @@ body.state-picking.client-team-active .pick-hero-button {
     gap: 4px;
 }
 
-.players-list-entry.team-legion {
+.team-name {
+    text-transform: capitalize;
+}
+
+.team-legion {
     color: green;
 }
 
-.players-list-entry.team-hellbourne {
+.team-hellbourne {
     color: red;
 }
 
-.players-list-entry.team-observers {
+.team-observers {
     color: blue;
+}
+
+.stat-name {
+    text-transform: capitalize;
+}
+
+.stat-agi {
+    color: green;
+}
+
+.stat-int {
+    color: blue;
+}
+
+.stat-str {
+    color: red;
 }
 
 .players-list-entry-icon {
@@ -772,14 +802,6 @@ body:has( #str:hover ) #hero-information:not( .no-hero-selected ) #hero-informat
     display: flex;
     align-items: center;
     gap: 4px;
-}
-
-.hero-information-player-entry.team-legion {
-    color: green;
-}
-
-.hero-information-player-entry.team-hellbourne {
-    color: red;
 }
 
 .hero-information-player-entry-icon {

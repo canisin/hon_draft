@@ -1,9 +1,8 @@
-import teams
-import heroes
-import draft
-import messages
-
 from uuid import uuid4
+
+import teams
+import draft
+import sockets
 
 class Player:
     def __init__( self, name, id ):
@@ -17,22 +16,21 @@ class Player:
         self.is_disconnected = False
 
     def set_name( self, name ):
-        old_name = self.get_formatted_name()
+        old_name = self.name
         self.name = name
-        messages.emit_update_player( self )
-        new_name = self.get_formatted_name()
-        messages.emit_message( f"{ old_name } changed name to { new_name }." )
+        sockets.emit_update_player( self )
+        sockets.message( "name_change", player = self.id, old_name = old_name ).emit()
 
     def set_team( self, team, index = None ):
         self.team.remove_player( self )
         self.team = team
         self.update_client_team()
-        messages.emit_update_player( self )
+        sockets.emit_update_player( self )
         team.add_player( self, index )
         if team is teams.observers:
-            messages.emit_message( f"{ self.get_formatted_name() } is now an observer." )
+            sockets.message( "change_team_observer", player = self.id ).emit()
         else:
-            messages.emit_message( f"{ self.get_formatted_name() } has joined { team.get_formatted_name() }." )
+            sockets.message( "change_team", player = self.id, team = team.name ).emit()
 
     def is_observer( self ):
         return self.team is teams.observers
@@ -40,26 +38,22 @@ class Player:
     def set_disconnected( self, is_disconnected ):
         self.is_disconnected = is_disconnected
         if is_disconnected:
-            messages.emit_message( f"{ self.get_formatted_name() } has disconnected." )
+            sockets.message( "player_disconnect", player = self.id ).emit()
         else:
-            messages.emit_message( f"{ self.get_formatted_name() } has reconnected." )
-        messages.emit_update_player( self )
+            sockets.message( "player_reconnect", player = self.id ).emit()
+        sockets.emit_update_player( self )
 
     def set_hero( self, hero ):
         self.dibs = None
         self.hero = hero
-        messages.emit_update_player( self )
+        sockets.emit_update_player( self )
 
     def toggle_dibs( self, hero ):
         assert not self.hero
         is_dibs = self.dibs != hero
         self.dibs = hero if is_dibs else None
-        messages.emit_update_player( self )
-        messages.emit_message(
-            f"{ self.get_formatted_name() } has called dibs on { hero.name }."
-            if is_dibs else
-            f"{ self.get_formatted_name() } has retracted their dibs for { hero.name }.",
-            team = self.team )
+        sockets.emit_update_player( self )
+        sockets.message( "set_dibs" if is_dibs else "remove_dibs", player = self.id, hero = hero.name ).emit( team = self.team )
 
     def toggle_veto( self, hero ):
         if draft.veto_count == 0: return
@@ -67,42 +61,39 @@ class Player:
         count = self.veto.get( hero, 0 ) + 1
         if count <= draft.veto_count:
             self.veto[ hero ] = count
-            if count == 1:
-                messages.emit_message( f"{ self.get_formatted_name() } adds a vote for { hero.name } to be banned.", team = self.team )
-            else:
-                messages.emit_message( f"{ self.get_formatted_name() } now has { count } votes for { hero.name } to be banned.", team = self.team )
+            sockets.message( "set_veto" if count == 1 else "set_veto_count", count = count, player = self.id, hero = hero.name ).emit( team = self.team )
         else:
             self.veto.pop( hero )
-            messages.emit_message( f"{ self.get_formatted_name() } no longer wants { hero.name } to be banned.", team = self.team )
-        messages.emit_update_hero( hero )
-        messages.emit_update_player( self )
+            sockets.message( "remove_veto", player = self.id, hero = hero.name ).emit( team = self.team )
+        sockets.emit_update_hero( hero )
+        sockets.emit_update_player( self )
 
     def check_dibs( self, hero ):
         if self.dibs is hero:
             self.dibs = None
-            messages.emit_update_player( self )
+            sockets.emit_update_player( self )
         
     def check_veto( self, hero ):
         if hero in self.veto:
             del self.veto[ hero ]
-            messages.emit_update_player( self )
+            sockets.emit_update_player( self )
 
     def clear_veto( self ):
         veto = self.veto
         self.veto = {}
         for hero in veto:
-            messages.emit_update_hero( hero )
-        messages.emit_update_player( self )
+            sockets.emit_update_hero( hero )
+        sockets.emit_update_player( self )
 
     def reset( self ):
         self.hero = None
         self.dibs = None
         self.veto = {}
-        messages.emit_update_player( self )
+        sockets.emit_update_player( self )
 
     def update_client_team( self ):
-        messages.emit_update_client_team( self )
-        messages.update_rooms( self.team )
+        sockets.emit_update_client_team( self )
+        sockets.update_rooms( self.team )
 
     def serialize( self ):
         return {
@@ -114,9 +105,6 @@ class Player:
             "dibs": self.dibs.name if self.dibs else None,
             "veto": { hero.name: count for hero, count in self.veto.items() },
         }
-
-    def get_formatted_name( self ):
-        return f"<span style=\"color: { self.team.color }\">{ self.name }</span>"
 
 players = []
 
@@ -153,22 +141,22 @@ def connect( id, name, session_id ):
         player = Player( name, id )
         is_new_player = True
     player.session_id = session_id
-    messages.emit_welcome( to = session_id )
+    sockets.emit_welcome( to = session_id )
 
-    messages.emit_update_client_id( player )
-    messages.emit_update_client_team( player )
+    sockets.emit_update_client_id( player )
+    sockets.emit_update_client_team( player )
 
-    messages.emit_update_state( to = session_id )
-    messages.emit_update_heroes( to = session_id )
-    messages.emit_update_players( to = session_id )
-    messages.emit_update_teams( to = session_id )
+    sockets.emit_update_state( to = session_id )
+    sockets.emit_update_heroes( to = session_id )
+    sockets.emit_update_players( to = session_id )
+    sockets.emit_update_teams( to = session_id )
 
     if is_new_player:
         add( player )
     elif player.is_disconnected:
         restore( player )
 
-    messages.update_rooms( player.team )
+    sockets.update_rooms( player.team )
 
 def disconnect( id, session_id ):
     player = get( id )
@@ -184,8 +172,8 @@ def disconnect( id, session_id ):
 def add( player ):
     players.append( player )
     teams.observers.add_player( player )
-    messages.emit_update_players()
-    messages.emit_message( f"{ player.get_formatted_name() } joined." )
+    sockets.emit_update_players()
+    sockets.message( "player_joined", player = player.id ).emit()
 
 def restore( player ):
     player.set_disconnected( False )
@@ -193,11 +181,11 @@ def restore( player ):
 def remove( player ):
     players.remove( player )
     player.team.remove_player( player )
-    messages.emit_update_players()
+    sockets.emit_update_players()
     if player.is_disconnected:
-        messages.emit_message( f"{ player.get_formatted_name() } has been removed." )
+        sockets.message( "player_removed", player = player.id ).emit()
     else:
-        messages.emit_message( f"{ player.get_formatted_name() } left." )
+        sockets.message( "player_left", player = player.id ).emit()
 
 def serialize():
     return { player.id : player.serialize() for player in players }

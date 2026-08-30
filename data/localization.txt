@@ -1,0 +1,64 @@
+# Syntax:
+#   key: template
+#   @param: localization parameter
+#   #other_key: key substitution
+#   #@param: dynamic key substitution where key is a localization parameter
+#   [[ expr ]]: javascript invocation, @field can still be used
+
+welcome:                    Welcome to HoNDraft! [.@revision-@sha]
+name_help:                  Type <b>/name new_name</b> in chat to change your name.
+command_help:               <b>/@command:</b> @help
+unrecognized_command:       <span style="color: red">Unrecognized command</span>
+server_reset:               <span style="color: red">#player has reset the server, please refresh the page.</span>
+error:                      <span style="color: red">@error</span>
+
+player:                     <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( players[ @player ].name ) ]]</span>
+name_change:                <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( @old_name ) ]]</span> changed name to #player.
+hero:                       <span class="stat-[[ findHero( @hero ).stat ]]">[[ findHero( @hero ).name ]]</span>
+team:                       <span class="team-name team-[[ @team ]]">The [[ @team ]]</span>
+agi:                        agility
+int:                        intelligence
+str:                        strength
+stat:                       <span class="stat-name stat-@stat">#@stat</span>
+
+lobby:                      Lobby
+pool_countdown:             Draft Coundown
+banning_countdown:          Banning Countdown
+banning:                    [[ state.active_team ]] is Banning
+picking_countdown:          Picking Countdown
+picking:                    [[ state.active_team ]] is Picking
+results:                    Results
+
+pause_timer:                #player has paused the timer.
+resume_timer:               #player has resumed the timer.
+extend_timer:               #player has extended the timer by @seconds seconds.
+draft_countdown:            Draft starting in @seconds seconds..
+
+set_first_ban:              #player has set #team to ban first.
+enable_stat:                #player has enabled #stat heroes.
+disable_stat:               #player has disabled #stat heroes.
+start_draft:                #player has started the draft!
+cannot_start_empty_teams:   <span style="color: red">Cannot start with empty teams</span>
+cancel_draft:               #player has cancelled the draft!
+end_draft:                  #player has ended the draft!
+
+player_ban_hero:            #player has banned #hero.
+vote_ban_hero:              #hero was banned based on votes.
+fate_ban_hero:              <span style="color:orange">Fate</span> has banned #hero.
+player_pick_hero:           #player has picked #hero.
+fate_pick_hero:             <span style="color:orange">Fate</span> has picked #hero for #player.
+
+set_dibs:                   #player has called dibs on #hero.
+remove_dibs:                #player has retracted their dibs for #hero.
+set_veto:                   #player adds a vote for #hero to be banned.
+set_veto_count:             #player now has @count votes for #hero to be banned.
+remove_veto:                #player no longer wants #hero to be banned.
+
+message:                    #player: [[escapeHtml( @text )]]
+change_team:                #player has joined #team.
+change_team_observer:       #player is now an observer.
+player_joined:              #player joined.
+player_disconnect:          #player has disconnected.
+player_reconnect:           #player has reconnected.
+player_left:                #player left.
+player_removed:             #player has been removed.

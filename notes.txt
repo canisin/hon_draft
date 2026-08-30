@@ -34,73 +34,31 @@ serving on render with gunicorn
   > gunicorn -k gevent -w 1 main:app
 
 TODO
-- break the python code into smaller files
-- make a pass on global and non-local variables
-
-Add style to state and countdown
-Move slot hero names to tooltip similar to draft heroes
-Do a pass on style, composition and background 
-    Try using actual margins instead of the margin divs that you created
-Test even longer player and hero names
 Add hover and click animations
-Add animation to the active team indicaitor
 Add sounds
     Button sounds (hover and click)
     Slot sounds (on sitting and leaving)
-    Hero ban/pick sounds
-    Easter egg: Play "counter pick" if a dibs is picked
-Also, reduce volume on all sounds
 
-Don't display controls if hero name is empty
-Add a scoll bar to the player list
-
-- click sounds
-- add a button to name yourself
+Add a button to name yourself
   o as a relatively simple way to implement this, it could simply add /name to the chat box
-- increase the size of player names in teams
-- remove hero names from teams
-- add tooltips for heroes
-
-it would be nice if clicking on hero controls would not select (or deselect?) hero
-
-ban button is still visible on an already banned hero..
-.. i suppose the pick button will be there on already banned or picked heroes, too :(
-
-- Fix ban button on banned heroes and potential similar issues with pick button 
-- Fix that a click on the ban/pick buttons also select the hero 
-- Make the start, cancel and clear buttons replace each other
-
+Add a scoll bar to the player list
 implement status icons for disconnected players
-
-consider if you prefer not value or value is None
-
-add an icon to indicate "you" (bold text is too subtle, especially on the slot)
-
-pause/resume
-
-results has a cooldown
 try setting a background to the whole page, maybe something darker
-add various sounds
- - last 5 seconds of every countdown
- - various actions using events generated from the server
+
+add sounds for server generated events
    o such as client moved to slot/became observer
    o other player moved to slot/became observer
    o hero picked/dibbed/banned
-   o dib denied
-   o picked hero (with client side queue for overlapping picks)
-   o start/cancel/end draft
    o message received, message sent
-do away with hero selection
 
-
-new serialization reference:
+serialization reference:
 state = {
 	state = state.name
-	state_label = state.label
 	first_ban = first_ban.name
 	stats = [ stat.name .. ]
 	active_team = active_team.name
 	remaining_picks = remaining_picks
+	timer = { state = state, seconds = seconds } or None
 }
 
 players = {

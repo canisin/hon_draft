@@ -23,7 +23,7 @@
     <div class="team-header">
         <div class="team-header-icon-name">
             <img class="team-header-icon" src="/static/images/team-{{ name }}.png" />
-            <div class="team-header-name">{{ name }}</div>
+            <div class="team-header-name team-name team-{{ name }}">{{ name }}</div>
         </div>
         <div class="first-ban">
             <input type="checkbox" class="first-ban-checkbox" id="{{ name }}-first-ban-checkbox"
@@ -93,7 +93,7 @@
         <div class="stat" id="{{ stat }}">
             <div class="stat-header">
                 <img class="stat-header-icon" src="/static/images/{{ stat_name }}.png" />
-                <div class="stat-header-name">{{ stat_name }}</div>
+                <div class="stat-header-name stat-name">{{ stat_name }}</div>
                 <input type="checkbox" class="stat-checkbox" id="{{ stat }}-checkbox"
                        onClick="clickToggleStat( '{{ stat }}' )" />
             </div>
@@ -155,6 +155,8 @@
 <audio id="ban-hero-audio" src="/static/sounds/ban-hero.ogg" />
 <audio id="pick-hero-audio" src="/static/sounds/pick-hero.ogg" />
 <audio id="start-game-audio" src="/static/sounds/start-game.ogg" />
+<audio id="counter-pick-audio" src="/static/sounds/counter-pick.ogg" />
 
+<script type="text/javascript" src="/generated/script/localization.js"></script>
 <script type="text/javascript" src="/static/script/script.js"></script>
 {% endblock %}

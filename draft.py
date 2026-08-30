@@ -2,12 +2,13 @@ from os import getenv
 import enum
 from enum import Enum
 import threading
+import random
 
 import hero_sets
 import players
 import teams
 import heroes
-import messages
+import sockets
 import utils
 
 hero_set = getenv( "HERO_SET" ) or "reborn"
@@ -27,8 +28,6 @@ veto_count = int( getenv( "VETO_COUNT" ) or 2 )
 initial_pick_count = int( getenv( "INITIAL_PICK_COUNT" ) or 1 )
 later_pick_count = int( getenv( "LATER_PICK_COUNT" ) or 2 )
 
-fate_formatted = "<span style=\"color:orange\">Fate</span>"
-
 ## STATE ##
 state = None
 timer = None
@@ -45,23 +44,6 @@ class State( Enum ):
     picking = enum.auto()
     results = enum.auto()
 
-    def get_label( state ):
-        match state:
-            case State.lobby:
-                return "Lobby"
-            case State.pool_countdown:
-                return "Draft Coundown"
-            case State.banning_countdown:
-                return "Banning Countdown"
-            case State.banning:
-                return f"{ active_team.name } is Banning"
-            case State.picking_countdown:
-                return "Picking Countdown"
-            case State.picking:
-                return f"{ active_team.name } is Picking"
-            case State.results:
-                return "Results"
-
 def initialize_state():
     global state
     state = State.lobby
@@ -71,7 +53,6 @@ def initialize_state():
 def serialize_state():
     return {
         "state": state.name,
-        "state_label": state.get_label(),
         "first_ban": first_ban.name,
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
@@ -83,7 +64,7 @@ def set_state( new_state, seconds, callback ):
     global state
     state = new_state
     set_timer( seconds, callback )
-    messages.emit_update_state()
+    sockets.emit_update_state()
 
 def set_timer( seconds, callback ):
     global timer
@@ -102,20 +83,20 @@ def can_modify_timer():
 def pause_timer( player ):
     if not can_modify_timer(): return
     if timer.try_pause():
-        messages.emit_update_state()
-        messages.emit_message( f"{ player.get_formatted_name() } has paused the timer." )
+        sockets.emit_update_state()
+        sockets.message( "pause_timer", player = player.id ).emit()
 
 def resume_timer( player ):
     if not can_modify_timer(): return
     if timer.try_resume():
-        messages.emit_update_state()
-        messages.emit_message( f"{ player.get_formatted_name() } has resumed the timer." )
+        sockets.emit_update_state()
+        sockets.message( "resume_timer", player = player.id ).emit()
 
 def extend_timer( player ):
     if not can_modify_timer(): return
     if timer.try_extend( timer_extension ):
-        messages.emit_update_state()
-        messages.emit_message( f"{ player.get_formatted_name() } has extended the timer by { timer_extension } seconds." )
+        sockets.emit_update_state()
+        sockets.message( "extend_timer", player = player.id, seconds = timer_extension ).emit()
 
 def set_first_ban( player, team ):
     if state != State.lobby:
@@ -126,17 +107,16 @@ def set_first_ban( player, team ):
         return
 
     first_ban = team
-    messages.emit_update_state()
-    messages.emit_message( f"{ player.get_formatted_name() } has set { team.get_formatted_name() } to ban first." )
+    sockets.emit_update_state()
+    sockets.message( "set_first_ban", player = player.id, team = team.name ).emit()
 
 def toggle_stat( player, stat ):
     if state != State.lobby:
         return
 
     stat.is_enabled = not stat.is_enabled
-    messages.emit_update_state()
-    action = "enabled" if stat.is_enabled else "disabled"
-    messages.emit_message( f"{ player.get_formatted_name() } has { action } { stat.get_formatted_name() } heroes." )
+    sockets.emit_update_state()
+    sockets.message( "enable_stat" if stat.is_enabled else "disable_stat", player = player.id, stat = stat.name ).emit()
 
 def click_slot( player, team, index ):
     assert team is not teams.observers
@@ -161,10 +141,10 @@ def start_draft( player ):
         return
 
     if not teams.can_draft():
-        messages.emit_message( f"<span style=\"color: red\">Cannot start with empty teams</span>", to = player.session_id )
+        sockets.message( "cannot_start_empty_teams" ).emit( to = player.session_id )
         return
 
-    messages.emit_message( f"{ player.get_formatted_name() } has started the draft!" )
+    sockets.message( "start_draft", player = player.id ).emit()
 
     set_state( State.pool_countdown, pool_countdown_duration, pool_countdown_callback )
     draft_countdown( pool_countdown_duration )
@@ -172,20 +152,20 @@ def start_draft( player ):
 def draft_countdown( seconds ):
     if state != State.pool_countdown: return
     if seconds == 0: return
-    messages.emit_message( f"Draft starting in { seconds } seconds.." )
+    sockets.message( "draft_countdown", seconds = seconds ).emit()
     threading.Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
     if state in ( State.lobby, State.results ):
         return
     reset_draft()
-    messages.emit_message( f"{ player.get_formatted_name() } has cancelled the draft!" )
+    sockets.message( "cancel_draft", player = player.id ).emit()
 
 def end_draft( player ):
     if state != State.results:
         return
     reset_draft()
-    messages.emit_message( f"{ player.get_formatted_name() } has ended the draft!" )
+    sockets.message( "end_draft", player = player.id ).emit()
 
 def reset_draft( clear_players = False ):
     global active_team
@@ -254,13 +234,13 @@ def ban_hero( player, hero, is_veto = False ):
     hero.set_banned()
     players.check_dibs_veto( hero )
 
-    messages.emit_update_hero( hero )
+    sockets.emit_update_hero( hero )
     if player:
-        messages.emit_message( f"{ player.get_formatted_name() } has banned { hero.name }." )
+        sockets.message( "player_ban_hero", player = player.id, hero = hero.name ).emit()
     elif is_veto:
-        messages.emit_message( f"{ hero.name } was banned based on votes." )
+        sockets.message( "vote_ban_hero", hero = hero.name ).emit()
     else:
-        messages.emit_message( f"{ fate_formatted } has banned { hero.name }." )
+        sockets.message( "fate_ban_hero", hero = hero.name ).emit()
 
     timer.cancel()
 
@@ -281,10 +261,7 @@ def start_picking( team, pick_count ):
     active_team = team
 
     global remaining_picks
-    remaining_picks = min(
-        pick_count,
-        sum( 1 for player in active_team.picking_players() )
-    )
+    remaining_picks = min( pick_count, len( active_team.picking_players() ) )
 
     if remaining_picks == 0:
         active_team = None
@@ -307,17 +284,15 @@ def pick_hero( player, hero, is_fate = False ):
     if not hero.is_available():
         return
 
+    is_denied = any( player and player.dibs == hero for player in player.team.get_other().players )
+
     player.set_hero( hero )
     hero.set_picked()
     players.check_dibs_veto( hero )
 
-    messages.emit_update_hero( hero )
-    messages.emit_hero_picked( hero )
-    messages.emit_message(
-        f"{ player.get_formatted_name() } has picked { hero.name }."
-        if not is_fate else
-        f"{ fate_formatted } has picked { hero.name } for { player.get_formatted_name() }."
-    )
+    sockets.emit_update_hero( hero )
+    sockets.emit_hero_picked( hero, is_denied )
+    sockets.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id, hero = hero.name ).emit()
 
     global remaining_picks
     remaining_picks -= 1
@@ -332,6 +307,6 @@ def picking_timer_callback():
     for _ in range( remaining_picks ):
         picking_players = active_team.picking_players()
         assert picking_players
-        player = next( ( player for player in picking_players if player.dibs ), picking_players[ 0 ] )
+        player = random.choice( [ player for player in picking_players if player.dibs ] or picking_players )
         hero = player.dibs if player.dibs else active_team.get_random_pick()
         pick_hero( player, hero, is_fate = not player.dibs )

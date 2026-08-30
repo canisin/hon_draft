@@ -12,30 +12,33 @@ let pickHeroAudio = document.getElementById( "pick-hero-audio" );
 pickHeroAudio.volume = 0.2;
 let startGameAudio = document.getElementById( "start-game-audio" );
 startGameAudio.volume = 0.2;
+let counterPickAudio = document.getElementById( "counter-pick-audio" );
+counterPickAudio.volume = 0.2;
 
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
-function playAudio( audio, noDelay = true )
+function playAudio( audio )
+{
+    audio.play();
+    lastPlayedAudio = Date.now();
+};
+
+function playAudioWithDelay( audio, delay = audioDelay )
 {
     let timeSinceAudio = Date.now() - lastPlayedAudio;
-    let remainingDelay = audioDelay - timeSinceAudio;
-    if ( noDelay || remainingDelay <= 0 )
+    let remainingDelay = delay - timeSinceAudio;
+    if ( remainingDelay <= 0 )
     {
-        audio.play();
-        lastPlayedAudio = Date.now();
+        playAudio( audio );
     }
     else
     {
         setTimeout( () => {
             audio.play();
         }, remainingDelay );
-        lastPlayedAudio += audioDelay;
+        lastPlayedAudio += delay;
     }
 };
-function playAudioWithDelay( audio )
-{
-    playAudio( audio, false );
-}
 
 function clickSlot( team, index )
 {
@@ -429,7 +432,7 @@ function onUpdateState( newState )
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
     let stateLabel = document.getElementById( "state" );
-    stateLabel.textContent = state.state_label;
+    stateLabel.innerHTML = localize( state.state );
 
     let startDraftButton = document.getElementById( "start-draft-button" );
     startDraftButton.disabled = state.state != "lobby";
@@ -466,6 +469,22 @@ function onUpdateClientTeam( team )
 };
 socketio.on( "update-client-team", onUpdateClientTeam );
 
+const tickAudioSeconds = 3;
+function shouldPlayTickAudio( seconds )
+{
+    if ( state.state == "pool_countdown" )
+    {
+        return true;
+    }
+
+    if ( [ "banning", "picking" ].includes( state.state ) )
+    {
+        return seconds <= tickAudioSeconds;
+    }
+ 
+    return false;
+};
+
 let timer;
 function setTimer()
 {
@@ -487,7 +506,7 @@ function setTimer()
 
         if ( seconds > 0 )
         {
-            if ( state.state == "pool_countdown" )
+            if ( shouldPlayTickAudio( seconds ) )
             {
                 tickAudio.play();
             }
@@ -740,12 +759,17 @@ function onUpdateHeroes( newHeroes )
 };
 socketio.on( "update-heroes", onUpdateHeroes );
 
-function onHeroPicked( hero )
+function onHeroPicked( hero, isDenied )
 {
     let [ stat, index ] = findHeroIndex( hero );
     let heroDiv = document.getElementById( `${ stat }-${ index }` );
     let heroSound = heroDiv.getElementsByClassName( "hero-sound" )[ 0 ];
     playAudioWithDelay( heroSound );
+
+    if ( isDenied )
+    {
+        playAudioWithDelay( counterPickAudio, 1500 );
+    }
 };
 socketio.on( "hero-picked", onHeroPicked );
 
@@ -801,6 +825,35 @@ function getTimestamp()
             + time.getSeconds().toString().padStart( 2, "0" );
 };
 
+function escapeHtml( str )
+{
+    let div = document.createElement( "div" );
+    div.textContent = str;
+    return div.innerHTML;
+};
+
+function localize( key, params = {} )
+{
+    const recursionLimit = 10;
+    let depth = ( params._depth ?? 0 ) + 1;
+    if ( depth >= recursionLimit )
+    {
+        let error = `recursion limit reached in '${ key }'`;
+        console.warn( error );
+        return localizations.error?.( { error } ) ?? error;
+    }
+
+    let localization = localizations[ key ];
+    if ( !localization )
+    {
+        let error = `unknown loc key '${ key }'`;
+        console.warn( error );
+        return localizations.error?.( { error } ) ?? error;
+    }
+
+    return localization( { ...params, _depth: depth } );
+};
+
 function onMessage( message )
 {
     console.log( "message received" );
@@ -808,7 +861,7 @@ function onMessage( message )
     messageLog.innerHTML += `
         <div class="message">
             <span class="message-timestamp">${ getTimestamp() }</span>
-            <span class="message-message">${ message }</span>
+            <span class="message-message">${ localize( message.key, message.params ) }</span>
         </div>
     `;
     messageLog.scrollTop = messageLog.scrollHeight;
