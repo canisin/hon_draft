@@ -17,14 +17,19 @@ counterPickAudio.volume = 0.2;
 
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
-function playAudio( audio, noDelay = true, delay = audioDelay )
+function playAudio( audio )
+{
+    audio.play();
+    lastPlayedAudio = Date.now();
+};
+
+function playAudioWithDelay( audio, delay = audioDelay )
 {
     let timeSinceAudio = Date.now() - lastPlayedAudio;
     let remainingDelay = delay - timeSinceAudio;
-    if ( noDelay || remainingDelay <= 0 )
+    if ( remainingDelay <= 0 )
     {
-        audio.play();
-        lastPlayedAudio = Date.now();
+        playAudio( audio );
     }
     else
     {
@@ -34,10 +39,6 @@ function playAudio( audio, noDelay = true, delay = audioDelay )
         lastPlayedAudio += delay;
     }
 };
-function playAudioWithDelay( audio, delay = audioDelay )
-{
-    playAudio( audio, false, delay );
-}
 
 function clickSlot( team, index )
 {
