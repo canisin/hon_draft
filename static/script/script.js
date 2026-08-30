@@ -17,10 +17,10 @@ counterPickAudio.volume = 0.2;
 
 let lastPlayedAudio = Date.now();
 let audioDelay = 3000;
-function playAudio( audio, noDelay = true )
+function playAudio( audio, noDelay = true, delay = audioDelay )
 {
     let timeSinceAudio = Date.now() - lastPlayedAudio;
-    let remainingDelay = audioDelay - timeSinceAudio;
+    let remainingDelay = delay - timeSinceAudio;
     if ( noDelay || remainingDelay <= 0 )
     {
         audio.play();
@@ -31,12 +31,12 @@ function playAudio( audio, noDelay = true )
         setTimeout( () => {
             audio.play();
         }, remainingDelay );
-        lastPlayedAudio += audioDelay;
+        lastPlayedAudio += delay;
     }
 };
-function playAudioWithDelay( audio )
+function playAudioWithDelay( audio, delay = audioDelay )
 {
-    playAudio( audio, false );
+    playAudio( audio, false, delay );
 }
 
 function clickSlot( team, index )
@@ -767,7 +767,7 @@ function onHeroPicked( hero, isDenied )
 
     if ( isDenied )
     {
-        playAudioWithDelay( counterPickAudio );
+        playAudioWithDelay( counterPickAudio, 1500 );
     }
 };
 socketio.on( "hero-picked", onHeroPicked );
