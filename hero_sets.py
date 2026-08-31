@@ -239,6 +239,7 @@ reborn = {
         ( "The Gladiator", "gladiator" ),
         ( "Hammerstorm", "hammerstorm" ),
         ( "Jeraziah", "jeraziah" ),
+        ( "Kane", "kane" ),
         ( "Keeper of the Forest", "keeper_of_the_forest" ),
         ( "King Klout", "king_klout" ),
         ( "Kraken", "kraken" ),
