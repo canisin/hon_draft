@@ -215,6 +215,7 @@ reborn = {
         ( "Rhapsody", "rhapsody" ),
         ( "Riftwalker", "riftwalker" ),
         ( "Soul Reaper", "soul_reaper" ),
+        ( "Succubus", "succubus" ),
         ( "Tempest", "tempest" ),
         ( "Thunderbringer", "thunderbringer" ),
         ( "Torturer", "torturer" ),
