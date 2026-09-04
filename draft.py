@@ -120,9 +120,12 @@ def toggle_stat( player, stat ):
 
 def click_slot( player, team, index ):
     assert team is not teams.observers
-    if state != State.lobby:
-        return
+    if state == State.lobby:
+        move_to_slot( player, team, index )
+    else:
+        swap_with_slot( player, team, index )
 
+def move_to_slot( player, team, index ):
     slot_player = team.get( index )
     if slot_player == player:
         player.set_team( teams.observers )
@@ -135,6 +138,30 @@ def click_slot( player, team, index ):
         team.set_player_index( player, index )
     else:
         player.set_team( team, index )
+
+def swap_with_slot( player, team, index ):
+    if team != player.team:
+        return
+
+    other_player = team.get( index )
+    if not other_player:
+        return
+
+    if player == other_player:
+        return
+
+    if player.swap_request == other_player:
+        player.set_swap_request( None )
+        return
+
+    if other_player.swap_request == player:
+        player.accept_swap_request( other_player )
+        return
+
+    if not player.hero and not other_player.hero:
+        return
+
+    player.set_swap_request( other_player )
 
 def start_draft( player ):
     if state != State.lobby:

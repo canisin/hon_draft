@@ -12,6 +12,7 @@ class Player:
         self.hero = None
         self.dibs = None
         self.veto = {}
+        self.swap_request = None
         self.team = teams.observers
         self.is_disconnected = False
 
@@ -45,8 +46,15 @@ class Player:
 
     def set_hero( self, hero ):
         self.dibs = None
+        self.swap_request = None
         self.hero = hero
         sockets.emit_update_player( self )
+        for other_player in self.team.players:
+            if not other_player: continue
+            if other_player == self: continue
+            if other_player.swap_request == self:
+                other_player.swap_request = None
+                sockets.emit_update_player( other_player )
 
     def toggle_dibs( self, hero ):
         assert not self.hero
@@ -67,6 +75,30 @@ class Player:
             sockets.message( "remove_veto", player = self.id, hero = hero.name ).emit( team = self.team )
         sockets.emit_update_hero( hero )
         sockets.emit_update_player( self )
+
+    def set_swap_request( self, other ):
+        self.swap_request = other
+        sockets.emit_update_player( self )
+        # TODO: message: self wants to/no longer wants to swap heroes with other
+
+    def execute_swap_request( self ):
+        assert self.swap_request
+        other = self.swap_request
+        self.swap_request = None
+        hero = self.hero
+        other_hero = other.hero
+        self.set_hero( other_hero )
+        other.set_hero( hero )
+        # TODO: message: other accepted self's request to swap heroes
+
+    def accept_swap_request( self, other ):
+        assert other.swap_request == self
+        other.swap_request = None
+        hero = self.hero
+        other_hero = other.hero
+        self.set_hero( other_hero )
+        other.set_hero( hero )
+        # TODO: message: self accepted other's request to swap heroes
 
     def check_dibs( self, hero ):
         if self.dibs is hero:
@@ -89,6 +121,7 @@ class Player:
         self.hero = None
         self.dibs = None
         self.veto = {}
+        self.swap_request = None
         sockets.emit_update_player( self )
 
     def update_client_team( self ):
@@ -104,6 +137,7 @@ class Player:
             "hero": self.hero.name if self.hero else None,
             "dibs": self.dibs.name if self.dibs else None,
             "veto": { hero.name: count for hero, count in self.veto.items() },
+            "swap_request": self.swap_request.id if self.swap_request else None,
         }
 
 players = []
