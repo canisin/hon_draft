@@ -298,6 +298,7 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 .slot {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 #legion .slot {
@@ -372,6 +373,37 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 
 .slot.dibs .slot-hero-icon {
     filter: grayscale( 1 );
+}
+
+.slot.incoming-swap-request,
+.slot.outgoing-swap-request {
+    outline: 6px solid orange;
+    outline-offset: 2px;
+}
+
+.slot .tooltip {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX( -50% );
+    margin-top: 6px;
+
+    background: darkslategray;
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    pointer-events: none;
+    z-index: 1;
+}
+
+.slot.incoming-swap-request:hover .tooltip-swap-accept,
+.slot.outgoing-swap-request:hover .tooltip-swap-cancel {
+    display: block;
 }
 
 .slot-hero-name {

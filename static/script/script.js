@@ -594,6 +594,24 @@ function shouldShowDibs( team )
     return isClientObserver() || team == clientTeam;
 };
 
+function updateTeamSlots( team )
+{
+    if ( team == "observers" )
+    {
+        return;
+    }
+
+    if ( !teams )
+    {
+        return;
+    }
+
+    for ( let [ index, player ] of teams[ team ].entries() )
+    {
+        updateSlot( team, index, player ? players[ player ] : null );
+    }
+};
+
 function updateSlot( team, index, player )
 {
     let slotDiv = document.getElementById( `${ team }-${ index }` );
@@ -624,6 +642,12 @@ function updateSlot( team, index, player )
 
     let isDibs = player && !player.hero && player.dibs && shouldShowDibs( team );
     slotDiv.classList.toggle( "dibs", isDibs );
+
+    let isIncomingSwapRequest = player && player.swap_request == clientId;
+    slotDiv.classList.toggle( "incoming-swap-request", isIncomingSwapRequest );
+
+    let isOutgoingSwapRequest = player && player.id == players[ clientId ]?.swap_request;
+    slotDiv.classList.toggle( "outgoing-swap-request", isOutgoingSwapRequest );
 
     if ( !player )
     {
@@ -683,12 +707,7 @@ function updatePlayer( player )
     let playerIcon = playerDiv.getElementsByClassName( "players-list-entry-icon" )[ 0 ];
     playerIcon.src = `/static/images/${ getTeamIcon( player.team ) }.png`;
 
-    let [ team, index ] = findPlayer( player.id );
-    if ( team != "observers" )
-    {
-        updateSlot( team, index, player );
-    }
-
+    updateTeamSlots( player.team );
     updateHoveredHero();
 };
 
@@ -805,12 +824,9 @@ function onUpdateTeams( newTeams )
 {
     console.log( "updating teams" );
     teams = newTeams;
-    for ( let [ team, slots ] of Object.entries( teams ) )
+    for ( let team of Object.keys( teams ) )
     {
-        for ( let [ index, player ] of slots.entries() )
-        {
-            updateSlot( team, index, player ? players[ player ] : null );
-        }
+        updateTeamSlots( team );
     }
 };
 socketio.on( "update-teams", onUpdateTeams );
