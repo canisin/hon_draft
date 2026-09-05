@@ -317,8 +317,15 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
     background: linear-gradient( to left, lightsalmon, white );
 }
 
+#legion-0     { --slot-color: gold; }
+#legion-1     { --slot-color: steelblue; }
+#legion-2     { --slot-color: mediumorchid; }
+#hellbourne-0 { --slot-color: gold; }
+#hellbourne-1 { --slot-color: steelblue; }
+#hellbourne-2 { --slot-color: mediumorchid; }
+
 .client-slot {
-    box-shadow: 0 0 10px yellow;
+    box-shadow: 0 0 10px 2px var( --slot-color );
 }
 
 .slot-player {
