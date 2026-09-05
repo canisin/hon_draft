@@ -643,11 +643,7 @@ function updateSlot( team, index, player )
     let isDibs = player && !player.hero && player.dibs && shouldShowDibs( team );
     slotDiv.classList.toggle( "dibs", isDibs );
 
-    let isIncomingSwapRequest = player && player.swap_request == clientId;
-    slotDiv.classList.toggle( "incoming-swap-request", isIncomingSwapRequest );
-
-    let isOutgoingSwapRequest = player && player.id == players[ clientId ]?.swap_request;
-    slotDiv.classList.toggle( "outgoing-swap-request", isOutgoingSwapRequest );
+    updateSwapRequests( slotDiv, team, index, player );
 
     if ( !player )
     {
@@ -670,6 +666,74 @@ function updateSlot( team, index, player )
     {
         heroName.textContent = "None";
         heroIcon.src = `/static/images/hero-none.png`;
+    }
+};
+
+function collectSwapRequests( team, index, player )
+{
+    let swapRequests = [];
+    let hasSwapRequestForClient = false;
+    let hasSwapRequestFromClient = false;
+
+    if ( !player )
+    {
+        return { swapRequests, hasSwapRequestForClient, hasSwapRequestFromClient };
+    }
+
+    if ( player.swap_request )
+    {
+        hasSwapRequestForClient = player.swap_request == clientId;
+        if ( hasSwapRequestForClient || isClientObserver() )
+        {
+            swapRequests.push( index );
+        }
+    }
+
+    for ( let [ otherIndex, otherPlayer ] of teams[ team ].entries() )
+    {
+        if ( otherIndex == index )
+        {
+            continue;
+        }
+
+        if ( !otherPlayer )
+        {
+            continue;
+        }
+
+        otherPlayer = players[ otherPlayer ];
+        if ( otherPlayer.swap_request == player.id )
+        {
+            let isSwapRequestFromClient = otherPlayer.id == clientId;
+            hasSwapRequestFromClient ||= isSwapRequestFromClient;
+            if ( isSwapRequestFromClient || isClientObserver() )
+            {
+                swapRequests.push( otherIndex );
+            }
+        }
+    }
+
+    return { swapRequests, hasSwapRequestForClient, hasSwapRequestFromClient };
+};
+
+function updateSwapRequests( slotDiv, team, index, player )
+{
+    let { swapRequests, hasSwapRequestForClient, hasSwapRequestFromClient } = collectSwapRequests( team, index, player );
+
+    slotDiv.classList.toggle( "swap-request", swapRequests.length > 0 );
+    slotDiv.classList.toggle( "incoming-swap-request", hasSwapRequestForClient );
+    slotDiv.classList.toggle( "outgoing-swap-request", hasSwapRequestFromClient );
+
+    for ( let dashIndex = 0; dashIndex < teamSize - 1; ++dashIndex )
+    {
+        if ( swapRequests.length > dashIndex )
+        {
+            slotDiv.style.setProperty( `--dash-${ dashIndex }-color`, `var( --${ team }-${ swapRequests[ dashIndex ] }-color )` );
+        }
+        else
+        {
+            slotDiv.style.removeProperty( `--dash-${ dashIndex }-color` );
+        }
     }
 };
 

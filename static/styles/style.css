@@ -317,12 +317,21 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
     background: linear-gradient( to left, lightsalmon, white );
 }
 
-#legion-0     { --slot-color: gold; }
-#legion-1     { --slot-color: steelblue; }
-#legion-2     { --slot-color: mediumorchid; }
-#hellbourne-0 { --slot-color: gold; }
-#hellbourne-1 { --slot-color: steelblue; }
-#hellbourne-2 { --slot-color: mediumorchid; }
+:root {
+    --legion-0-color: gold;
+    --legion-1-color: steelblue;
+    --legion-2-color: mediumorchid;
+    --hellbourne-0-color: gold;
+    --hellbourne-1-color: steelblue;
+    --hellbourne-2-color: mediumorchid;
+}
+
+#legion-0     { --slot-color: var( --legion-0-color ); }
+#legion-1     { --slot-color: var( --legion-1-color ); }
+#legion-2     { --slot-color: var( --legion-2-color ); }
+#hellbourne-0 { --slot-color: var( --hellbourne-0-color ); }
+#hellbourne-1 { --slot-color: var( --hellbourne-1-color ); }
+#hellbourne-2 { --slot-color: var( --hellbourne-2-color ); }
 
 .client-slot {
     box-shadow: 0 0 10px 2px var( --slot-color );
@@ -382,11 +391,23 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
     filter: grayscale( 1 );
 }
 
-.slot.incoming-swap-request,
-.slot.outgoing-swap-request {
-    outline: 6px solid orange;
-    outline-offset: 2px;
+.slot .slot-swap-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+    overflow: visible;
+    filter: drop-shadow( 0 0 1px black ) drop-shadow( 0 0 1px black );
 }
+
+.slot.swap-request .slot-swap-indicator {
+    display: block;
+}
+
+.slot-swap-indicator .dash-0 { color: var( --dash-0-color ); }
+.slot-swap-indicator .dash-1 { color: var( --dash-1-color, var( --dash-0-color ) ); }
 
 .slot .tooltip {
     display: none;
