@@ -54,6 +54,32 @@
                 <img class="slot-hero-icon" src="/static/images/slot-{{ name }}.png" />
                 <div class="slot-hero-name"></div>
             </div>
+            <svg class="slot-swap-indicator" preserveAspectRatio="none" viewBox="0 0 100 100">
+                <path class="dash-0" d="M -10 -10 L 110 -10 L 110 110 L -10 110 Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      stroke-dasharray="200 280"
+                      stroke-linecap="round">
+                    <animate attributeName="stroke-dashoffset"
+                             from="0" to="-480"
+                             dur="3s"
+                             repeatCount="indefinite" />
+                </path>
+                <path class="dash-1" d="M -10 -10 L 110 -10 L 110 110 L -10 110 Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      stroke-dasharray="200 280"
+                      stroke-linecap="round">
+                    <animate attributeName="stroke-dashoffset"
+                             from="240" to="-240"
+                             dur="3s"
+                             repeatCount="indefinite" />
+                </path>
+            </svg>
+            <span class="tooltip tooltip-swap-accept">Click to accept swap request</span>
+            <span class="tooltip tooltip-swap-cancel">Click to cancel swap request</span>
         </div>
         {% endfor %}
     </div>
@@ -157,6 +183,9 @@
 <audio id="start-game-audio" src="/static/sounds/start-game.ogg" />
 <audio id="counter-pick-audio" src="/static/sounds/counter-pick.ogg" />
 
+<script>
+    const teamSize = {{ team_size }};
+</script>
 <script type="text/javascript" src="/generated/script/localization.js"></script>
 <script type="text/javascript" src="/static/script/script.js"></script>
 {% endblock %}
