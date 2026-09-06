@@ -77,19 +77,12 @@ class Player:
         sockets.emit_update_player( self )
 
     def set_swap_request( self, other ):
+        prev_request = self.swap_request
         self.swap_request = other
         sockets.emit_update_player( self )
-        # TODO: message: self wants to/no longer wants to swap heroes with other
-
-    def execute_swap_request( self ):
-        assert self.swap_request
-        other = self.swap_request
-        self.swap_request = None
-        hero = self.hero
-        other_hero = other.hero
-        self.set_hero( other_hero )
-        other.set_hero( hero )
-        # TODO: message: other accepted self's request to swap heroes
+        sockets.message( "add_swap_request" if other else "cancel_swap_request", 
+                        player = self.id, 
+                        other_player = other.id if other else prev_request.id ).emit( team = self.team )
 
     def accept_swap_request( self, other ):
         assert other.swap_request == self
@@ -98,7 +91,7 @@ class Player:
         other_hero = other.hero
         self.set_hero( other_hero )
         other.set_hero( hero )
-        # TODO: message: self accepted other's request to swap heroes
+        sockets.message( "accept_swap_request", player = self.id, other_player = other.id ).emit()
 
     def check_dibs( self, hero ):
         if self.dibs is hero:
