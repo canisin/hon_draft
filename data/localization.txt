@@ -13,7 +13,7 @@ server_reset:               <span style="color: red">#player has reset the serve
 error:                      <span style="color: red">@error</span>
 
 player:                     <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( players[ @player ].name ) ]]</span>
-other_player:				[[ localize( "player", { player: @other_player } ) ]]
+other_player:               [[ localize( "player", { player: @other_player } ) ]]
 name_change:                <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( @old_name ) ]]</span> changed name to #player.
 hero:                       <span class="stat-[[ findHero( @hero ).stat ]]">[[ findHero( @hero ).name ]]</span>
 team:                       <span class="team-name team-[[ @team ]]">The [[ @team ]]</span>
@@ -55,9 +55,9 @@ set_veto:                   #player adds a vote for #hero to be banned.
 set_veto_count:             #player now has @count votes for #hero to be banned.
 remove_veto:                #player no longer wants #hero to be banned.
 
-add_swap_request:			#player wants to swap heroes with #other_player.
-cancel_swap_request:		#player no longer wants to swap heroes with #other_player.
-accept_swap_request:		#player accepted #other_player's request to swap heroes.
+add_swap_request:           #player wants to swap heroes with #other_player.
+cancel_swap_request:        #player no longer wants to swap heroes with #other_player.
+accept_swap_request:        #player accepted #other_player's request to swap heroes.
 
 message:                    #player: [[escapeHtml( @text )]]
 change_team:                #player has joined #team.
