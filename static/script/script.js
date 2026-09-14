@@ -724,11 +724,17 @@ function updateSwapRequests( slotDiv, team, index, player )
     slotDiv.classList.toggle( "incoming-swap-request", hasSwapRequestForClient );
     slotDiv.classList.toggle( "outgoing-swap-request", hasSwapRequestFromClient );
 
-    for ( let dashIndex = 0; dashIndex < teamSize - 1; ++dashIndex )
+    let dashCount = teamSize - 1;
+    let swapCount = swapRequests.length;
+
+    // color as many dashes as it is possible to have an even distribution of colors
+    let coloredDashCount = swapCount > 0 ? dashCount - ( dashCount % swapCount ) : 0;
+    for ( let dashIndex = 0; dashIndex < dashCount; ++dashIndex )
     {
-        if ( swapRequests.length > dashIndex )
+        if ( dashIndex < coloredDashCount )
         {
-            slotDiv.style.setProperty( `--dash-${ dashIndex }-color`, `var( --${ team }-${ swapRequests[ dashIndex ] }-color )` );
+            let swapIndex = dashIndex % swapCount;
+            slotDiv.style.setProperty( `--dash-${ dashIndex }-color`, `var( --${ team }-${ swapRequests[ swapIndex ] }-color )` );
         }
         else
         {
