@@ -48,6 +48,7 @@ vote_ban_hero:              #hero was banned based on votes.
 fate_ban_hero:              <span style="color:orange">Fate</span> has banned #hero.
 player_pick_hero:           #player has picked #hero.
 fate_pick_hero:             <span style="color:orange">Fate</span> has picked #hero for #player.
+counter_pick:               #player <span style="color:red">counter-picked</span> #hero from #other_player.
 
 set_dibs:                   #player has called dibs on #hero.
 remove_dibs:                #player has retracted their dibs for #hero.
