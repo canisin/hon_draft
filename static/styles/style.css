@@ -407,7 +407,7 @@ body.state-picking.active-team-hellbourne #hellbourne :is( .team-status-label, .
 }
 
 .slot-swap-indicator .dash-0 { color: var( --dash-0-color ); }
-.slot-swap-indicator .dash-1 { color: var( --dash-1-color, var( --dash-0-color ) ); }
+.slot-swap-indicator .dash-1 { color: var( --dash-1-color ); }
 
 .slot .tooltip {
     display: none;
