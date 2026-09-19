@@ -229,6 +229,7 @@ reborn = {
         ( "Amun-Ra", "amun_ra" ),
         ( "Armadon", "armadon" ),
         ( "Behemoth", "behemoth" ),
+        ( "Berzerker", "berzerker" ),
         ( "Cthulhuphant", "cthulhuphant" ),
         ( "Deadwood", "deadwood" ),
         ( "Devourer", "devourer" ),
