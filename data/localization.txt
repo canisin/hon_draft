@@ -68,3 +68,7 @@ player_disconnect:          #player has disconnected.
 player_reconnect:           #player has reconnected.
 player_left:                #player left.
 player_removed:             #player has been removed.
+
+dice_help:                  Example dice rolls: "d100", "1d4 + 1", "3d6 - 1d8"
+dice_error:                 <span style="color:red">Invalid dice expression.</span>
+dice_roll:                  #player rolled @expression → <span style="color:orange"><b>@roll</b></span>
