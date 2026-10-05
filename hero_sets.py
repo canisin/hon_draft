@@ -205,6 +205,7 @@ reborn = {
         ( "Myrmidon", "myrmidon" ),
         ( "Nymphora", "nymphora" ),
         ( "Ophelia", "ophelia" ),
+        ( "Parasite", "parasite" ),
         ( "Pearl", "pearl" ),
         ( "Plague Rider", "plague_rider" ),
         ( "Pollywog Priest", "pollywog_priest" ),
