@@ -17,6 +17,11 @@ other_player:               [[ localize( "player", { player: @other_player } ) ]
 name_change:                <span class="team-[[ players[ @player ].team ]]">[[ escapeHtml( @old_name ) ]]</span> changed name to #player.
 hero:                       <span class="stat-[[ findHero( @hero ).stat ]]">[[ findHero( @hero ).name ]]</span>
 team:                       <span class="team-name team-[[ @team ]]">The [[ @team ]]</span>
+other_team:                 [[ localize( "team", { team: getOtherTeam( @team ) } ) ]]
+player_team:                [[ localize( "team", { team: players[ @player ].team } ) ]]
+player_other_team:          [[ localize( "team", { team: getOtherTeam( players[ @player ].team ) } ) ]]
+active_team:                [[ localize( "team", { team: state.active_team } ) ]]
+inactive_team:              [[ localize( "team", { team: getOtherTeam( state.active_team ) } ) ]]
 agi:                        agility
 int:                        intelligence
 str:                        strength
@@ -27,7 +32,9 @@ pool_countdown:             Draft Coundown
 banning_countdown:          Banning Countdown
 banning:                    [[ state.active_team ]] is Banning
 picking_countdown:          Picking Countdown
-picking:                    [[ state.active_team ]] is Picking
+picking:                    [[ localize( !state.reverse_draft ? "picking_classic" : "picking_reverse", params ) ]]
+picking_classic:            [[ state.active_team ]] is Picking
+picking_reverse:            [[ state.active_team ]] is Picking for [[ getOtherTeam( state.active_team ) ]]
 results:                    Results
 
 pause_timer:                #player has paused the timer.
@@ -35,10 +42,14 @@ resume_timer:               #player has resumed the timer.
 extend_timer:               #player has extended the timer by @seconds seconds.
 draft_countdown:            Draft starting in @seconds seconds..
 
+enable_reverse_draft:       #player has enabled <span style="color: deeppink">Reverse Draft</span>.
+disable_reverse_draft:      #player has disabled <span style="color: deeppink">Reverse Draft</span>.
 set_first_ban:              #player has set #team to ban first.
 enable_stat:                #player has enabled #stat heroes.
 disable_stat:               #player has disabled #stat heroes.
-start_draft:                #player has started the draft!
+start_draft:                [[ localize( !state.reverse_draft ? "start_draft_classic" : "start_draft_reverse", params ) ]]
+start_draft_classic:        #player has started the draft!
+start_draft_reverse:        #player has started the <span style="color: deeppink">Reverse Draft</span>!
 cannot_start_empty_teams:   <span style="color: red">Cannot start with empty teams</span>
 cancel_draft:               #player has cancelled the draft!
 end_draft:                  #player has ended the draft!
@@ -46,12 +57,22 @@ end_draft:                  #player has ended the draft!
 player_ban_hero:            #player has banned #hero.
 vote_ban_hero:              #hero was banned based on votes.
 fate_ban_hero:              <span style="color:orange">Fate</span> has banned #hero.
-player_pick_hero:           #player has picked #hero.
-fate_pick_hero:             <span style="color:orange">Fate</span> has picked #hero for #player.
-counter_pick:               #player <span style="color:red">counter-picked</span> #hero from #other_player.
+player_pick_hero:           [[ localize( !state.reverse_draft ? "player_pick_hero_classic" : "player_pick_hero_reverse", params ) ]]
+player_pick_hero_classic:   #player has picked #hero.
+player_pick_hero_reverse:   #player has picked #hero for #inactive_team.
+fate_pick_hero:             [[ localize( !state.reverse_draft ? "fate_pick_hero_classic" : "fate_pick_hero_reverse", params ) ]]
+fate_pick_hero_classic:     <span style="color:orange">Fate</span> has picked #hero for #player.
+fate_pick_hero_reverse:     <span style="color:orange">Fate</span> has picked #hero for #inactive_team.
+counter_pick:               [[ localize( !state.reverse_draft ? "counter_pick_classic" : "counter_pick_reverse", params ) ]]
+counter_pick_classic:       #player <span style="color:red">counter-picked</span> #hero from #other_player.
+counter_pick_reverse:       #player <span style="color:red">counter-reverse-picked</span> #hero from #other_player.
 
-set_dibs:                   #player has called dibs on #hero.
-remove_dibs:                #player has retracted their dibs for #hero.
+set_dibs:                   [[ localize( !state.reverse_draft ? "set_dibs_classic" : "set_dibs_reverse", params ) ]]
+set_dibs_classic:           #player has called dibs on #hero.
+set_dibs_reverse:           #player wants to pick #hero for #player_other_team.
+remove_dibs:                [[ localize( !state.reverse_draft ? "remove_dibs_classic" : "remove_dibs_reverse", params ) ]]
+remove_dibs_classic:        #player has retracted their dibs for #hero.
+remove_dibs_reverse:        #player no longer wants to pick #hero for #player_other_team.
 set_veto:                   #player adds a vote for #hero to be banned.
 set_veto_count:             #player now has @count votes for #hero to be banned.
 remove_veto:                #player no longer wants #hero to be banned.

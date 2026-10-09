@@ -378,6 +378,12 @@ function isClientTeamActive()
     return state && clientTeam == state.active_team;
 };
 
+function getOtherTeam( team )
+{
+    if ( team == "legion" ) return "hellbourne";
+    if ( team == "hellbourne" ) return "legion";
+};
+
 function checkAnnouncer( previousState )
 {
     // if the previous state was null, then the client is just loading in or refreshing the page
