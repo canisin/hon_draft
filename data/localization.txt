@@ -37,6 +37,10 @@ picking_classic:            [[ state.active_team ]] is Picking
 picking_reverse:            [[ state.active_team ]] is Picking for [[ getOtherTeam( state.active_team ) ]]
 results:                    Results
 
+draft_mode:                 [[ localize( !state.reverse_draft ? "draft_mode_classic" : "draft_mode_reverse" ) ]]
+draft_mode_classic:         Classic Draft
+draft_mode_reverse:         Reverse Draft
+
 pause_timer:                #player has paused the timer.
 resume_timer:               #player has resumed the timer.
 extend_timer:               #player has extended the timer by @seconds seconds.

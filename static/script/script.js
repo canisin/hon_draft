@@ -294,6 +294,11 @@ function endDraft()
     socketio.emit( "end-draft" );
 };
 
+function toggleReverseDraft()
+{
+    socketio.emit( "toggle-reverse-draft" );
+};
+
 function pauseTimer()
 {
     socketio.emit( "pause-timer" );
@@ -328,6 +333,15 @@ function setFirstBan()
 
     legionFirstBan.checked = state.first_ban == "legion";
     hellbourneFirstBan.checked = state.first_ban == "hellbourne";
+};
+
+function setDraftMode()
+{
+    document.body.classList.toggle( "reverse-draft", state.reverse_draft );
+
+    let draftModeButton = document.getElementById( "draft-mode-button" );
+    draftModeButton.innerHTML = localize( "draft_mode" );
+    draftModeButton.disabled = state.state != "lobby";
 };
 
 function setTeamStatus( team )
@@ -450,6 +464,7 @@ function onUpdateState( newState )
     endDraftButton.disabled = state.state != "results";
 
     setTimer();
+    setDraftMode();
     setFirstBan();
     setTeamStatus( "legion" );
     setTeamStatus( "hellbourne" );
