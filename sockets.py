@@ -84,6 +84,11 @@ def on_disconnect():
     utils.log( f"socket disconnect: id: { id }, session_id: { session_id }" )
     players.disconnect( id, session_id )
 
+@socketio.on( "toggle-reverse-draft" )
+def on_toggle_reverse_draft():
+    player = players.get( session[ "id" ] )
+    draft.toggle_reverse_draft( player )
+
 @socketio.on( "first-ban" )
 def on_first_ban( team ):
     player = players.get( session[ "id" ] )

@@ -27,5 +27,10 @@ def generate_localization_script():
                 if not line or line.startswith( "#" ):
                     continue
                 key, _, loc = line.partition( ":" )
-                generated.write( f"\"{ key.strip() }\": ( params ) => `{ _process_loc( loc.strip() ) }`,\n" )
+                generated.write(
+                    f"\"{ key.strip() }\": ( params ) => {{\n"
+                    f"    const localize = ( key, extra = {{}} ) => window.localize( key, {{ ...params, ...extra }} );\n"
+                    f"    return `{ _process_loc( loc.strip() ) }`;\n"
+                    f"}},\n"
+                )
         generated.write( "};\n" )

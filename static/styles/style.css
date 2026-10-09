@@ -100,6 +100,36 @@ body:not(.timer-paused) #resume-timer-button {
     display: none;
 }
 
+#draft-mode-button {
+    display: block;
+    margin: 5px auto 0;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    color: orange;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-box: trim-both cap alphabetic;
+}
+
+body.reverse-draft #draft-mode-button {
+    color: deeppink;
+}
+
+#draft-mode-button:enabled {
+    cursor: pointer;
+}
+
+#draft-mode-button:enabled:hover {
+    background: color-mix( in srgb, currentColor 15%, transparent );
+}
+
+#draft-mode-button:disabled {
+    border-color: transparent;
+}
+
 .main {
     display: flex;
     justify-content: center;

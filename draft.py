@@ -31,6 +31,7 @@ later_pick_count = int( getenv( "LATER_PICK_COUNT" ) or 2 )
 ## STATE ##
 state = None
 timer = None
+is_reverse_draft = None
 first_ban = None
 active_team = None
 remaining_picks = 0
@@ -47,12 +48,15 @@ class State( Enum ):
 def initialize_state():
     global state
     state = State.lobby
+    global is_reverse_draft
+    is_reverse_draft = False
     global first_ban
     first_ban = teams.legion
 
 def serialize_state():
     return {
         "state": state.name,
+        "reverse_draft": is_reverse_draft,
         "first_ban": first_ban.name,
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
         "active_team": active_team.name if active_team else None,
@@ -97,6 +101,15 @@ def extend_timer( player ):
     if timer.try_extend( timer_extension ):
         sockets.emit_update_state()
         sockets.message( "extend_timer", player = player.id, seconds = timer_extension ).emit()
+
+def toggle_reverse_draft( player ):
+    if state != State.lobby:
+        return
+
+    global is_reverse_draft
+    is_reverse_draft = not is_reverse_draft
+    sockets.emit_update_state()
+    sockets.message( "enable_reverse_draft" if is_reverse_draft else "disable_reverse_draft", player = player.id ).emit()
 
 def set_first_ban( player, team ):
     if state != State.lobby:
@@ -288,7 +301,8 @@ def start_picking( team, pick_count ):
     active_team = team
 
     global remaining_picks
-    remaining_picks = min( pick_count, len( active_team.picking_players() ) )
+    picking_players = active_team.picking_players() if not is_reverse_draft else active_team.get_other().picking_players()
+    remaining_picks = min( pick_count, len( picking_players ) )
 
     if remaining_picks == 0:
         active_team = None
@@ -303,23 +317,24 @@ def pick_hero( player, hero, is_fate = False ):
     if state != State.picking:
         return
 
-    if player.team != active_team:
+    if player and player.team != active_team:
         return
-    if player.hero:
+    if not is_reverse_draft and player.hero:
         return
 
     if not hero.is_available():
         return
 
-    denied_players = [ p for p in player.team.get_other().players if p and p.dibs == hero ]
+    denied_players = [ p for p in active_team.get_other().players if p and p.dibs == hero ] if not is_fate else []
 
-    player.set_hero( hero )
+    picking_player = player if not is_reverse_draft else active_team.get_other().picking_players()[ 0 ]
+    picking_player.set_hero( hero )
     hero.set_picked()
     players.check_dibs_veto( hero )
 
     sockets.emit_update_hero( hero )
     sockets.emit_hero_picked( hero, bool( denied_players ) )
-    sockets.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id, hero = hero.name ).emit()
+    sockets.message( "player_pick_hero" if not is_fate else "fate_pick_hero", player = player.id if player else None, hero = hero.name ).emit()
     for denied_player in denied_players:
         sockets.message( "counter_pick", player = player.id, hero = hero.name, other_player = denied_player.id ).emit()
 
@@ -333,9 +348,16 @@ def pick_hero( player, hero, is_fate = False ):
     start_picking( active_team.get_other(), later_pick_count )
 
 def picking_timer_callback():
-    for _ in range( remaining_picks ):
-        picking_players = active_team.picking_players()
-        assert picking_players
-        player = random.choice( [ player for player in picking_players if player.dibs ] or picking_players )
-        hero = player.dibs if player.dibs else active_team.get_random_pick()
-        pick_hero( player, hero, is_fate = not player.dibs )
+    if not is_reverse_draft:
+        for _ in range( remaining_picks ):
+            picking_players = active_team.picking_players()
+            assert picking_players
+            player = random.choice( [ player for player in picking_players if player.dibs ] or picking_players )
+            hero = player.dibs if player.dibs else active_team.get_random_pick()
+            pick_hero( player, hero, is_fate = not player.dibs )
+    else:
+        for _ in range( remaining_picks ):
+            dibs_players = [ player for player in active_team.players if player and player.dibs ]
+            player = random.choice( dibs_players ) if dibs_players else None
+            hero = player.dibs if player else active_team.get_other().get_random_pick()
+            pick_hero( player, hero, is_fate = not player )
