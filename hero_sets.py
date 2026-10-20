@@ -197,6 +197,7 @@ reborn = {
         ( "Fayde", "fayde" ),
         ( "Geomancer", "geomancer" ),
         ( "Glacius", "glacius" ),
+        ( "Gravekeeper", "gravekeeper" ),
         ( "Hellbringer", "hellbringer" ),
         ( "Kinesis", "kinesis" ),
         ( "Martyr", "martyr" ),
