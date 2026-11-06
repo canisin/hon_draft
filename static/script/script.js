@@ -489,15 +489,58 @@ function createSettingEntry( setting )
     input.inputMode = "numeric";
     input.className = "setting-input";
     input.id = `setting-${ setting }`;
+    input.addEventListener( "input", () => onSettingInputValueChanged( setting, input ) );
+    input.addEventListener( "keydown", ( event ) => onSettingKeyDown( setting, input, event.key ) );
     entry.appendChild( input );
 
+    let tooltip = document.createElement( "span" );
+    tooltip.className = "tooltip";
+    tooltip.innerHTML = "<b>Enter</b> to apply, <b>Escape</b> to cancel";
+    entry.appendChild( tooltip );
+
     return entry;
+};
+
+function onSettingInputValueChanged( setting, input )
+{
+    input.parentElement.classList.toggle( "dirty", input.value != settings[ setting ] );
+};
+
+function resetSetting( setting, input )
+{
+    input.value = settings[ setting ];
+    input.parentElement.classList.remove( "dirty" );
+};
+
+function onSettingKeyDown( setting, input, key )
+{
+    switch ( key )
+    {
+        case "Enter":
+        {
+            if ( input.value == settings[ setting ] )
+            {
+                break;
+            }
+            socketio.emit( "set-setting", setting, input.value );
+            // restore the old value to let the server decide
+            resetSetting( setting, input );
+            break;
+        }
+
+        case "Escape":
+        {
+            resetSetting( setting, input );
+            break;
+        }
+    }
 };
 
 let settings = null;
 function onUpdateSettings( newSettings )
 {
     console.log( "updating settings" );
+    let previousSettings = settings;
     settings = newSettings;
 
     let settingsPanel = document.getElementById( "settings-panel" );
@@ -509,7 +552,14 @@ function onUpdateSettings( newSettings )
             settingsPanel.appendChild( createSettingEntry( setting ) );
             input = document.getElementById( `setting-${ setting }` );
         }
-        input.value = value;
+
+        // only overwrite input value if the value has changed
+        // this avoids discarding the client's edits unnecessarily
+        if ( !previousSettings || previousSettings[ setting ] != value )
+        {
+            input.value = value;
+        }
+        onSettingInputValueChanged( setting, input );
     }
 };
 socketio.on( "update-settings", onUpdateSettings );
