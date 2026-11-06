@@ -512,7 +512,7 @@ function createSettingEntry( setting )
 
     let tooltip = document.createElement( "span" );
     tooltip.className = "tooltip";
-    tooltip.innerHTML = "<b>Escape</b> to cancel";
+    tooltip.innerHTML = "<b>Enter</b> to apply, <b>Escape</b> to cancel";
     entry.appendChild( tooltip );
 
     return entry;
@@ -545,6 +545,12 @@ function onSettingKeyDown( setting, input, key )
 {
     switch ( key )
     {
+        case "Enter":
+        {
+            applySetting( setting, input );
+            break;
+        }
+
         case "Escape":
         {
             resetSetting( setting, input );
