@@ -341,7 +341,7 @@ function setDraftMode()
 
     let draftModeButton = document.getElementById( "draft-mode-button" );
     draftModeButton.innerHTML = localize( "draft_mode" );
-    draftModeButton.disabled = state.state != "lobby";
+    draftModeButton.disabled = state.phase != "lobby";
 };
 
 function setTeamStatus( team )
@@ -350,12 +350,12 @@ function setTeamStatus( team )
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
-    if ( state.state == "banning" && team == state.active_team )
+    if ( state.phase == "banning" && team == state.active_team )
     {
         title.textContent = "Banning";
         subtitle.textContent = "";
     }
-    else if ( state.state == "picking" && team == state.active_team )
+    else if ( state.phase == "picking" && team == state.active_team )
     {
         title.textContent = "Picking";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
@@ -403,31 +403,31 @@ function checkAnnouncer( previousState )
     // if the previous state was null, then the client is just loading in or refreshing the page
     let isRefresh = !previousState;
 
-    let stateHasChanged = !isRefresh && state.state != previousState.state;
+    let phaseHasChanged = !isRefresh && state.phase != previousState.phase;
     let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
 
-    // start draft and result announcements are only played if the client sees the state transition
-    let shouldPlayTransition = stateHasChanged;
+    // start draft and result announcements are only played if the client sees the phase transition
+    let shouldPlayTransition = phaseHasChanged;
 
     // active team announcements are played on refresh and turn changes
-    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && isClientTeamActive();
+    let shouldPlayActiveState = ( isRefresh || phaseHasChanged || teamHasChanged ) && isClientTeamActive();
 
-    if ( shouldPlayTransition && state.state == "banning_countdown" )
+    if ( shouldPlayTransition && state.phase == "banning_countdown" )
     {
         playAudio( startDraftAudio );
     }
 
-    if ( shouldPlayActiveState && state.state == "banning" )
+    if ( shouldPlayActiveState && state.phase == "banning" )
     {
         playAudioWithDelay( banHeroAudio );
     }
 
-    if ( shouldPlayActiveState && state.state == "picking" )
+    if ( shouldPlayActiveState && state.phase == "picking" )
     {
         playAudioWithDelay( pickHeroAudio );
     }
 
-    if ( shouldPlayTransition && state.state == "results" )
+    if ( shouldPlayTransition && state.phase == "results" )
     {
         playAudioWithDelay( startGameAudio );
     }
@@ -440,8 +440,8 @@ function onUpdateState( newState )
     let previousState = state;
     state = newState;
 
-    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
-    document.body.classList.add( `state-${ state.state }` );
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "phase-" ) ) );
+    document.body.classList.add( `phase-${ state.phase }` );
 
     document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "active-team-" ) ) );
     if ( state.active_team )
@@ -451,17 +451,17 @@ function onUpdateState( newState )
 
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
-    let stateLabel = document.getElementById( "state" );
-    stateLabel.innerHTML = localize( state.state );
+    let phaseLabel = document.getElementById( "phase" );
+    phaseLabel.innerHTML = localize( state.phase );
 
     let startDraftButton = document.getElementById( "start-draft-button" );
-    startDraftButton.disabled = state.state != "lobby";
+    startDraftButton.disabled = state.phase != "lobby";
 
     let cancelDraftButton = document.getElementById( "cancel-draft-button" );
-    cancelDraftButton.disabled = [ "lobby", "results" ].includes( state.state );
+    cancelDraftButton.disabled = [ "lobby", "results" ].includes( state.phase );
 
     let endDraftButton = document.getElementById( "end-draft-button" );
-    endDraftButton.disabled = state.state != "results";
+    endDraftButton.disabled = state.phase != "results";
 
     setTimer();
     setDraftMode();
@@ -493,12 +493,12 @@ socketio.on( "update-client-team", onUpdateClientTeam );
 const tickAudioSeconds = 3;
 function shouldPlayTickAudio( seconds )
 {
-    if ( state.state == "pool_countdown" )
+    if ( state.phase == "pool_countdown" )
     {
         return true;
     }
 
-    if ( [ "banning", "picking" ].includes( state.state ) )
+    if ( [ "banning", "picking" ].includes( state.phase ) )
     {
         return seconds <= tickAudioSeconds;
     }

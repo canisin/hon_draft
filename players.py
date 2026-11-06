@@ -191,7 +191,7 @@ def disconnect( id, session_id ):
     if player.session_id != session_id:
         print( "Discarding disconnect event for invalid socket id" )
         return
-    if draft.state == draft.State.lobby:
+    if draft.phase == draft.Phase.lobby:
         remove( player )
     else:
         player.set_disconnected( True )
