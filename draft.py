@@ -43,7 +43,12 @@ def set_setting( player, setting, value ):
     if phase != Phase.lobby:
         return
 
-    value = int( value or 0 )
+    try:
+        value = int( value or 0 )
+    except ValueError:
+        sockets.message( "settings_error", error = "Invalid value." ).emit( to = player.session_id )
+        return
+
     minimum_phase_duration = 5
     match setting:
         case "banning_duration":
