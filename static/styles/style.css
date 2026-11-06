@@ -829,10 +829,6 @@ body.phase-picking.client-team-active .pick-hero-button {
     text-transform: capitalize;
 }
 
-.setting.dirty .setting-label::after {
-    content: "*";
-}
-
 .setting-input {
     width: 60px;
 }

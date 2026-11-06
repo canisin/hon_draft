@@ -490,12 +490,13 @@ function createSettingEntry( setting )
     input.className = "setting-input";
     input.id = `setting-${ setting }`;
     input.addEventListener( "input", () => onSettingInputValueChanged( setting, input ) );
+    input.addEventListener( "blur", () => applySetting( setting, input ) );
     input.addEventListener( "keydown", ( event ) => onSettingKeyDown( setting, input, event.key ) );
     entry.appendChild( input );
 
     let tooltip = document.createElement( "span" );
     tooltip.className = "tooltip";
-    tooltip.innerHTML = "<b>Enter</b> to apply, <b>Escape</b> to cancel";
+    tooltip.innerHTML = "<b>Escape</b> to cancel";
     entry.appendChild( tooltip );
 
     return entry;
@@ -512,22 +513,22 @@ function resetSetting( setting, input )
     input.parentElement.classList.remove( "dirty" );
 };
 
+function applySetting( setting, input )
+{
+    if ( input.value == settings[ setting ] )
+    {
+        return;
+    }
+
+    socketio.emit( "set-setting", setting, input.value );
+    // restore the old value to let the server decide
+    resetSetting( setting, input );
+};
+
 function onSettingKeyDown( setting, input, key )
 {
     switch ( key )
     {
-        case "Enter":
-        {
-            if ( input.value == settings[ setting ] )
-            {
-                break;
-            }
-            socketio.emit( "set-setting", setting, input.value );
-            // restore the old value to let the server decide
-            resetSetting( setting, input );
-            break;
-        }
-
         case "Escape":
         {
             resetSetting( setting, input );
