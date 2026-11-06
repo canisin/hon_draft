@@ -772,6 +772,66 @@ body.phase-picking.client-team-active .pick-hero-button {
     top: 10px;
 }
 
+#settings {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    border: 2px solid black;
+    border-radius: 10px;
+    background-color: whitesmoke;
+}
+
+#settings-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: default;
+}
+
+#settings-button-icon {
+    width: 20px;
+    height: 20px;
+    background-color: currentColor;
+    mask: url( /static/images/settings.png ) center / contain no-repeat;
+}
+
+#settings[open] #settings-button {
+    background-color: gainsboro;
+    border-radius: 8px 8px 0 0;
+}
+
+#settings-button:hover,
+#settings[open] #settings-button:hover {
+    background-color: lightgray;
+}
+
+#settings-panel {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px 10px 10px;
+}
+
+.setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.setting-label {
+    text-transform: capitalize;
+}
+
+.setting-input {
+    width: 60px;
+}
+
 #hero-information-icon-container {
     width: 150px;
     height: 150px;

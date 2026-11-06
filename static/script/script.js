@@ -473,6 +473,47 @@ function onUpdateState( newState )
 };
 socketio.on( "update-state", onUpdateState );
 
+function createSettingEntry( setting )
+{
+    let entry = document.createElement( "div" );
+    entry.className = "setting";
+
+    let label = document.createElement( "label" );
+    label.className = "setting-label";
+    label.htmlFor = `setting-${ setting }`;
+    label.innerHTML = localize( setting );
+    entry.appendChild( label );
+
+    let input = document.createElement( "input" );
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.className = "setting-input";
+    input.id = `setting-${ setting }`;
+    entry.appendChild( input );
+
+    return entry;
+};
+
+let settings = null;
+function onUpdateSettings( newSettings )
+{
+    console.log( "updating settings" );
+    settings = newSettings;
+
+    let settingsPanel = document.getElementById( "settings-panel" );
+    for ( let [ setting, value ] of Object.entries( settings ) )
+    {
+        let input = document.getElementById( `setting-${ setting }` );
+        if ( !input )
+        {
+            settingsPanel.appendChild( createSettingEntry( setting ) );
+            input = document.getElementById( `setting-${ setting }` );
+        }
+        input.value = value;
+    }
+};
+socketio.on( "update-settings", onUpdateSettings );
+
 function onUpdateClientId( id )
 {
     console.log( "updating client id" );
