@@ -173,6 +173,7 @@ def connect( id, name, session_id ):
     sockets.emit_update_client_id( player )
     sockets.emit_update_client_team( player )
 
+    sockets.emit_update_settings( to = session_id )
     sockets.emit_update_state( to = session_id )
     sockets.emit_update_heroes( to = session_id )
     sockets.emit_update_players( to = session_id )
@@ -191,7 +192,7 @@ def disconnect( id, session_id ):
     if player.session_id != session_id:
         print( "Discarding disconnect event for invalid socket id" )
         return
-    if draft.state == draft.State.lobby:
+    if draft.phase == draft.Phase.lobby:
         remove( player )
     else:
         player.set_disconnected( True )

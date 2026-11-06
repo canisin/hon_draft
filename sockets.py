@@ -14,6 +14,9 @@ import utils
 def emit_update_state( **kwargs ):
     socketio.emit( "update-state", draft.serialize_state(), **kwargs )
 
+def emit_update_settings( **kwargs ):
+    socketio.emit( "update-settings", draft.serialize_settings(), **kwargs )
+
 def emit_update_client_id( player, **kwargs ):
     kwargs[ "to" ] = player.session_id
     socketio.emit( "update-client-id", player.id, **kwargs )
@@ -100,6 +103,11 @@ def on_toggle_stat( stat ):
     player = players.get( session[ "id" ] )
     stat = heroes.get( stat )
     draft.toggle_stat( player, stat )
+
+@socketio.on( "set-setting" )
+def on_set_setting( setting, value ):
+    player = players.get( session[ "id" ] )
+    draft.set_setting( player, setting, value )
 
 @socketio.on( "start-draft" )
 def on_start_draft():

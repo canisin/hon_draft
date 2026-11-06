@@ -28,15 +28,101 @@ veto_count = int( getenv( "VETO_COUNT" ) or 2 )
 initial_pick_count = int( getenv( "INITIAL_PICK_COUNT" ) or 1 )
 later_pick_count = int( getenv( "LATER_PICK_COUNT" ) or 2 )
 
+def serialize_settings():
+    return {
+        "banning_duration": banning_duration,
+        "picking_duration": picking_duration,
+        "pool_size": pool_size,
+        "ban_count": ban_count,
+        "veto_count": veto_count,
+        "initial_pick_count": initial_pick_count,
+        "later_pick_count": later_pick_count,
+    }
+
+def set_setting( player, setting, value ):
+    if phase != Phase.lobby:
+        return
+
+    try:
+        value = int( value or 0 )
+    except ValueError:
+        sockets.message( "settings_error", error = "Invalid value." ).emit( to = player.session_id )
+        return
+
+    minimum_phase_duration = 5
+    match setting:
+        case "banning_duration":
+            global banning_duration
+            if value == banning_duration: return
+            if value < minimum_phase_duration:
+                sockets.message( "settings_error", error = "Duration too low." ).emit( to = player.session_id )
+                return
+            banning_duration = value
+
+        case "picking_duration":
+            global picking_duration
+            if value == picking_duration: return
+            if value < minimum_phase_duration:
+                sockets.message( "settings_error", error = "Duration too low." ).emit( to = player.session_id )
+                return
+            picking_duration = value
+
+        case "pool_size":
+            global pool_size
+            if value == pool_size: return
+            sockets.message( "settings_error", error = "Pool size setting not yet implemented." ).emit( to = player.session_id )
+            return
+
+        case "ban_count":
+            global ban_count
+            if value == ban_count: return
+            if value < 0:
+                sockets.message( "settings_error", error = "Ban count cannot be negative." ).emit( to = player.session_id )
+                return
+            if value == 0:
+                sockets.message( "settings_error", error = "Zero bans not yet implemented." ).emit( to = player.session_id )
+                return
+            ban_count = value
+
+        case "veto_count":
+            global veto_count
+            if value == veto_count: return
+            if value < 0:
+                sockets.message( "settings_error", error = "Veto count cannot be negative." ).emit( to = player.session_id )
+                return
+            veto_count = value
+
+        case "initial_pick_count":
+            global initial_pick_count
+            if value == initial_pick_count: return
+            if value < 1:
+                sockets.message( "settings_error", error = "Pick count must be at least 1." ).emit( to = player.session_id )
+                return
+            initial_pick_count = value
+
+        case "later_pick_count":
+            global later_pick_count
+            if value == later_pick_count: return
+            if value < 1:
+                sockets.message( "settings_error", error = "Pick count must be at least 1." ).emit( to = player.session_id )
+                return
+            later_pick_count = value
+
+        case _:
+            assert False
+
+    sockets.emit_update_settings()
+    sockets.message( "settings_change", player = player.id, setting = setting, value = value ).emit()
+
 ## STATE ##
-state = None
+phase = None
 timer = None
 is_reverse_draft = None
 first_ban = None
 active_team = None
 remaining_picks = 0
 
-class State( Enum ):
+class Phase( Enum ):
     lobby = enum.auto()
     pool_countdown = enum.auto()
     banning_countdown = enum.auto()
@@ -46,8 +132,8 @@ class State( Enum ):
     results = enum.auto()
 
 def initialize_state():
-    global state
-    state = State.lobby
+    global phase
+    phase = Phase.lobby
     global is_reverse_draft
     is_reverse_draft = False
     global first_ban
@@ -55,7 +141,7 @@ def initialize_state():
 
 def serialize_state():
     return {
-        "state": state.name,
+        "phase": phase.name,
         "reverse_draft": is_reverse_draft,
         "first_ban": first_ban.name,
         "stats": { stat.name: stat.is_enabled for stat in heroes.stats },
@@ -64,9 +150,9 @@ def serialize_state():
         "timer": timer.serialize() if timer else None,
     }
 
-def set_state( new_state, seconds, callback ):
-    global state
-    state = new_state
+def set_phase( new_phase, seconds, callback ):
+    global phase
+    phase = new_phase
     set_timer( seconds, callback )
     sockets.emit_update_state()
 
@@ -82,7 +168,7 @@ def set_timer( seconds, callback ):
 
 def can_modify_timer():
     if not timer: return False
-    return state in ( State.banning, State.picking )
+    return phase in ( Phase.banning, Phase.picking )
 
 def pause_timer( player ):
     if not can_modify_timer(): return
@@ -103,7 +189,7 @@ def extend_timer( player ):
         sockets.message( "extend_timer", player = player.id, seconds = timer_extension ).emit()
 
 def toggle_reverse_draft( player ):
-    if state != State.lobby:
+    if phase != Phase.lobby:
         return
 
     global is_reverse_draft
@@ -112,7 +198,7 @@ def toggle_reverse_draft( player ):
     sockets.message( "enable_reverse_draft" if is_reverse_draft else "disable_reverse_draft", player = player.id ).emit()
 
 def set_first_ban( player, team ):
-    if state != State.lobby:
+    if phase != Phase.lobby:
         return
 
     global first_ban
@@ -124,7 +210,7 @@ def set_first_ban( player, team ):
     sockets.message( "set_first_ban", player = player.id, team = team.name ).emit()
 
 def toggle_stat( player, stat ):
-    if state != State.lobby:
+    if phase != Phase.lobby:
         return
 
     stat.is_enabled = not stat.is_enabled
@@ -133,7 +219,7 @@ def toggle_stat( player, stat ):
 
 def click_slot( player, team, index ):
     assert team is not teams.observers
-    if state == State.lobby:
+    if phase == Phase.lobby:
         move_to_slot( player, team, index )
     else:
         swap_with_slot( player, team, index )
@@ -177,7 +263,7 @@ def swap_with_slot( player, team, index ):
     player.set_swap_request( other_player )
 
 def start_draft( player ):
-    if state != State.lobby:
+    if phase != Phase.lobby:
         return
 
     if not teams.can_draft():
@@ -186,23 +272,23 @@ def start_draft( player ):
 
     sockets.message( "start_draft", player = player.id ).emit()
 
-    set_state( State.pool_countdown, pool_countdown_duration, pool_countdown_callback )
+    set_phase( Phase.pool_countdown, pool_countdown_duration, pool_countdown_callback )
     draft_countdown( pool_countdown_duration )
 
 def draft_countdown( seconds ):
-    if state != State.pool_countdown: return
+    if phase != Phase.pool_countdown: return
     if seconds == 0: return
     sockets.message( "draft_countdown", seconds = seconds ).emit()
     threading.Timer( 1, draft_countdown, [ seconds - 1 ] ).start()
 
 def cancel_draft( player ):
-    if state in ( State.lobby, State.results ):
+    if phase in ( Phase.lobby, Phase.results ):
         return
     reset_draft()
     sockets.message( "cancel_draft", player = player.id ).emit()
 
 def end_draft( player ):
-    if state != State.results:
+    if phase != Phase.results:
         return
     reset_draft()
     sockets.message( "end_draft", player = player.id ).emit()
@@ -218,14 +304,14 @@ def reset_draft( clear_players = False ):
         teams.clear()
     else:
         players.reset()
-    set_state( State.lobby, 0, None )
+    set_phase( Phase.lobby, 0, None )
 
 def pool_countdown_callback():
     heroes.generate_pool()
-    set_state( State.banning_countdown, banning_countdown_duration, banning_countdown_callback )
+    set_phase( Phase.banning_countdown, banning_countdown_duration, banning_countdown_callback )
 
 def dibs_hero( player, hero ):
-    if state in ( State.lobby, State.pool_countdown, State.results ):
+    if phase in ( Phase.lobby, Phase.pool_countdown, Phase.results ):
         return
 
     if player.is_observer():
@@ -244,10 +330,10 @@ def dibs_hero( player, hero ):
 def banning_countdown_callback():
     global active_team
     active_team = first_ban
-    set_state( State.banning, banning_duration, banning_timer_callback )
+    set_phase( Phase.banning, banning_duration, banning_timer_callback )
 
 def veto_hero( player, hero ):
-    if state not in ( State.banning_countdown, State.banning ):
+    if phase not in ( Phase.banning_countdown, Phase.banning ):
         return
 
     if player.is_observer():
@@ -261,7 +347,7 @@ def veto_hero( player, hero ):
     player.toggle_veto( hero )
 
 def ban_hero( player, hero, is_veto = False ):
-    if state != State.banning:
+    if phase != Phase.banning:
         return
 
     global active_team
@@ -287,10 +373,10 @@ def ban_hero( player, hero, is_veto = False ):
     if heroes.calc_ban_count() == ban_count:
         players.clear_veto()
         active_team = None
-        set_state( State.picking_countdown, picking_countdown_duration, picking_countdown_callback )
+        set_phase( Phase.picking_countdown, picking_countdown_duration, picking_countdown_callback )
     else:
         active_team = active_team.get_other()
-        set_state( State.banning, banning_duration, banning_timer_callback )
+        set_phase( Phase.banning, banning_duration, banning_timer_callback )
 
 def banning_timer_callback():
     hero, is_veto = active_team.get_random_ban()
@@ -306,15 +392,15 @@ def start_picking( team, pick_count ):
 
     if remaining_picks == 0:
         active_team = None
-        set_state( State.results, 0, None )
+        set_phase( Phase.results, 0, None )
     else:
-        set_state( State.picking, picking_duration, picking_timer_callback )
+        set_phase( Phase.picking, picking_duration, picking_timer_callback )
 
 def picking_countdown_callback():
     start_picking( first_ban, initial_pick_count )
 
 def pick_hero( player, hero, is_fate = False ):
-    if state != State.picking:
+    if phase != Phase.picking:
         return
 
     if player and player.team != active_team:

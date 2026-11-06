@@ -341,7 +341,7 @@ function setDraftMode()
 
     let draftModeButton = document.getElementById( "draft-mode-button" );
     draftModeButton.innerHTML = localize( "draft_mode" );
-    draftModeButton.disabled = state.state != "lobby";
+    draftModeButton.disabled = state.phase != "lobby";
 };
 
 function setTeamStatus( team )
@@ -350,12 +350,12 @@ function setTeamStatus( team )
     let title = teamDiv.getElementsByClassName( "team-status-label" )[ 0 ];
     let subtitle = teamDiv.getElementsByClassName( "team-status-subtitle" )[ 0 ];
 
-    if ( state.state == "banning" && team == state.active_team )
+    if ( state.phase == "banning" && team == state.active_team )
     {
         title.textContent = "Banning";
         subtitle.textContent = "";
     }
-    else if ( state.state == "picking" && team == state.active_team )
+    else if ( state.phase == "picking" && team == state.active_team )
     {
         title.textContent = "Picking";
         subtitle.textContent = `(Remaining Picks: ${ state.remaining_picks })`;
@@ -376,6 +376,21 @@ function setStatToggles()
 
         let statDiv = document.getElementById( stat );
         statDiv.classList.toggle( "disabled", !isEnabled );
+    }
+};
+
+function setSettingsState()
+{
+    let disabled = state.phase != "lobby";
+    for ( let setting of Object.keys( settings || {} ) )
+    {
+        let input = document.getElementById( `setting-${ setting }` );
+        if ( disabled )
+        {
+            // discard any pending edit since it can no longer be applied
+            resetSetting( setting, input );
+        }
+        input.disabled = disabled;
     }
 };
 
@@ -403,31 +418,31 @@ function checkAnnouncer( previousState )
     // if the previous state was null, then the client is just loading in or refreshing the page
     let isRefresh = !previousState;
 
-    let stateHasChanged = !isRefresh && state.state != previousState.state;
+    let phaseHasChanged = !isRefresh && state.phase != previousState.phase;
     let teamHasChanged = !isRefresh && state.active_team != previousState.active_team;
 
-    // start draft and result announcements are only played if the client sees the state transition
-    let shouldPlayTransition = stateHasChanged;
+    // start draft and result announcements are only played if the client sees the phase transition
+    let shouldPlayTransition = phaseHasChanged;
 
     // active team announcements are played on refresh and turn changes
-    let shouldPlayActiveState = ( isRefresh || stateHasChanged || teamHasChanged ) && isClientTeamActive();
+    let shouldPlayActiveState = ( isRefresh || phaseHasChanged || teamHasChanged ) && isClientTeamActive();
 
-    if ( shouldPlayTransition && state.state == "banning_countdown" )
+    if ( shouldPlayTransition && state.phase == "banning_countdown" )
     {
         playAudio( startDraftAudio );
     }
 
-    if ( shouldPlayActiveState && state.state == "banning" )
+    if ( shouldPlayActiveState && state.phase == "banning" )
     {
         playAudioWithDelay( banHeroAudio );
     }
 
-    if ( shouldPlayActiveState && state.state == "picking" )
+    if ( shouldPlayActiveState && state.phase == "picking" )
     {
         playAudioWithDelay( pickHeroAudio );
     }
 
-    if ( shouldPlayTransition && state.state == "results" )
+    if ( shouldPlayTransition && state.phase == "results" )
     {
         playAudioWithDelay( startGameAudio );
     }
@@ -440,8 +455,8 @@ function onUpdateState( newState )
     let previousState = state;
     state = newState;
 
-    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "state-" ) ) );
-    document.body.classList.add( `state-${ state.state }` );
+    document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "phase-" ) ) );
+    document.body.classList.add( `phase-${ state.phase }` );
 
     document.body.classList.remove( ...Array.from( document.body.classList ).filter( cls => cls.startsWith( "active-team-" ) ) );
     if ( state.active_team )
@@ -451,17 +466,17 @@ function onUpdateState( newState )
 
     document.body.classList.toggle( "client-team-active", isClientTeamActive() );
 
-    let stateLabel = document.getElementById( "state" );
-    stateLabel.innerHTML = localize( state.state );
+    let phaseLabel = document.getElementById( "phase" );
+    phaseLabel.innerHTML = localize( state.phase );
 
     let startDraftButton = document.getElementById( "start-draft-button" );
-    startDraftButton.disabled = state.state != "lobby";
+    startDraftButton.disabled = state.phase != "lobby";
 
     let cancelDraftButton = document.getElementById( "cancel-draft-button" );
-    cancelDraftButton.disabled = [ "lobby", "results" ].includes( state.state );
+    cancelDraftButton.disabled = [ "lobby", "results" ].includes( state.phase );
 
     let endDraftButton = document.getElementById( "end-draft-button" );
-    endDraftButton.disabled = state.state != "results";
+    endDraftButton.disabled = state.phase != "results";
 
     setTimer();
     setDraftMode();
@@ -469,9 +484,108 @@ function onUpdateState( newState )
     setTeamStatus( "legion" );
     setTeamStatus( "hellbourne" );
     setStatToggles();
+    setSettingsState();
     checkAnnouncer( previousState );
 };
 socketio.on( "update-state", onUpdateState );
+
+function createSettingEntry( setting )
+{
+    let entry = document.createElement( "div" );
+    entry.className = "setting";
+
+    let label = document.createElement( "label" );
+    label.className = "setting-label";
+    label.htmlFor = `setting-${ setting }`;
+    label.innerHTML = localize( setting );
+    entry.appendChild( label );
+
+    let input = document.createElement( "input" );
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.className = "setting-input";
+    input.id = `setting-${ setting }`;
+    input.addEventListener( "input", () => onSettingInputValueChanged( setting, input ) );
+    input.addEventListener( "blur", () => applySetting( setting, input ) );
+    input.addEventListener( "keydown", ( event ) => onSettingKeyDown( setting, input, event.key ) );
+    entry.appendChild( input );
+
+    let tooltip = document.createElement( "span" );
+    tooltip.className = "tooltip";
+    tooltip.innerHTML = "<b>Enter</b> to apply, <b>Escape</b> to cancel";
+    entry.appendChild( tooltip );
+
+    return entry;
+};
+
+function onSettingInputValueChanged( setting, input )
+{
+    input.parentElement.classList.toggle( "dirty", input.value != settings[ setting ] );
+};
+
+function resetSetting( setting, input )
+{
+    input.value = settings[ setting ];
+    input.parentElement.classList.remove( "dirty" );
+};
+
+function applySetting( setting, input )
+{
+    if ( input.value == settings[ setting ] )
+    {
+        return;
+    }
+
+    socketio.emit( "set-setting", setting, input.value );
+    // restore the old value to let the server decide
+    resetSetting( setting, input );
+};
+
+function onSettingKeyDown( setting, input, key )
+{
+    switch ( key )
+    {
+        case "Enter":
+        {
+            applySetting( setting, input );
+            break;
+        }
+
+        case "Escape":
+        {
+            resetSetting( setting, input );
+            break;
+        }
+    }
+};
+
+let settings = null;
+function onUpdateSettings( newSettings )
+{
+    console.log( "updating settings" );
+    let previousSettings = settings;
+    settings = newSettings;
+
+    let settingsPanel = document.getElementById( "settings-panel" );
+    for ( let [ setting, value ] of Object.entries( settings ) )
+    {
+        let input = document.getElementById( `setting-${ setting }` );
+        if ( !input )
+        {
+            settingsPanel.appendChild( createSettingEntry( setting ) );
+            input = document.getElementById( `setting-${ setting }` );
+        }
+
+        // only overwrite input value if the value has changed
+        // this avoids discarding the client's edits unnecessarily
+        if ( !previousSettings || previousSettings[ setting ] != value )
+        {
+            input.value = value;
+        }
+        onSettingInputValueChanged( setting, input );
+    }
+};
+socketio.on( "update-settings", onUpdateSettings );
 
 function onUpdateClientId( id )
 {
@@ -493,12 +607,12 @@ socketio.on( "update-client-team", onUpdateClientTeam );
 const tickAudioSeconds = 3;
 function shouldPlayTickAudio( seconds )
 {
-    if ( state.state == "pool_countdown" )
+    if ( state.phase == "pool_countdown" )
     {
         return true;
     }
 
-    if ( [ "banning", "picking" ].includes( state.state ) )
+    if ( [ "banning", "picking" ].includes( state.phase ) )
     {
         return seconds <= tickAudioSeconds;
     }

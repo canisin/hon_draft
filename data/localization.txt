@@ -97,3 +97,13 @@ player_removed:             #player has been removed.
 dice_help:                  Example dice rolls: "d100", "1d4 + 1", "3d6 - 1d8"
 dice_error:                 <span style="color:red">Invalid dice expression.</span>
 dice_roll:                  #player rolled @expression → <span style="color:orange"><b>@roll</b></span>
+
+settings_change:            #player has changed the #@setting to @value.
+settings_error:             <span style="color:red">@error</span>
+banning_duration:           banning duration
+picking_duration:           picking duration
+pool_size:                  pool size
+ban_count:                  ban count
+veto_count:                 veto count
+initial_pick_count:         pick count (first turn)
+later_pick_count:           pick count

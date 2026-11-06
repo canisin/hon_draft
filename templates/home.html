@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="header">
-    <div id="state"></div>
+    <div id="phase"></div>
     <div id="countdown-container">
         <div id="countdown">0</div>
         <div id="countdown-controls">
@@ -110,6 +110,12 @@
         <div id="hero-information-veto-list"></div>
     </div>
 </div>
+<details id="settings">
+    <summary id="settings-button">
+        <span id="settings-button-icon"></span> Settings
+    </summary>
+    <div id="settings-panel"></div>
+</details>
 <div class="main">
     <div class="outer-margin"></div>
     {{ team( "legion" ) }}
