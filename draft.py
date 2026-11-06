@@ -28,6 +28,87 @@ veto_count = int( getenv( "VETO_COUNT" ) or 2 )
 initial_pick_count = int( getenv( "INITIAL_PICK_COUNT" ) or 1 )
 later_pick_count = int( getenv( "LATER_PICK_COUNT" ) or 2 )
 
+def serialize_settings():
+    return {
+        "banning_duration": banning_duration,
+        "picking_duration": picking_duration,
+        "pool_size": pool_size,
+        "ban_count": ban_count,
+        "veto_count": veto_count,
+        "initial_pick_count": initial_pick_count,
+        "later_pick_count": later_pick_count,
+    }
+
+def set_setting( player, setting, value ):
+    if phase != Phase.lobby:
+        return
+
+    value = int( value or 0 )
+    minimum_phase_duration = 5
+    match setting:
+        case "banning_duration":
+            global banning_duration
+            if value == banning_duration: return
+            if value < minimum_phase_duration:
+                sockets.message( "settings_error", error = "Duration too low." ).emit( to = player.session_id )
+                return
+            banning_duration = value
+
+        case "picking_duration":
+            global picking_duration
+            if value == picking_duration: return
+            if value < minimum_phase_duration:
+                sockets.message( "settings_error", error = "Duration too low." ).emit( to = player.session_id )
+                return
+            picking_duration = value
+
+        case "pool_size":
+            global pool_size
+            if value == pool_size: return
+            sockets.message( "settings_error", error = "Pool size setting not yet implemented." ).emit( to = player.session_id )
+            return
+
+        case "ban_count":
+            global ban_count
+            if value == ban_count: return
+            if value < 0:
+                sockets.message( "settings_error", error = "Ban count cannot be negative." ).emit( to = player.session_id )
+                return
+            if value == 0:
+                sockets.message( "settings_error", error = "Zero bans not yet implemented." ).emit( to = player.session_id )
+                return
+            ban_count = value
+
+        case "veto_count":
+            global veto_count
+            if value == veto_count: return
+            if value < 0:
+                sockets.message( "settings_error", error = "Veto count cannot be negative." ).emit( to = player.session_id )
+                return
+            veto_count = value
+
+        case "initial_pick_count":
+            global initial_pick_count
+            if value == initial_pick_count: return
+            if value < 1:
+                sockets.message( "settings_error", error = "Pick count must be at least 1." ).emit( to = player.session_id )
+                return
+            initial_pick_count = value
+
+        case "later_pick_count":
+            global later_pick_count
+            if value == later_pick_count: return
+            if value < 1:
+                sockets.message( "settings_error", error = "Pick count must be at least 1." ).emit( to = player.session_id )
+                return
+            later_pick_count = value
+
+        case _:
+            assert False
+
+    sockets.emit_update_settings()
+    sockets.message( "settings_change", player = player.id, setting = setting, value = value ).emit()
+
 ## STATE ##
 phase = None
 timer = None

@@ -173,6 +173,7 @@ def connect( id, name, session_id ):
     sockets.emit_update_client_id( player )
     sockets.emit_update_client_team( player )
 
+    sockets.emit_update_settings( to = session_id )
     sockets.emit_update_state( to = session_id )
     sockets.emit_update_heroes( to = session_id )
     sockets.emit_update_players( to = session_id )
