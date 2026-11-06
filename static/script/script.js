@@ -379,6 +379,21 @@ function setStatToggles()
     }
 };
 
+function setSettingsState()
+{
+    let disabled = state.phase != "lobby";
+    for ( let setting of Object.keys( settings || {} ) )
+    {
+        let input = document.getElementById( `setting-${ setting }` );
+        if ( disabled )
+        {
+            // discard any pending edit since it can no longer be applied
+            resetSetting( setting, input );
+        }
+        input.disabled = disabled;
+    }
+};
+
 let clientId = null;
 let clientTeam = null;
 
@@ -469,6 +484,7 @@ function onUpdateState( newState )
     setTeamStatus( "legion" );
     setTeamStatus( "hellbourne" );
     setStatToggles();
+    setSettingsState();
     checkAnnouncer( previousState );
 };
 socketio.on( "update-state", onUpdateState );
