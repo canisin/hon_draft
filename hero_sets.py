@@ -164,6 +164,7 @@ reborn = {
         ( "Forsaken Archer", "forsaken_archer" ),
         ( "Gemini", "gemini" ),
         ( "Gunblade", "gunblade" ),
+        ( "Klanx", "klanx" ),
         ( "The Madman", "madman" ),
         ( "Master Of Arms", "master_of_arms" ),
         ( "Monkey King", "monkey_king" ),
